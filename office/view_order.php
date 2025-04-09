@@ -1,0 +1,137 @@
+<?php
+require_once '../config/config.php';
+checkAuth(['office_staff']);
+
+$order_id = $_GET['id'] ?? null;
+if (!$order_id) {
+    header('Location: dashboard.php');
+    exit();
+}
+
+// Get order details with all measurements and user information
+$order = $conn->query("
+    SELECT o.*, 
+           rdm.*, 
+           wdm.*,
+           u1.name as prepared_by_name,
+           u1.contact as prepared_by_contact,
+           u2.name as checked_by_name
+    FROM orders o 
+    LEFT JOIN roller_door_measurements rdm ON o.id = rdm.order_id
+    LEFT JOIN wicket_door_measurements wdm ON o.id = wdm.order_id
+    LEFT JOIN users u1 ON o.prepared_by = u1.id
+    LEFT JOIN users u2 ON o.checked_by = u2.id
+    WHERE o.id = $order_id
+")->fetch_assoc();
+
+// Get materials if order has been reviewed by supervisor
+$materials = $conn->query("
+    SELECT m.*, om.quantity as used_quantity
+    FROM order_materials om
+    JOIN materials m ON om.material_id = m.id
+    WHERE om.order_id = $order_id
+")->fetch_all(MYSQLI_ASSOC);
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Order</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <div class="dashboard">
+        <?php include __DIR__ . '/includes/navigation.php'; ?>
+        
+        <div class="content">
+            <h2>Order Details #<?php echo $order_id; ?></h2>
+            
+            <!-- Customer Information -->
+            <div class="section">
+                <h3>Customer Information</h3>
+                <p><strong>Customer Name:</strong> <?php echo htmlspecialchars($order['customer_name']); ?></p>
+                <p><strong>Order Status:</strong> <?php echo ucfirst($order['status']); ?></p>
+                <p><strong>Created Date:</strong> <?php echo date('Y-m-d H:i', strtotime($order['created_at'])); ?></p>
+                <?php if ($order['total_price']): ?>
+                    <p><strong>Total Price:</strong> Rs. <?php echo number_format($order['total_price'], 2); ?></p>
+                <?php endif; ?>
+            </div>
+
+            <!-- Roller Door Measurements -->
+            <div class="section">
+                <h3>Roller Door Measurements</h3>
+                <div class="measurements-grid">
+                    <p><strong>Outside Width:</strong> <?php echo $order['outside_width']; ?></p>
+                    <p><strong>Inside Width:</strong> <?php echo $order['inside_width']; ?></p>
+                    <p><strong>Door Width:</strong> <?php echo $order['door_width']; ?></p>
+                    <p><strong>Tower Height:</strong> <?php echo $order['tower_height']; ?></p>
+                    <p><strong>Tower Type:</strong> <?php echo ucfirst($order['tower_type']); ?></p>
+                    <p><strong>Coil Color:</strong> <?php echo str_replace('_', ' ', ucfirst($order['coil_color'])); ?></p>
+                    <p><strong>Thickness:</strong> <?php echo $order['thickness']; ?></p>
+                    <p><strong>Covering:</strong> <?php echo ucfirst($order['covering']); ?></p>
+                    <p><strong>Side Lock:</strong> <?php echo $order['side_lock'] ? 'Yes' : 'No'; ?></p>
+                    <p><strong>Motor:</strong> <?php echo $order['motor'] == 'manual' ? 'Manual' : $order['motor']; ?></p>
+                    <p><strong>Fixing:</strong> <?php echo ucfirst($order['fixing']); ?></p>
+                    <p><strong>Down Lock:</strong> <?php echo $order['down_lock'] ? 'Yes' : 'No'; ?></p>
+                </div>
+            </div>
+
+            <!-- Wicket Door Measurements if exists -->
+            <?php if ($order['point1']): ?>
+            <div class="section">
+                <h3>Wicket Door Measurements</h3>
+                <div class="measurements-grid">
+                    <p><strong>Point 1:</strong> <?php echo $order['point1']; ?></p>
+                    <p><strong>Point 2:</strong> <?php echo $order['point2']; ?></p>
+                    <p><strong>Point 3:</strong> <?php echo $order['point3']; ?></p>
+                    <p><strong>Point 4:</strong> <?php echo $order['point4']; ?></p>
+                    <p><strong>Point 5:</strong> <?php echo $order['point5']; ?></p>
+                    <p><strong>Thickness:</strong> <?php echo $order['thickness']; ?></p>
+                    <p><strong>Door Opening:</strong> <?php echo str_replace('_', ' ', ucfirst($order['door_opening'])); ?></p>
+                    <p><strong>Handle:</strong> <?php echo $order['handle'] ? 'Yes' : 'No'; ?></p>
+                    <p><strong>Letter Box:</strong> <?php echo $order['letter_box'] ? 'Yes' : 'No'; ?></p>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- Materials List if reviewed -->
+            <?php if (!empty($materials)): ?>
+            <div class="section">
+                <h3>Materials Required</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Details</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($materials as $material): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($material['name']); ?></td>
+                            <td>
+                                <?php if ($material['type'] == 'coil'): ?>
+                                    Color: <?php echo htmlspecialchars($material['color']); ?><br>
+                                    Thickness: <?php echo $material['thickness']; ?>
+                                <?php endif; ?>
+                            </td>
+                            <td><?php echo $material['used_quantity'] . ' ' . $material['unit']; ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <?php endif; ?>
+
+            <!-- Action Buttons -->
+            <div class="actions">
+                <a href="dashboard.php" class="button">Back to Dashboard</a>
+                <?php if ($order['status'] == 'reviewed'): ?>
+                <a href="confirm_order.php?id=<?php echo $order_id; ?>" class="button primary">Confirm Order</a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
