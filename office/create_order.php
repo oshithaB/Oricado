@@ -8,9 +8,9 @@ $coils = $conn->query("SELECT * FROM materials WHERE type = 'coil'")->fetch_all(
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn->begin_transaction();
     try {
-        // Insert order
-        $stmt = $conn->prepare("INSERT INTO orders (customer_name, prepared_by) VALUES (?, ?)");
-        $stmt->bind_param("si", $_POST['customer_name'], $_SESSION['user_id']);
+        // Insert order with customer details
+        $stmt = $conn->prepare("INSERT INTO orders (customer_name, customer_contact, customer_address, prepared_by) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("sssi", $_POST['customer_name'], $_POST['customer_contact'], $_POST['customer_address'], $_SESSION['user_id']);
         $stmt->execute();
         $order_id = $conn->insert_id;
 
@@ -44,9 +44,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->execute();
         }
 
+        // Get the complete order data for PDF
+        $order = $conn->query("
+            SELECT o.*, rdm.*, wdm.*,
+                   u1.name as prepared_by_name,
+                   u1.contact as prepared_by_contact
+            FROM orders o 
+            LEFT JOIN roller_door_measurements rdm ON o.id = rdm.order_id
+            LEFT JOIN wicket_door_measurements wdm ON o.id = wdm.order_id
+            LEFT JOIN users u1 ON o.prepared_by = u1.id
+            WHERE o.id = $order_id
+        ")->fetch_assoc();
+
+        // Generate PDF using PDFGenerator
+        require_once '../includes/PDFGenerator.php';
+        $pdf = new PDFGenerator($order_id);
+        $pdf->generatePDF($order, 'new_order');
+
         $conn->commit();
-        header('Location: dashboard.php?success=1');
-        exit();
+        // The PDF generation will handle the exit
     } catch (Exception $e) {
         $conn->rollback();
         $error = "Error creating order: " . $e->getMessage();
@@ -74,6 +90,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <input type="text" name="customer_name" required>
                     </div>
                     <div class="form-group">
+                        <label>Customer Contact Number:</label>
+                        <input type="text" name="customer_contact" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Customer Address:</label>
+                        <textarea name="customer_address" required rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
                         <label>Prepared By:</label>
                         <input type="text" name="prepared_by" value="<?php echo isset($_SESSION['name']) ? htmlspecialchars($_SESSION['name']) : ''; ?>" readonly>
                     </div>
@@ -86,6 +110,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <!-- Roller Door Measurements -->
                 <div class="section">
                     <h3>Roller Door Measurements</h3>
+                    <div class="measurement-guide">
+                        <img src="../rollerdoor.jpg" alt="Roller Door Measurement Guide" class="guide-image">
+                    </div>
                     <!-- Add Section 1 and 2 measurements -->
                     <div class="measurement-sections">
                         <div class="form-group">
@@ -195,6 +222,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <!-- Wicket Door Measurements -->
                 <div class="section">
                     <h3>Wicket Door</h3>
+                    <div class="measurement-guide">
+                        <img src="../wicketdoor.jpg" alt="Wicket Door Measurement Guide" class="guide-image">
+                    </div>
                     <div class="form-group">
                         <label>Include Wicket Door:</label>
                         <input type="checkbox" name="has_wicket_door" id="has_wicket_door">

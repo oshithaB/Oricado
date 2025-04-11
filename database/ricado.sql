@@ -24,6 +24,8 @@ CREATE TABLE materials (
 CREATE TABLE orders (
     id INT PRIMARY KEY AUTO_INCREMENT,
     customer_name VARCHAR(100) NOT NULL,
+    customer_contact VARCHAR(50) NOT NULL,
+    customer_address TEXT NOT NULL,
     prepared_by INT,
     checked_by INT,
     approved_by INT,
