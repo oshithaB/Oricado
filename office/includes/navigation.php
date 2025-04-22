@@ -9,6 +9,8 @@
         <li><a href="completed_orders.php">Completed Orders</a></li>
         <li><a href="done_orders.php">Done Orders</a></li>
         <li><a href="manage_stock.php">Manage Stock</a></li>
+        <li><a href="contacts.php">Contacts</a></li>
+        <li><a href="add_contact.php">Add Contact</a></li>
         <li><a href="../logout.php">Logout</a></li>
     </ul>
 </nav>

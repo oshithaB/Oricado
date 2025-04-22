@@ -79,3 +79,20 @@ CREATE TABLE order_materials (
     FOREIGN KEY (order_id) REFERENCES orders(id),
     FOREIGN KEY (material_id) REFERENCES materials(id)
 );
+
+CREATE TABLE contacts (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    type ENUM('individual', 'company') NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    address TEXT NOT NULL,
+    phone VARCHAR(20),
+    mobile VARCHAR(20) NOT NULL,
+    email VARCHAR(100),
+    tax_number VARCHAR(50),
+    website VARCHAR(100),
+    profile_picture VARCHAR(255) DEFAULT 'profilepic.jpg',
+    tags VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by INT,
+    FOREIGN KEY (created_by) REFERENCES users(id)
+);
