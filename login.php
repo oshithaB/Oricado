@@ -39,12 +39,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Ricado Login</title>
+    <title>Oricado Login</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
     <div class="login-container">
-        <h2>Ricado Login</h2>
+        <div class="logo-container">
+            <img src="assets/images/oricado logo.jpg" alt="Oricado Logo" class="login-logo"> 
+            <style>
+         .logo-container {
+          text-align: center;
+          margin-bottom: 20px;
+        }
+        .login-logo {
+    max-width: 300px;
+    height: auto;
+    border-radius: 60px;
+}
+</style>
+             
+        </div>
+        <h2>Oricado Login</h2>
         <?php if (isset($error)): ?>
             <div class="error"><?php echo $error; ?></div>
         <?php endif; ?>
@@ -59,7 +74,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <input type="password" name="password" required>
             </div>
             <button type="submit">Login</button>
+            
         </form>
+        <style>
+.logo-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.login-logo {
+    max-width: 300px;
+    height: auto;
+    border-radius: 60px;
+}
+
+.login-container {
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 0 10px 2px #ffc107; /* Highlight color changed to yellow */
+}
+</style>
     </div>
 </body>
 </html>
