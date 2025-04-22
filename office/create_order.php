@@ -89,7 +89,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="dashboard">
         <?php include __DIR__ . '/includes/navigation.php'; ?>
         <div class="content">
-            <h2>Create New Order</h2>
+            <h2 style="color: black;">Create New Order</h2>
+            <style>
+                h2 {
+    font-family: 'Roman Classic', serif; /* Use Roman Classic font */
+    font-size: 30px; /* Adjust font size */
+    font-weight: bold; /* Make the text bold */
+    color:rgb(249, 243, 243); /* Set a nice color */
+    text-align: center; /* Center the text */
+    margin-bottom: 20px; /* Add spacing below the text */
+}
+                </style>
             <form method="POST" class="order-form">
                 <!-- Customer Details -->
                 <div class="section">

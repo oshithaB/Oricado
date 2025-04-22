@@ -55,11 +55,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     max-width: 300px;
     height: auto;
     border-radius: 60px;
+    
+    
+}
+h2 {
+    font-family: 'Roman Classic', serif; /* Use Roman Classic font */
+    font-size: 30px; /* Adjust font size */
+    font-weight: bold; /* Make the text bold */
+    color: #121111; /* Set a nice color */
+    text-align: center; /* Center the text */
+    margin-bottom: 20px; /* Add spacing below the text */
 }
 </style>
              
         </div>
-        <h2>Oricado Login</h2>
+        <h2 style="color: black;" >Oricado Login</h2>
+       
         <?php if (isset($error)): ?>
             <div class="error"><?php echo $error; ?></div>
         <?php endif; ?>
