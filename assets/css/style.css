@@ -91,10 +91,69 @@ th {
 /* Cards */
 .coil-card {
     background: white;
-    padding: 15px;
-    margin: 10px;
-    border-radius: 4px;
+    border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.color-header {
+    padding: 20px;
+    text-align: center;
+}
+
+.color-sample {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+.color-header h4 {
+    margin: 0;
+    font-size: 1.2em;
+    text-transform: capitalize;
+}
+
+.coil-details {
+    padding: 15px;
+    flex-grow: 1;
+}
+
+.coil-details p {
+    margin: 8px 0;
+    color: #666;
+}
+
+.view-details-btn {
+    width: 100%;
+    padding: 15px;
+    background: #007bff;
+    color: white;
+    border: none;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: auto;
+}
+
+.view-details-btn:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Coil Grid */
+.coil-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
 }
 
 /* Login Page */
@@ -111,8 +170,8 @@ th {
 .measurements-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-    margin: 15px 0;
+    gap: 10px;
+    margin: 10px 0;
 }
 
 .measurements-grid p {
@@ -120,6 +179,13 @@ th {
     padding: 10px;
     background: #f8f9fa;
     border-radius: 4px;
+}
+
+.measurement-item {
+    padding: 8px;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 3px;
 }
 
 .measurement-guide {
@@ -160,6 +226,70 @@ th {
     color: white;
     background: #007bff;
     display: inline-block;
+}
+
+/* Button Group */
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 10px 0;
+    width: 200px;  /* Set fixed width for consistent button sizes */
+}
+
+.button-group .button {
+    width: 100%;
+    text-align: center;
+    padding: 10px 15px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.9em;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.button.view-btn {
+    background-color: #4CAF50;
+    border: 1px solid #45a049;
+}
+
+.button.download-btn {
+    background-color: #2196F3;
+    border: 1px solid #1976D2;
+}
+
+.button.add-materials-btn {
+    background-color: #FF9800;
+    border: 1px solid #F57C00;
+}
+
+.button.view-btn:hover {
+    background-color: #45a049;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+.button.download-btn:hover {
+    background-color: #1976D2;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+.button.add-materials-btn:hover {
+    background-color: #F57C00;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+.button i {
+    font-size: 1.1em;
 }
 
 /* Price Confirmation */
@@ -347,4 +477,18 @@ th {
 .measurement-list li {
     padding: 5px 0;
     border-bottom: 1px solid #eee;
+}
+
+.view-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.order-details-section {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }

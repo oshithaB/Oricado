@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn->begin_transaction();
     try {
         // Insert order with customer details
-        $stmt = $conn->prepare("INSERT INTO orders (customer_name, customer_contact, customer_address, prepared_by) VALUES (?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO orders (customer_name, customer_contact, customer_address, prepared_by, status) VALUES (?, ?, ?, ?, 'pending')");
         $stmt->bind_param("sssi", $_POST['customer_name'], $_POST['customer_contact'], $_POST['customer_address'], $_SESSION['user_id']);
         $stmt->execute();
         $order_id = $conn->insert_id;
@@ -20,31 +20,42 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             tower_type, coil_color, thickness, covering, side_lock, motor,
             fixing, down_lock
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        
+        $sideLock = isset($_POST['side_lock']) ? 1 : 0;
+        $downLock = isset($_POST['down_lock']) ? 1 : 0;
+        
         $stmt->bind_param("iddddssdsissi", 
             $order_id, $_POST['outside_width'], $_POST['inside_width'],
             $_POST['door_width'], $_POST['tower_height'], $_POST['tower_type'],
             $_POST['coil_color'], $_POST['thickness'], $_POST['covering'],
-            $_POST['side_lock'], $_POST['motor'], $_POST['fixing'],
-            $_POST['down_lock']
+            $sideLock, $_POST['motor'], $_POST['fixing'],
+            $downLock
         );
         $stmt->execute();
 
         // Insert wicket door measurements if exists
-        if (isset($_POST['has_wicket_door']) && $_POST['has_wicket_door']) {
+        if (isset($_POST['has_wicket_door']) && $_POST['has_wicket_door'] == 'on') {
             $stmt = $conn->prepare("INSERT INTO wicket_door_measurements (
                 order_id, point1, point2, point3, point4, point5,
                 thickness, door_opening, handle, letter_box, coil_color
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            
+            $handle = isset($_POST['handle']) ? 1 : 0;
+            $letterBox = isset($_POST['letter_box']) ? 1 : 0;
+            
             $stmt->bind_param("idddddssiss",
                 $order_id, $_POST['point1'], $_POST['point2'], $_POST['point3'],
-                $_POST['point4'], $_POST['point5'], $_POST['w_thickness'],
-                $_POST['door_opening'], $_POST['handle'], $_POST['letter_box'],
-                $_POST['w_coil_color']
+                $_POST['point4'], $_POST['point5'], $_POST['thickness'],
+                $_POST['door_opening'], $handle, $letterBox,
+                $_POST['coil_color']
             );
             $stmt->execute();
         }
 
-        // Get the complete order data for PDF
+        // Commit the transaction first
+        $conn->commit();
+
+        // After successful commit, get complete order data for PDF
         $order = $conn->query("
             SELECT o.*, rdm.*, wdm.*,
                    u1.name as prepared_by_name,
@@ -56,13 +67,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             WHERE o.id = $order_id
         ")->fetch_assoc();
 
-        // Generate PDF using PDFGenerator
+        // Generate PDF
         require_once '../includes/PDFGenerator.php';
         $pdf = new PDFGenerator($order_id);
         $pdf->generatePDF($order, 'new_order');
-
-        $conn->commit();
-        // The PDF generation will handle the exit
+        
     } catch (Exception $e) {
         $conn->rollback();
         $error = "Error creating order: " . $e->getMessage();

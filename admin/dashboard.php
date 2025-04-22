@@ -35,15 +35,34 @@ $coils = $conn->query($coilQuery)->fetch_all(MYSQLI_ASSOC);
         <div class="content">
             <h3>Coil Overview</h3>
             <div class="coil-grid">
-                <?php foreach ($coils as $coil): ?>
+                <?php 
+                $colors = [
+                    'coffee_brown' => ['hex' => '#4A2C2A', 'text' => 'white'],
+                    'black_shine' => ['hex' => '#2C2C2C', 'text' => 'white'],
+                    'blue_color' => ['hex' => '#1E4D8C', 'text' => 'white'],
+                    'butter_milk' => ['hex' => '#FFF3D9', 'text' => 'black'],
+                    'chocolate_brown' => ['hex' => '#3C1F1E', 'text' => 'white'],
+                    'black_mate' => ['hex' => '#1C1C1C', 'text' => 'white'],
+                    'beige' => ['hex' => '#E8DCC4', 'text' => 'black']
+                ];
+                
+                foreach ($coils as $coil): 
+                    $colorInfo = $colors[$coil['color']] ?? ['hex' => '#000000', 'text' => 'white'];
+                    $colorName = str_replace('_', ' ', ucfirst($coil['color']));
+                ?>
                     <div class="coil-card">
-                        <h4><?php echo htmlspecialchars($coil['name']); ?></h4>
-                        <p>Color: <?php echo htmlspecialchars($coil['color']); ?></p>
-                        <p>Thickness: <?php echo $coil['thickness']; ?></p>
-                        <p>Available: <?php echo $coil['quantity']; ?> <?php echo $coil['unit']; ?></p>
-                        <p>Usage Count: <?php echo $coil['usage_count']; ?></p>
-                        <p>Revenue: Rs. <?php echo number_format($coil['total_revenue'], 2); ?></p>
-                        <a href="coil_details.php?id=<?php echo $coil['id']; ?>">View Details</a>
+                        <div class="color-header" style="background-color: <?php echo $colorInfo['hex']; ?>; color: <?php echo $colorInfo['text']; ?>">
+                            <h4><?php echo $colorName; ?></h4>
+                        </div>
+                        <div class="coil-details">
+                            <p>Thickness: <?php echo $coil['thickness']; ?></p>
+                            <p>Available: <?php echo $coil['quantity']; ?> <?php echo $coil['unit']; ?></p>
+                            <p>Usage Count: <?php echo $coil['usage_count']; ?></p>
+                            <p>Revenue: Rs. <?php echo number_format($coil['total_revenue'], 2); ?></p>
+                        </div>
+                        <button onclick="window.location.href='coil_details.php?id=<?php echo $coil['id']; ?>'" class="view-details-btn">
+                            View Details
+                        </button>
                     </div>
                 <?php endforeach; ?>
             </div>
