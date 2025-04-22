@@ -23,6 +23,29 @@ $coils = $conn->query($coilQuery)->fetch_all(MYSQLI_ASSOC);
 <body>
     <div class="dashboard">
         <nav>
+        <img src="../assets/images/oricado logo.jpg" alt="Oricado Logo" class="navigation-logo">
+<style>
+    .navigation {
+    background: #333; /* Black background for navigation */
+    color: white;
+    padding: 20px;
+}
+
+.logo-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.navigation-logo {
+    max-width: 150px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-radius: 50%; /* Makes the logo circular */
+    border: 2px solid #FFD700; /* Gold color for the border */
+    box-shadow: 0 0 10px 2px #FFD700; /* Optional: Add a glowing effect */
+}
+    </style>
             <h2>Admin Dashboard</h2>
             <ul>
                 <li><a href="users.php">Manage Users</a></li>
