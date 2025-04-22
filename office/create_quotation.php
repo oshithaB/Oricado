@@ -56,12 +56,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         $conn->commit();
+
         if ($_POST['action'] == 'download') {
             header("Location: download_quotation.php?id=" . $quotation_id);
+            exit();
         } else {
-            header("Location: quotations.php?success=1");
+            $_SESSION['success_message'] = "Quotation created successfully!";
+            header("Location: quotations.php");
+            exit();
         }
-        exit();
     } catch (Exception $e) {
         $conn->rollback();
         $error = $e->getMessage();
@@ -144,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                     <div class="actions">
                         <button type="submit" name="action" value="save">Create Quotation</button>
-                        <button type="submit" name="action" value="download">Download Quotation</button>
+                       
                     </div>
                 </form>
             </div>

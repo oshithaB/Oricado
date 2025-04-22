@@ -5,6 +5,30 @@ checkAuth(['office_staff']);
 $supervisors = $conn->query("SELECT * FROM users WHERE role = 'supervisor'")->fetch_all(MYSQLI_ASSOC);
 $coils = $conn->query("SELECT * FROM materials WHERE type = 'coil'")->fetch_all(MYSQLI_ASSOC);
 
+// Check if this is from a quotation
+$quotation_id = $_GET['quotation_id'] ?? null;
+if ($quotation_id) {
+    // Get quotation details
+    $quotation = $conn->query("
+        SELECT * FROM quotations 
+        WHERE id = $quotation_id AND type = 'order'
+    ")->fetch_assoc();
+
+    if ($quotation) {
+        // Pre-fill customer details
+        $customer_name = $quotation['customer_name'];
+        $customer_contact = $quotation['customer_contact'];
+        
+        // Get customer address from contacts
+        $customer = $conn->query("
+            SELECT address FROM contacts 
+            WHERE name = '$customer_name' AND mobile = '$customer_contact'
+        ")->fetch_assoc();
+        
+        $customer_address = $customer['address'] ?? '';
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn->begin_transaction();
     try {
@@ -106,15 +130,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <h3>Customer Details</h3>
                     <div class="form-group">
                         <label>Customer Name:</label>
-                        <input type="text" name="customer_name" required>
+                        <input type="text" name="customer_name" 
+                               value="<?php echo htmlspecialchars($customer_name ?? ''); ?>" required>
                     </div>
                     <div class="form-group">
                         <label>Customer Contact Number:</label>
-                        <input type="text" name="customer_contact" required>
+                        <input type="text" name="customer_contact" 
+                               value="<?php echo htmlspecialchars($customer_contact ?? ''); ?>" required>
                     </div>
                     <div class="form-group">
                         <label>Customer Address:</label>
-                        <textarea name="customer_address" required rows="3"></textarea>
+                        <textarea name="customer_address" required rows="3"><?php echo htmlspecialchars($customer_address ?? ''); ?></textarea>
                     </div>
                     <div class="form-group">
                         <label>Prepared By:</label>
