@@ -18,7 +18,8 @@ CREATE TABLE materials (
     thickness DECIMAL(4,2),
     color VARCHAR(50),
     quantity DECIMAL(10,2),
-    unit VARCHAR(20)
+    unit VARCHAR(20),
+    price DECIMAL(10,2) DEFAULT 0.00
 );
 
 CREATE TABLE orders (
@@ -95,4 +96,32 @@ CREATE TABLE contacts (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by INT,
     FOREIGN KEY (created_by) REFERENCES users(id)
+);
+
+CREATE TABLE quotations (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    type ENUM('raw_materials', 'order') NOT NULL,
+    customer_name VARCHAR(100) NOT NULL,
+    customer_contact VARCHAR(50) NOT NULL,
+    total_amount DECIMAL(10,2) NOT NULL,
+    created_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    coil_thickness DECIMAL(4,2),
+    quotation_text TEXT,
+    FOREIGN KEY (created_by) REFERENCES users(id)
+);
+
+CREATE TABLE quotation_items (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    quotation_id INT,
+    material_id INT,
+    name VARCHAR(100) NOT NULL,
+    quantity DECIMAL(10,2) NOT NULL,
+    unit VARCHAR(20) NOT NULL,
+    discount DECIMAL(5,2) DEFAULT 0,
+    price DECIMAL(10,2) NOT NULL,
+    taxes DECIMAL(5,2) DEFAULT 0,
+    amount DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (quotation_id) REFERENCES quotations(id),
+    FOREIGN KEY (material_id) REFERENCES materials(id)
 );
