@@ -16,8 +16,10 @@ $quotation_id = $_GET['quotation_id'] ?? null;
 if ($quotation_id) {
     // Get quotation details
     $quotation = $conn->query("
-        SELECT * FROM quotations 
-        WHERE id = $quotation_id AND type = 'order'
+        SELECT q.*, u.name as created_by_name, u.contact as created_by_contact
+        FROM quotations q 
+        LEFT JOIN users u ON q.created_by = u.id
+        WHERE q.id = $quotation_id AND q.type = 'order'
     ")->fetch_assoc();
 
     if ($quotation) {
@@ -27,79 +29,125 @@ if ($quotation_id) {
         
         // Get customer address from contacts
         $customer = $conn->query("
-            SELECT address FROM contacts 
+            SELECT * FROM contacts 
             WHERE name = '$customer_name' AND mobile = '$customer_contact'
+            LIMIT 1
         ")->fetch_assoc();
         
         $customer_address = $customer['address'] ?? '';
+        $prepared_by_name = $quotation['created_by_name'];
+        $prepared_by_contact = $quotation['created_by_contact'];
     }
+
+    // Check if quotation already has an order
+    $existing_order = $conn->query("
+        SELECT id FROM orders WHERE quotation_id = $quotation_id
+    ")->fetch_assoc();
+
+    if ($existing_order) {
+        $_SESSION['error_message'] = "This quotation already has an order.";
+        header('Location: quotations.php');
+        exit();
+    }
+}
+
+// Get measurements from URL if they exist
+$measurements = null;
+if (isset($_GET['measurements'])) {
+    $measurements = json_decode(base64_decode($_GET['measurements']), true);
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn->begin_transaction();
     try {
-        // Prepare variables before binding
-        $customerName = $_POST['customer_name'];
-        $customerContact = $_POST['customer_contact'];
-        $customerAddress = $_POST['customer_address'];
-        $userId = $_SESSION['user_id'];
-        $quotationId = $quotation_id ?? null;
-        
         // Calculate square feet
         $height = floatval($_POST['section1']) + floatval($_POST['section2']);
         $width = floatval($_POST['door_width']);
         $calculated_sqft = $height * $width;
 
-        // Insert order with prepared statement
-        $stmt = $conn->prepare("INSERT INTO orders (
+        // Save order first
+        $customerName = $_POST['customer_name'];
+        $customerContact = $_POST['customer_contact'];
+        $customerAddress = $_POST['customer_address'];
+        $status = 'pending';
+        $userId = $_SESSION['user_id'];
+
+        // Insert order
+        $query = "INSERT INTO orders (
             customer_name, customer_contact, customer_address, 
             prepared_by, status, quotation_id, total_sqft
-        ) VALUES (?, ?, ?, ?, 'pending', ?, ?)");
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
+        $stmt = $conn->prepare($query);
         if ($stmt === false) {
-            throw new Exception("Error preparing statement: " . $conn->error);
+            throw new Exception("Prepare failed: " . $conn->error . " for query: " . $query);
         }
 
-        $stmt->bind_param("sssidi", 
+        $stmt->bind_param("sssissd", 
             $customerName,
             $customerContact,
             $customerAddress,
             $userId,
-            $quotationId,
+            $status,
+            $quotation_id,
             $calculated_sqft
         );
 
         if (!$stmt->execute()) {
-            throw new Exception("Error executing statement: " . $stmt->error);
+            throw new Exception("Order insertion failed: " . $stmt->error);
         }
 
         $order_id = $conn->insert_id;
 
-        // Insert roller door measurements with all details
-        $stmt = $conn->prepare("INSERT INTO roller_door_measurements (
+        // Insert roller door measurements
+        $measurementQuery = "INSERT INTO roller_door_measurements (
             order_id, section1, section2, outside_width, inside_width, door_width, 
             tower_height, tower_type, coil_color, thickness, covering, 
             side_lock, motor, fixing, down_lock
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        $stmt = $conn->prepare($measurementQuery);
+        if ($stmt === false) {
+            throw new Exception("Prepare failed: " . $conn->error . "\nQuery: " . $measurementQuery);
+        }
+
+        // Convert values to appropriate types
+        $section1 = floatval($_POST['section1']);
+        $section2 = floatval($_POST['section2']);
+        $outsideWidth = floatval($_POST['outside_width']);
+        $insideWidth = floatval($_POST['inside_width']);
+        $doorWidth = floatval($_POST['door_width']);
+        $towerHeight = floatval($_POST['tower_height']);
+        $towerType = $_POST['tower_type'];
+        $coilColor = $_POST['coil_color'];
+        $thickness = $_POST['thickness'];
+        $covering = $_POST['covering'];
+        $sideLock = $_POST['side_lock'];
+        $motor = $_POST['motor'];
+        $fixing = $_POST['fixing'];
+        $downLock = intval($_POST['down_lock']);
+
         $stmt->bind_param("iddddddsssssssi", 
-            $order_id,
-            $_POST['section1'],
-            $_POST['section2'],
-            $_POST['outside_width'],
-            $_POST['inside_width'],
-            $_POST['door_width'],
-            $_POST['tower_height'],
-            $_POST['tower_type'],
-            $_POST['coil_color'],
-            $_POST['thickness'],
-            $_POST['covering'],
-            $_POST['side_lock'],
-            $_POST['motor'],
-            $_POST['fixing'],
-            $_POST['down_lock']
+            $order_id,          // i (integer)
+            $section1,          // d (double)
+            $section2,          // d
+            $outsideWidth,      // d
+            $insideWidth,       // d
+            $doorWidth,         // d
+            $towerHeight,       // d
+            $towerType,         // s (string)
+            $coilColor,         // s
+            $thickness,         // s
+            $covering,          // s
+            $sideLock,          // s
+            $motor,             // s
+            $fixing,            // s
+            $downLock           // i (integer)
         );
-        $stmt->execute();
+
+        if (!$stmt->execute()) {
+            throw new Exception("Error inserting measurements: " . $stmt->error);
+        }
 
         // Insert wicket door if exists
         if (isset($_POST['has_wicket_door'])) {
@@ -120,7 +168,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->execute();
         }
 
+        // Now check quotation sqft and update if needed
+        if ($quotation_id) {
+            $quotation_item = $conn->query("
+                SELECT qi.quantity, qi.material_id
+                FROM quotation_items qi
+                WHERE qi.quotation_id = $quotation_id 
+                AND qi.name LIKE '%Roller Door%'
+                LIMIT 1
+            ")->fetch_assoc();
+
+            if ($quotation_item && abs($calculated_sqft - $quotation_item['quantity']) > 0.01) {
+                // Store order_id for redirection after quotation update
+                $_SESSION['created_order_id'] = $order_id;
+                $_SESSION['calculated_sqft'] = $calculated_sqft;
+                
+                header("Location: edit_quotation.php?id=$quotation_id&calculated_sqft=$calculated_sqft&order_id=$order_id");
+                exit();
+            }
+        }
+
         $conn->commit();
+        $_SESSION['success_message'] = "Order created successfully!";
         header("Location: pending_orders.php");
         exit();
         
@@ -173,11 +242,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
                     <div class="form-group">
                         <label>Prepared By:</label>
-                        <input type="text" name="prepared_by" value="<?php echo isset($_SESSION['name']) ? htmlspecialchars($_SESSION['name']) : ''; ?>" readonly>
+                        <input type="text" name="prepared_by" 
+                               value="<?php echo htmlspecialchars($prepared_by_name ?? $_SESSION['name']); ?>" readonly>
                     </div>
                     <div class="form-group">
                         <label>Contact Number:</label>
-                        <input type="text" name="contact" value="<?php echo isset($_SESSION['contact']) ? htmlspecialchars($_SESSION['contact']) : ''; ?>" readonly>
+                        <input type="text" name="contact" 
+                               value="<?php echo htmlspecialchars($prepared_by_contact ?? $_SESSION['contact']); ?>" readonly>
                     </div>
                 </div>
 
@@ -191,11 +262,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div class="measurement-sections">
                         <div class="form-group">
                             <label>Section 1:</label>
-                            <input type="number" name="section1" step="0.01" required>
+                            <input type="number" name="section1" step="0.01" 
+                                   value="<?php echo htmlspecialchars($measurements['section1'] ?? ''); ?>" required>
                         </div>
                         <div class="form-group">
                             <label>Section 2:</label>
-                            <input type="number" name="section2" step="0.01" required>
+                            <input type="number" name="section2" step="0.01" 
+                                   value="<?php echo htmlspecialchars($measurements['section2'] ?? ''); ?>" required>
                         </div>
                     </div>
 

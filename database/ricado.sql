@@ -24,6 +24,7 @@ CREATE TABLE materials (
 
 CREATE TABLE orders (
     id INT PRIMARY KEY AUTO_INCREMENT,
+
     customer_name VARCHAR(100) NOT NULL,
     customer_contact VARCHAR(50) NOT NULL,
     customer_address TEXT NOT NULL,
@@ -32,30 +33,32 @@ CREATE TABLE orders (
     approved_by INT,
     status ENUM('pending', 'reviewed', 'confirmed', 'completed', 'done') DEFAULT 'pending',
     total_price DECIMAL(10,2),
+    total_sqft DECIMAL(10,2) DEFAULT 0.00,
+    quotation_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (prepared_by) REFERENCES users(id),
     FOREIGN KEY (checked_by) REFERENCES users(id),
     FOREIGN KEY (approved_by) REFERENCES users(id)
 );
-
-CREATE TABLE roller_door_measurements (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    order_id INT,
+CREATE TABLE IF NOT EXISTS roller_door_measurements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    section1 DECIMAL(10,2),
+    section2 DECIMAL(10,2),
     outside_width DECIMAL(10,2),
     inside_width DECIMAL(10,2),
     door_width DECIMAL(10,2),
     tower_height DECIMAL(10,2),
-    tower_type ENUM('small', 'large'),
+    tower_type VARCHAR(50),
     coil_color VARCHAR(50),
-    thickness DECIMAL(4,2),
-    covering ENUM('full', 'side'),
-    side_lock BOOLEAN,
-    motor ENUM('R', 'L', 'manual'),
-    fixing ENUM('inside', 'outside'),
-    down_lock BOOLEAN,
+    thickness VARCHAR(10),
+    covering VARCHAR(50),
+    side_lock VARCHAR(10),
+    motor VARCHAR(10),
+    fixing VARCHAR(50),
+    down_lock TINYINT(1),
     FOREIGN KEY (order_id) REFERENCES orders(id)
 );
-
 CREATE TABLE wicket_door_measurements (
     id INT PRIMARY KEY AUTO_INCREMENT,
     order_id INT,

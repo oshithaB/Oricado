@@ -10,61 +10,93 @@ if (!$quotation_id) {
     exit();
 }
 
-// Get quotation details
-$quotation = $conn->query("
-    SELECT q.*, qi.* 
+// Get quotation item details with better error handling
+$query = "
+    SELECT q.*, qi.*, m.price as base_price, qi.name as material_name
     FROM quotations q
     JOIN quotation_items qi ON q.id = qi.quotation_id
-    JOIN materials m ON qi.material_id = m.id
-    WHERE q.id = $quotation_id AND m.type = 'coil'
-")->fetch_assoc();
+    LEFT JOIN materials m ON qi.material_id = m.id
+    WHERE q.id = ? AND qi.name LIKE '%Roller Door%'
+    LIMIT 1
+";
+
+$stmt = $conn->prepare($query);
+if (!$stmt) {
+    die("Error preparing query: " . $conn->error);
+}
+
+$stmt->bind_param("i", $quotation_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$quotation = $result->fetch_assoc();
+
+if (!$quotation) {
+    $_SESSION['error_message'] = "Quotation or coil item not found";
+    header('Location: quotations.php');
+    exit();
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn->begin_transaction();
     try {
-        // Update quotation item quantity
+        // Update coil quantity and recalculate amount
         $stmt = $conn->prepare("
             UPDATE quotation_items 
-            SET quantity = ?, amount = quantity * price * (1 - discount/100) * (1 + taxes/100)
+            SET quantity = ?,
+                amount = ? * price * (1 - discount/100) * (1 + taxes/100)
             WHERE quotation_id = ? AND material_id = ?
         ");
         
-        if ($stmt === false) {
-            throw new Exception("Error preparing update statement: " . $conn->error);
+        if (!$stmt) {
+            throw new Exception("Error preparing statement: " . $conn->error);
         }
-        
-        $stmt->bind_param("dii", $_POST['quantity'], $quotation_id, $_POST['material_id']);
-        $stmt->execute();
 
-        // Update quotation total amount
+        $stmt->bind_param("ddii", 
+            $calculated_sqft,
+            $calculated_sqft,
+            $quotation_id,
+            $_POST['material_id']
+        );
+
+        if (!$stmt->execute()) {
+            throw new Exception("Error updating quotation item: " . $stmt->error);
+        }
+
+        // Update total amount and mark as updated
         $stmt = $conn->prepare("
             UPDATE quotations 
             SET total_amount = (
                 SELECT SUM(amount) 
                 FROM quotation_items 
                 WHERE quotation_id = ?
-            )
+            ),
+            is_updated = 1
             WHERE id = ?
         ");
         
-        if ($stmt === false) {
-            throw new Exception("Error preparing total update statement: " . $conn->error);
-        }
-        
         $stmt->bind_param("ii", $quotation_id, $quotation_id);
-        $stmt->execute();
+        if (!$stmt->execute()) {
+            throw new Exception("Error updating total: " . $stmt->error);
+        }
 
         $conn->commit();
+        
+        // If order was already created, redirect to pending orders
+        if (isset($_GET['order_id'])) {
+            $_SESSION['success_message'] = "Order created and quotation updated successfully!";
+            header('Location: pending_orders.php');
+            exit();
+        }
 
-        // Instead of requiring create_order.php, redirect to it with stored data
+        // Return to order creation with original measurements
         if (isset($_SESSION['order_data'])) {
-            $_SESSION['order_from_quotation'] = true;
-            header("Location: create_order.php?quotation_id=" . $quotation_id);
+            header("Location: create_order.php?quotation_id=" . $quotation_id . "&measurements=" . base64_encode(json_encode($_SESSION['order_data'])));
             exit();
         }
 
         header('Location: quotations.php');
         exit();
+        
     } catch (Exception $e) {
         $conn->rollback();
         $error = "Error updating quotation: " . $e->getMessage();
@@ -85,18 +117,41 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="section">
                 <h2>Edit Quotation</h2>
                 <div class="alert warning">
-                    The calculated square feet (<?php echo number_format($calculated_sqft, 2); ?> sqft) 
-                    doesn't match the quotation (<?php echo number_format($quotation['quantity'], 2); ?> sqft).
-                    Please update the quotation to proceed.
+                    <p>Square feet mismatch detected:</p>
+                    <ul>
+                        <li>Calculated from measurements: <strong><?php echo number_format($calculated_sqft, 2); ?> sqft</strong></li>
+                        <li>Current in quotation: <strong><?php echo number_format($quotation['quantity'] ?? 0, 2); ?> sqft</strong></li>
+                        <li>Material: <strong><?php echo htmlspecialchars($quotation['material_name'] ?? 'Unknown'); ?></strong></li>
+                    </ul>
                 </div>
 
                 <form method="POST">
                     <input type="hidden" name="material_id" value="<?php echo $quotation['material_id']; ?>">
+                    
                     <div class="form-group">
                         <label>Square Feet:</label>
                         <input type="number" name="quantity" step="0.01" 
                                value="<?php echo $calculated_sqft; ?>" required>
                     </div>
+
+                    <div class="form-group">
+                        <label>Price per Unit:</label>
+                        <input type="number" name="price" step="0.01" 
+                               value="<?php echo $quotation['price']; ?>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Discount (%):</label>
+                        <input type="number" name="discount" step="0.01" 
+                               value="<?php echo $quotation['discount']; ?>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Taxes (%):</label>
+                        <input type="number" name="taxes" step="0.01" 
+                               value="<?php echo $quotation['taxes']; ?>" required>
+                    </div>
+
                     <button type="submit">Update Quotation</button>
                 </form>
             </div>

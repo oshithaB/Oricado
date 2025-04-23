@@ -27,6 +27,7 @@
         <li><a href="dashboard.php">Dashboard</a></li>
         <li><a href="create_quotation.php">Create Quotation</a></li>
         <li><a href="quotations.php">Quotations</a></li>
+        <li><a href="updated_quotations.php">Updated Quotations</a></li>
         <li><a href="create_order.php">New Order</a></li>
         <li><a href="pending_orders.php">Pending Orders</a></li>
         <li><a href="reviewed_orders.php">Reviewed Orders</a></li>

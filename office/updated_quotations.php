@@ -2,14 +2,12 @@
 require_once '../config/config.php';
 checkAuth(['office_staff']);
 
-// Get quotations with items and order status
+// Get only updated quotations
 $quotations = $conn->query("
-    SELECT q.*, u.name as prepared_by_name,
-           CASE WHEN o.id IS NOT NULL THEN 1 ELSE 0 END as has_order
+    SELECT q.*, u.name as prepared_by_name
     FROM quotations q
     LEFT JOIN users u ON q.created_by = u.id
-    LEFT JOIN orders o ON q.id = o.quotation_id
-    WHERE q.type = 'order'
+    WHERE q.is_updated = 1
     ORDER BY q.created_at DESC
 ")->fetch_all(MYSQLI_ASSOC);
 
@@ -27,33 +25,15 @@ foreach ($quotations as &$quotation) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Quotations</title>
+    <title>Updated Quotations</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
     <div class="dashboard">
         <?php include 'includes/navigation.php'; ?>
         <div class="content">
-            <?php if (isset($_SESSION['success_message'])): ?>
-                <div class="alert success">
-                    <?php 
-                    echo $_SESSION['success_message']; 
-                    unset($_SESSION['success_message']);
-                    ?>
-                </div>
-            <?php endif; ?>
-
-            <?php if (isset($_SESSION['error_message'])): ?>
-                <div class="alert error">
-                    <?php 
-                    echo $_SESSION['error_message'];
-                    unset($_SESSION['error_message']);
-                    ?>
-                </div>
-            <?php endif; ?>
-
             <div class="section">
-                <h2>Quotations</h2>
+                <h2>Updated Quotations</h2>
                 <?php foreach ($quotations as $quotation): ?>
                 <div class="quotation-card">
                     <div class="quotation-header">
@@ -66,6 +46,7 @@ foreach ($quotations as &$quotation) {
                         </div>
                     </div>
 
+                    <!-- Display quotation items -->
                     <table class="items-table">
                         <thead>
                             <tr>
@@ -74,8 +55,6 @@ foreach ($quotations as &$quotation) {
                                 <th>Quantity</th>
                                 <th>Unit</th>
                                 <th>Price</th>
-                                <th>Discount</th>
-                                <th>Taxes</th>
                                 <th>Amount</th>
                             </tr>
                         </thead>
@@ -92,13 +71,11 @@ foreach ($quotations as &$quotation) {
                                 <td><?php echo $item['quantity']; ?></td>
                                 <td><?php echo htmlspecialchars($item['unit']); ?></td>
                                 <td>Rs. <?php echo number_format($item['price'], 2); ?></td>
-                                <td><?php echo $item['discount']; ?>%</td>
-                                <td><?php echo $item['taxes']; ?>%</td>
                                 <td>Rs. <?php echo number_format($item['amount'], 2); ?></td>
                             </tr>
                             <?php endforeach; ?>
                             <tr class="total-row">
-                                <td colspan="7" align="right"><strong>Total Amount:</strong></td>
+                                <td colspan="5" align="right"><strong>Total Amount:</strong></td>
                                 <td><strong>Rs. <?php echo number_format($quotation['total_amount'], 2); ?></strong></td>
                             </tr>
                         </tbody>
@@ -107,10 +84,6 @@ foreach ($quotations as &$quotation) {
                     <div class="quotation-actions">
                         <a href="download_quotation.php?id=<?php echo $quotation['id']; ?>" 
                            class="button download-btn">Download</a>
-                        <?php if ($quotation['type'] == 'order' && !$quotation['has_order']): ?>
-                            <a href="create_order.php?quotation_id=<?php echo $quotation['id']; ?>" 
-                               class="button add-measurements-btn">Add Measurements</a>
-                        <?php endif; ?>
                     </div>
                 </div>
                 <?php endforeach; ?>
