@@ -146,44 +146,46 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
 
                     <div class="items-section">
-                        <h3>Items</h3>
-                        <table id="itemsTable">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Quantity</th>
-                                    <th>Unit</th>
-                                    <th>Discount (%)</th>
-                                    <th>Price</th>
-                                    <th>Taxes</th>
-                                    <th>Amount</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                        <button type="button" id="addItem">Add Product</button>
-                    </div>
+    <h3>Items</h3>
+    <table id="itemsTable" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+            <tr>
+                <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Name</th>
+                <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Quantity</th>
+                <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Unit</th>
+                <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Discount (%)</th>
+                <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Price</th>
+                <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Taxes</th>
+                <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Amount</th>
+                <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <button type="button" id="addItem" 
+            style="padding: 10px 20px; background-color:rgb(255, 179, 0); color: white; border:2px solid black; border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease; margin-top: 10px;">Add Product</button>
+</div>
 
-                    <div class="quotation-text" id="quotationTextSection" style="display: none;">
-                        <label>Quotation Text:</label>
-                        <textarea name="quotation_text" id="quotationText" rows="5"></textarea>
-                    </div>
+<div class="quotation-text" id="quotationTextSection" style="display: none;">
+    <label>Quotation Text:</label>
+    <textarea name="quotation_text" id="quotationText" rows="5" 
+              style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;"></textarea>
+</div>
 
-                    <div class="total-section">
-                        <h3>Total Amount: <span id="totalAmount">0.00</span></h3>
-                        <input type="hidden" name="total_amount" id="totalAmountInput">
-                    </div>
+<div class="total-section">
+    <h3>Total Amount: <span id="totalAmount">0.00</span></h3>
+    <input type="hidden" name="total_amount" id="totalAmountInput">
+</div>
 
-                    <div class="actions">
-                        <button type="submit" name="action" value="save">Create Quotation</button>
-                       
-                    </div>
+<div class="actions">
+    <button type="submit" name="action" value="save" 
+            style="padding: 10px 20px; background-color:rgb(255, 179, 0); color: white; border: 2px solid black; border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease;">Create Quotation</button>
+</div>
                 </form>
             </div>
         </div>
     </div>
-
+ 
     <script src="../assets/js/quotation.js"></script>
 </body>
 </html>

@@ -133,24 +133,45 @@ function addNewRow() {
     const rowIndex = itemsTable.rows.length;
     const row = itemsTable.insertRow();
     row.innerHTML = `
-        <td>
-            <div class="material-search">
-                <input type="text" class="item-name" onkeyup="searchMaterials(this)" autocomplete="off" required>
+        <td style="text-align: center; vertical-align: middle;">
+            <div class="material-search" style="display: flex; justify-content: center; align-items: center;">
+                <input type="text" class="item-name" onkeyup="searchMaterials(this)" autocomplete="off" required
+                       style="width: 90%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
                 <div class="material-suggestions"></div>
                 <input type="hidden" name="items[${rowIndex}][material_id]" class="material-id">
                 <input type="hidden" name="items[${rowIndex}][name]" class="item-name-input">
             </div>
         </td>
-        <td><input type="number" name="items[${rowIndex}][quantity]" class="quantity" step="0.01" oninput="calculateRowTotal(this)" required></td>
-        <td><input type="text" name="items[${rowIndex}][unit]" class="unit"></td>
-        <td><input type="number" name="items[${rowIndex}][discount]" class="discount" step="0.01" value="0" oninput="calculateRowTotal(this)"></td>
-        <td><input type="number" name="items[${rowIndex}][price]" class="price" step="0.01" oninput="calculateRowTotal(this)"></td>
-        <td><input type="number" name="items[${rowIndex}][taxes]" class="taxes" step="0.01" value="0" oninput="calculateRowTotal(this)"></td>
-        <td><input type="number" name="items[${rowIndex}][amount]" class="amount" readonly></td>
-        <td><button type="button" onclick="removeRow(this)">Remove</button></td>
+        <td style="text-align: center; vertical-align: middle;">
+            <input type="number" name="items[${rowIndex}][quantity]" class="quantity" step="0.01" oninput="calculateRowTotal(this)" required
+                   style="width: 90%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
+        </td>
+        <td style="text-align: center; vertical-align: middle;">
+            <input type="text" name="items[${rowIndex}][unit]" class="unit"
+                   style="width: 90%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
+        </td>
+        <td style="text-align: center; vertical-align: middle;">
+            <input type="number" name="items[${rowIndex}][discount]" class="discount" step="0.01" value="0" oninput="calculateRowTotal(this)"
+                   style="width: 90%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
+        </td>
+        <td style="text-align: center; vertical-align: middle;">
+            <input type="number" name="items[${rowIndex}][price]" class="price" step="0.01" oninput="calculateRowTotal(this)"
+                   style="width: 90%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
+        </td>
+        <td style="text-align: center; vertical-align: middle;">
+            <input type="number" name="items[${rowIndex}][taxes]" class="taxes" step="0.01" value="0" oninput="calculateRowTotal(this)"
+                   style="width: 90%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
+        </td>
+        <td style="text-align: center; vertical-align: middle;">
+            <input type="number" name="items[${rowIndex}][amount]" class="amount" readonly
+                   style="width: 90%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
+        </td>
+        <td style="text-align: center; vertical-align: middle;">
+            <button type="button" onclick="removeRow(this)"
+                    style="padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease;">Remove</button>
+        </td>
     `;
 }
-
 function calculateRowTotal(element) {
     const row = element.closest('tr');
     const quantity = parseFloat(row.querySelector('.quantity').value) || 0;

@@ -67,13 +67,55 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="section">
                 <h2>Add New Contact</h2>
                 <form method="POST" enctype="multipart/form-data" class="contact-form">
-                    <div class="form-group">
-                        <label>Type:</label>
-                        <div class="radio-group">
-                            <label><input type="radio" name="type" value="individual" required> Individual</label>
-                            <label><input type="radio" name="type" value="company"> Company</label>
-                        </div>
-                    </div>
+                <div class="form-group">
+    <label>Type:</label>
+    <div class="radio-group">
+        <label class="radio-option">
+            <input type="radio" name="type" value="individual" required>
+            <span>Individual</span>
+        </label>
+        <label class="radio-option">
+            <input type="radio" name="type" value="company">
+            <span>Company</span>
+        </label>
+        <style>
+            .radio-group {
+    display: flex;
+    gap: 20px; /* Add spacing between options */
+    margin-top: 10px;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Add spacing between the radio button and label */
+    font-size: 16px; /* Adjust font size */
+    cursor: pointer; /* Change cursor to pointer for better UX */
+}
+
+.radio-option input[type="radio"] {
+    appearance: none; /* Remove default radio button styling */
+    width: 18px;
+    height: 18px;
+    border: 2px solid black; /* Default border color */
+    border-radius: 50%; /* Make it circular */
+    outline: none;
+    cursor: pointer;
+    transition: all 0.3s ease; /* Smooth transition */
+}
+
+.radio-option input[type="radio"]:checked {
+    background-color: #FFC107; /* Change background color to dark yellow */
+    border-color: black; /* Set border color to black when selected */
+}
+
+.radio-option span {
+    color: #333; /* Text color */
+    font-weight: 500; /* Slightly bold text */
+}
+            </style>
+    </div>
+</div>
 
                     <div class="form-group">
                         <label>Name:</label>
@@ -112,8 +154,42 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                     <div class="form-group">
                         <label>Profile Picture:</label>
-                        <input type="file" name="profile_picture" accept="image/*">
-                    </div>
+                        <input type="file" name="profile_picture" accept="image/*" id="profilePictureInput">
+                        <div class="profile-picture-preview">
+                        <img id="profilePicturePreview" src="#" alt="Profile Preview" style="display: none;">
+                <style>
+                  .profile-picture-preview {
+                               margin-top: 10px;
+                        }
+
+                .profile-picture-preview img {
+                      max-width: 150px;
+                      max-height: 150px;
+                      border: 1px solid #ddd;
+                      border-radius: 4px;
+}
+                </style>
+           </div>
+        </div>
+<script>
+    document.getElementById('profilePictureInput').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        const preview = document.getElementById('profilePicturePreview');
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.src = '#';
+            preview.style.display = 'none';
+        }
+    });
+</script>
+
 
                     <div class="form-group">
                         <label>Tags (comma separated):</label>
@@ -121,6 +197,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
 
                     <button type="submit">Add Contact</button>
+                    <style>
+                        .contact-form input[type="text"],
+                        .contact-form input[type="tel"],
+                        .contact-form input[type="email"],
+                        .contact-form input[type="url"],
+                        .contact-form input[type="file"],
+                        .contact-form textarea {
+    width: 100%; /* Make all input fields take the full width of their container */
+    padding: 10px; /* Add consistent padding */
+    border: 1px solid #ddd; /* Add a border */
+    border-radius: 4px; /* Add rounded corners */
+    font-size: 16px; /* Ensure consistent font size */
+    box-sizing: border-box; /* Include padding and border in the element's total width */
+}
+
+.contact-form textarea {
+    resize: vertical; /* Allow vertical resizing only */
+}
+
+.contact-form .form-group {
+    margin-bottom: 15px; /* Add spacing between form groups */
+}
+                        </style>
                 </form>
             </div>
         </div>
