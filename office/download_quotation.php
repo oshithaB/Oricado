@@ -9,6 +9,7 @@ if (!$quotation_id) {
     exit();
 }
 
+// Get complete quotation data with all items
 $quotation = $conn->query("
     SELECT q.*, u.name as prepared_by_name 
     FROM quotations q
@@ -16,11 +17,18 @@ $quotation = $conn->query("
     WHERE q.id = $quotation_id
 ")->fetch_assoc();
 
-$items = $conn->query("
-    SELECT * FROM quotation_items 
-    WHERE quotation_id = $quotation_id
+if (!$quotation) {
+    die("Quotation not found");
+}
+
+// Get all items with their details
+$quotation['items'] = $conn->query("
+    SELECT qi.*, m.name as material_name, m.type, m.color, m.thickness
+    FROM quotation_items qi
+    LEFT JOIN materials m ON qi.material_id = m.id
+    WHERE qi.quotation_id = $quotation_id
 ")->fetch_all(MYSQLI_ASSOC);
 
-$quotation['items'] = $items;
-$pdf = new PDFGenerator();
-$pdf->generateQuotation($quotation);
+// Initialize PDF generator and generate PDF
+$pdf = new PDFGenerator($quotation_id);
+$pdf->generatePDF($quotation, 'quotation');

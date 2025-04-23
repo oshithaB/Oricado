@@ -2,6 +2,12 @@
 require_once '../config/config.php';
 checkAuth(['office_staff']);
 
+if (isset($_SESSION['order_data']) && isset($_SESSION['order_from_quotation'])) {
+    $_POST = $_SESSION['order_data'];
+    unset($_SESSION['order_data']);
+    unset($_SESSION['order_from_quotation']);
+}
+
 $supervisors = $conn->query("SELECT * FROM users WHERE role = 'supervisor'")->fetch_all(MYSQLI_ASSOC);
 $coils = $conn->query("SELECT * FROM materials WHERE type = 'coil'")->fetch_all(MYSQLI_ASSOC);
 
@@ -32,33 +38,71 @@ if ($quotation_id) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn->begin_transaction();
     try {
-        // Insert order with customer details
-        $stmt = $conn->prepare("INSERT INTO orders (customer_name, customer_contact, customer_address, prepared_by, status) VALUES (?, ?, ?, ?, 'pending')");
-        $stmt->bind_param("sssi", $_POST['customer_name'], $_POST['customer_contact'], $_POST['customer_address'], $_SESSION['user_id']);
-        $stmt->execute();
+        // Prepare variables before binding
+        $customerName = $_POST['customer_name'];
+        $customerContact = $_POST['customer_contact'];
+        $customerAddress = $_POST['customer_address'];
+        $userId = $_SESSION['user_id'];
+        $quotationId = $quotation_id ?? null;
+        
+        // Calculate square feet
+        $height = floatval($_POST['section1']) + floatval($_POST['section2']);
+        $width = floatval($_POST['door_width']);
+        $calculated_sqft = $height * $width;
+
+        // Insert order with prepared statement
+        $stmt = $conn->prepare("INSERT INTO orders (
+            customer_name, customer_contact, customer_address, 
+            prepared_by, status, quotation_id, total_sqft
+        ) VALUES (?, ?, ?, ?, 'pending', ?, ?)");
+
+        if ($stmt === false) {
+            throw new Exception("Error preparing statement: " . $conn->error);
+        }
+
+        $stmt->bind_param("sssidi", 
+            $customerName,
+            $customerContact,
+            $customerAddress,
+            $userId,
+            $quotationId,
+            $calculated_sqft
+        );
+
+        if (!$stmt->execute()) {
+            throw new Exception("Error executing statement: " . $stmt->error);
+        }
+
         $order_id = $conn->insert_id;
 
-        // Insert roller door measurements
+        // Insert roller door measurements with all details
         $stmt = $conn->prepare("INSERT INTO roller_door_measurements (
-            order_id, outside_width, inside_width, door_width, tower_height,
-            tower_type, coil_color, thickness, covering, side_lock, motor,
-            fixing, down_lock
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            order_id, section1, section2, outside_width, inside_width, door_width, 
+            tower_height, tower_type, coil_color, thickness, covering, 
+            side_lock, motor, fixing, down_lock
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         
-        $sideLock = isset($_POST['side_lock']) ? 1 : 0;
-        $downLock = isset($_POST['down_lock']) ? 1 : 0;
-        
-        $stmt->bind_param("iddddssdsissi", 
-            $order_id, $_POST['outside_width'], $_POST['inside_width'],
-            $_POST['door_width'], $_POST['tower_height'], $_POST['tower_type'],
-            $_POST['coil_color'], $_POST['thickness'], $_POST['covering'],
-            $sideLock, $_POST['motor'], $_POST['fixing'],
-            $downLock
+        $stmt->bind_param("iddddddsssssssi", 
+            $order_id,
+            $_POST['section1'],
+            $_POST['section2'],
+            $_POST['outside_width'],
+            $_POST['inside_width'],
+            $_POST['door_width'],
+            $_POST['tower_height'],
+            $_POST['tower_type'],
+            $_POST['coil_color'],
+            $_POST['thickness'],
+            $_POST['covering'],
+            $_POST['side_lock'],
+            $_POST['motor'],
+            $_POST['fixing'],
+            $_POST['down_lock']
         );
         $stmt->execute();
 
-        // Insert wicket door measurements if exists
-        if (isset($_POST['has_wicket_door']) && $_POST['has_wicket_door'] == 'on') {
+        // Insert wicket door if exists
+        if (isset($_POST['has_wicket_door'])) {
             $stmt = $conn->prepare("INSERT INTO wicket_door_measurements (
                 order_id, point1, point2, point3, point4, point5,
                 thickness, door_opening, handle, letter_box, coil_color
@@ -76,29 +120,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->execute();
         }
 
-        // Commit the transaction first
         $conn->commit();
-
-        // After successful commit, get complete order data for PDF
-        $order = $conn->query("
-            SELECT o.*, rdm.*, wdm.*,
-                   u1.name as prepared_by_name,
-                   u1.contact as prepared_by_contact
-            FROM orders o 
-            LEFT JOIN roller_door_measurements rdm ON o.id = rdm.order_id
-            LEFT JOIN wicket_door_measurements wdm ON o.id = wdm.order_id
-            LEFT JOIN users u1 ON o.prepared_by = u1.id
-            WHERE o.id = $order_id
-        ")->fetch_assoc();
-
-        // Generate PDF
-        require_once '../includes/PDFGenerator.php';
-        $pdf = new PDFGenerator($order_id);
-        $pdf->generatePDF($order, 'new_order');
+        header("Location: pending_orders.php");
+        exit();
         
     } catch (Exception $e) {
         $conn->rollback();
-        $error = "Error creating order: " . $e->getMessage();
+        error_log("Error in create_order.php: " . $e->getMessage());
+        die("Error creating order: " . $e->getMessage());
     }
 }
 ?>

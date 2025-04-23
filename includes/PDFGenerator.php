@@ -1,9 +1,9 @@
 <?php
 class PDFGenerator {
-    private $orderId;
+    private $id;
 
-    public function __construct($orderId) {
-        $this->orderId = $orderId;
+    public function __construct($id) {
+        $this->id = $id;
     }
 
     public function generatePDF($data, $type = 'order') {
@@ -11,7 +11,7 @@ class PDFGenerator {
         header('Content-Type: text/html; charset=utf-8');
         
         // Check for local logo file
-        $logoPath = __DIR__ . '/../logo.jpg';
+        $logoPath = __DIR__ . '/../assets/images/oricado logo.jpg';
         $logoHtml = file_exists($logoPath) ? 
             '<img src="data:image/jpeg;base64,' . base64_encode(file_get_contents($logoPath)) . '" 
                   style="max-width: 200px; display: block; margin: 0 auto;">' : 
@@ -21,7 +21,7 @@ class PDFGenerator {
         <html>
         <head>
             <meta charset="UTF-8">
-            <title>Order #' . $this->orderId . '</title>
+            <title>' . ($type == 'quotation' ? 'Quotation' : 'Order') . ' #' . $this->id . '</title>
             <style>
                 body { 
                     font-family: Arial, sans-serif; 
@@ -69,12 +69,14 @@ class PDFGenerator {
         <body>
             <div class="header">
                 ' . $logoHtml . '
-                <div class="company-name">Oricardo Roller Doors</div>
-                <div>Order #' . $this->orderId . '</div>
-                <div>Generated Date: ' . date('Y-m-d') . '</div>
+                <div class="company-name">Oricado Roller Doors</div>
+                <div>' . ($type == 'quotation' ? 'Quotation' : 'Order') . ' #' . $this->id . '</div>
+                <div>Date: ' . date('Y-m-d') . '</div>
             </div>';
 
-        if ($type === 'materials') {
+        if ($type === 'quotation') {
+            echo $this->getQuotationHTML($data);
+        } elseif ($type === 'materials') {
             echo $this->getMaterialsListHTML($data);
         } elseif ($type === 'new_order') {
             echo $this->getNewOrderDetailsHTML($data);
@@ -87,6 +89,78 @@ class PDFGenerator {
         </script>
         </body></html>';
         exit;
+    }
+
+    private function getQuotationHTML($quotation) {
+        $html = '<div class="section">
+            <h2>Quotation Details</h2>
+            <table>
+                <tr>
+                    <th>Customer Name</th>
+                    <td>' . htmlspecialchars($quotation['customer_name']) . '</td>
+                </tr>
+                <tr>
+                    <th>Customer Contact</th>
+                    <td>' . htmlspecialchars($quotation['customer_contact']) . '</td>
+                </tr>
+                <tr>
+                    <th>Type</th>
+                    <td>' . ucfirst($quotation['type']) . ' Quotation</td>
+                </tr>
+                <tr>
+                    <th>Created Date</th>
+                    <td>' . date('Y-m-d', strtotime($quotation['created_at'])) . '</td>
+                </tr>
+            </table>';
+
+        // Add quotation text for order type
+        if ($quotation['type'] === 'order') {
+            $html .= '<div class="additional-info">
+                <div>' . nl2br(htmlspecialchars($quotation['quotation_text'])) . '</div>
+            </div>';
+        }
+
+        // Items table with all details
+        $html .= '<table class="items-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Details</th>
+                    <th>Quantity</th>
+                    <th>Unit</th>
+                    <th>Price (Rs.)</th>
+                    <th>Discount (%)</th>
+                    <th>Taxes (%)</th>
+                    <th>Amount (Rs.)</th>
+                </tr>
+            </thead>
+            <tbody>';
+
+        foreach ($quotation['items'] as $item) {
+            $html .= '<tr>
+                <td>' . htmlspecialchars($item['name']) . '</td>
+                <td>' . ($item['type'] == 'coil' ? 
+                    'Color: ' . str_replace('_', ' ', ucfirst($item['color'])) . '<br>Thickness: ' . $item['thickness'] 
+                    : '') . '</td>
+                <td>' . number_format($item['quantity'], 2) . '</td>
+                <td>' . htmlspecialchars($item['unit']) . '</td>
+                <td>' . number_format($item['price'], 2) . '</td>
+                <td>' . number_format($item['discount'], 2) . '</td>
+                <td>' . number_format($item['taxes'], 2) . '</td>
+                <td>' . number_format($item['amount'], 2) . '</td>
+            </tr>';
+        }
+
+        $html .= '</tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="7" style="text-align: right">Total Amount:</th>
+                    <td>Rs. ' . number_format($quotation['total_amount'], 2) . '</td>
+                </tr>
+            </tfoot>
+        </table>';
+
+        return $html . '</div>';
     }
 
     private function getMaterialsListHTML($materials) {

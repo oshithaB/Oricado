@@ -81,26 +81,22 @@ function searchMaterials(input) {
 }
 
 function selectMaterial(row, material) {
-    // Get all inputs in the row
-    const inputs = row.querySelectorAll('input');
-    
-    // Find the correct inputs by their class names
     const nameInput = row.querySelector('.item-name');
-    const materialIdInput = row.querySelector('input[name="items[][material_id]"]');
+    const nameInputHidden = row.querySelector('.item-name-input');
+    const materialIdInput = row.querySelector('.material-id');
     const unitInput = row.querySelector('.unit');
     const priceInput = row.querySelector('.price');
     const suggestionDiv = row.querySelector('.material-suggestions');
 
-    // Set the values
     nameInput.value = material.display_name || material.name;
+    nameInputHidden.value = material.display_name || material.name;
     materialIdInput.value = material.id;
     unitInput.value = material.unit;
     priceInput.value = material.price || 0;
-
-    // Hide the suggestions
+    // Remove readonly attribute from price input
+    priceInput.removeAttribute('readonly');
     suggestionDiv.style.display = 'none';
 
-    // Calculate the row total
     calculateRowTotal(row.querySelector('.quantity'));
 }
 
@@ -134,21 +130,23 @@ function setupCustomerSearch() {
 }
 
 function addNewRow() {
+    const rowIndex = itemsTable.rows.length;
     const row = itemsTable.insertRow();
     row.innerHTML = `
         <td>
             <div class="material-search">
                 <input type="text" class="item-name" onkeyup="searchMaterials(this)" autocomplete="off" required>
                 <div class="material-suggestions"></div>
-                <input type="hidden" name="items[][material_id]">
+                <input type="hidden" name="items[${rowIndex}][material_id]" class="material-id">
+                <input type="hidden" name="items[${rowIndex}][name]" class="item-name-input">
             </div>
         </td>
-        <td><input type="number" name="items[][quantity]" class="quantity" step="0.01" oninput="calculateRowTotal(this)" required></td>
-        <td><input type="text" name="items[][unit]" class="unit" readonly></td>
-        <td><input type="number" name="items[][discount]" class="discount" step="0.01" value="0" oninput="calculateRowTotal(this)"></td>
-        <td><input type="number" name="items[][price]" class="price" step="0.01" readonly></td>
-        <td><input type="number" name="items[][taxes]" class="taxes" step="0.01" value="0" oninput="calculateRowTotal(this)"></td>
-        <td><input type="number" name="items[][amount]" class="amount" readonly></td>
+        <td><input type="number" name="items[${rowIndex}][quantity]" class="quantity" step="0.01" oninput="calculateRowTotal(this)" required></td>
+        <td><input type="text" name="items[${rowIndex}][unit]" class="unit"></td>
+        <td><input type="number" name="items[${rowIndex}][discount]" class="discount" step="0.01" value="0" oninput="calculateRowTotal(this)"></td>
+        <td><input type="number" name="items[${rowIndex}][price]" class="price" step="0.01" oninput="calculateRowTotal(this)"></td>
+        <td><input type="number" name="items[${rowIndex}][taxes]" class="taxes" step="0.01" value="0" oninput="calculateRowTotal(this)"></td>
+        <td><input type="number" name="items[${rowIndex}][amount]" class="amount" readonly></td>
         <td><button type="button" onclick="removeRow(this)">Remove</button></td>
     `;
 }
