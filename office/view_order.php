@@ -8,29 +8,38 @@ if (!$order_id) {
     exit();
 }
 
-// Get order details with all measurements and user information
+// Get complete order details with all measurements and pricing
 $order = $conn->query("
     SELECT o.*, 
            rdm.*, 
            wdm.*,
            u1.name as prepared_by_name,
            u1.contact as prepared_by_contact,
-           u2.name as checked_by_name
+           u2.name as checked_by_name,
+           u3.name as admin_approved_by_name,
+           o.admin_approved_at,
+           q.id as quotation_id,
+           q.total_amount as order_value
     FROM orders o 
     LEFT JOIN roller_door_measurements rdm ON o.id = rdm.order_id
     LEFT JOIN wicket_door_measurements wdm ON o.id = wdm.order_id
     LEFT JOIN users u1 ON o.prepared_by = u1.id
     LEFT JOIN users u2 ON o.checked_by = u2.id
+    LEFT JOIN users u3 ON o.admin_approved_by = u3.id
+    LEFT JOIN quotations q ON o.quotation_id = q.id
     WHERE o.id = $order_id
 ")->fetch_assoc();
 
-// Get materials if order has been reviewed by supervisor
+// Get materials with costs
 $materials = $conn->query("
-    SELECT m.*, om.quantity as used_quantity
+    SELECT m.*, om.quantity as used_quantity,
+           (m.price * om.quantity) as material_cost
     FROM order_materials om
     JOIN materials m ON om.material_id = m.id
     WHERE om.order_id = $order_id
 ")->fetch_all(MYSQLI_ASSOC);
+
+$total_material_cost = array_sum(array_column($materials, 'material_cost'));
 ?>
 
 <!DOCTYPE html>
@@ -44,7 +53,13 @@ $materials = $conn->query("
         <?php include __DIR__ . '/includes/navigation.php'; ?>
         
         <div class="content">
-            <h2>Order Details #<?php echo $order_id; ?></h2>
+            <h2>Order Details</h2>
+            <div class="order-reference">
+                <p>Order #<?php echo $order['id']; ?></p>
+                <?php if ($order['quotation_id']): ?>
+                    <p>Quotation #<?php echo $order['quotation_id']; ?></p>
+                <?php endif; ?>
+            </div>
             
             <!-- Customer Information -->
             <div class="section">
@@ -61,6 +76,8 @@ $materials = $conn->query("
             <div class="section">
                 <h3>Roller Door Measurements</h3>
                 <div class="measurements-grid">
+                    <p><strong>Section 1:</strong> <?php echo $order['section1']; ?></p>
+                    <p><strong>Section 2:</strong> <?php echo $order['section2']; ?></p>
                     <p><strong>Outside Width:</strong> <?php echo $order['outside_width']; ?></p>
                     <p><strong>Inside Width:</strong> <?php echo $order['inside_width']; ?></p>
                     <p><strong>Door Width:</strong> <?php echo $order['door_width']; ?></p>
@@ -94,35 +111,34 @@ $materials = $conn->query("
             </div>
             <?php endif; ?>
 
-            <!-- Materials List if reviewed -->
-            <?php if (!empty($materials)): ?>
+            <!-- Materials and Costs -->
             <div class="section">
-                <h3>Materials Required</h3>
+                <h3>Materials and Costs</h3>
                 <table>
                     <thead>
                         <tr>
-                            <th>Item</th>
-                            <th>Details</th>
+                            <th>Material</th>
                             <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Total Cost</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($materials as $material): ?>
                         <tr>
                             <td><?php echo htmlspecialchars($material['name']); ?></td>
-                            <td>
-                                <?php if ($material['type'] == 'coil'): ?>
-                                    Color: <?php echo htmlspecialchars($material['color']); ?><br>
-                                    Thickness: <?php echo $material['thickness']; ?>
-                                <?php endif; ?>
-                            </td>
                             <td><?php echo $material['used_quantity'] . ' ' . $material['unit']; ?></td>
+                            <td>Rs. <?php echo number_format($material['price'], 2); ?></td>
+                            <td>Rs. <?php echo number_format($material['material_cost'], 2); ?></td>
                         </tr>
                         <?php endforeach; ?>
+                        <tr class="total-row">
+                            <td colspan="3" align="right"><strong>Total Material Cost:</strong></td>
+                            <td><strong>Rs. <?php echo number_format($total_material_cost, 2); ?></strong></td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
-            <?php endif; ?>
 
             <!-- Action Buttons -->
             <div class="actions">
@@ -130,6 +146,7 @@ $materials = $conn->query("
                 <?php if ($order['status'] == 'reviewed'): ?>
                 <a href="confirm_order.php?id=<?php echo $order_id; ?>" class="button primary">Confirm Order</a>
                 <?php endif; ?>
+                <a href="download_order.php?id=<?php echo $order_id; ?>" class="button">Download Order Details</a>
             </div>
         </div>
     </div>

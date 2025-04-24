@@ -51,6 +51,7 @@ $coils = $conn->query($coilQuery)->fetch_all(MYSQLI_ASSOC);
                 <li><a href="users.php">Manage Users</a></li>
                 <li><a href="orders.php">View Orders</a></li>
                 <li><a href="stock.php">Stock Management</a></li>
+                <li><a href="reviewed_orders.php">confirm oders</a></li>
                 <li><a href="../logout.php">Logout</a></li>
             </ul>
         </nav>

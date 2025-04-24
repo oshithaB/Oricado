@@ -1,34 +1,32 @@
 <?php
 require_once '../config/config.php';
 require_once '../includes/PDFGenerator.php';
-checkAuth(['office_staff']);
+checkAuth(['supervisor']);
 
 $order_id = $_GET['id'] ?? null;
 if (!$order_id) {
-    header('Location: dashboard.php');
+    header('Location: confirmed_orders.php');
     exit();
 }
 
 // Get complete order data
 $order = $conn->query("
-    SELECT o.*, rdm.*, wdm.*,
-           u1.name as prepared_by_name,
-           u1.contact as prepared_by_contact,
-           u2.name as checked_by_name,
-           u3.name as admin_approved_by_name,
-           o.admin_approved_at,
-           q.total_amount as order_value
+    SELECT o.*, 
+           rdm.*, 
+           wdm.*,
+           u.name as prepared_by_name,
+           u.contact as prepared_by_contact,
+           q.id as quotation_id,
+           q.total_amount as quotation_amount
     FROM orders o 
     LEFT JOIN roller_door_measurements rdm ON o.id = rdm.order_id
     LEFT JOIN wicket_door_measurements wdm ON o.id = wdm.order_id
-    LEFT JOIN users u1 ON o.prepared_by = u1.id
-    LEFT JOIN users u2 ON o.checked_by = u2.id
-    LEFT JOIN users u3 ON o.admin_approved_by = u3.id
+    LEFT JOIN users u ON o.prepared_by = u.id
     LEFT JOIN quotations q ON o.quotation_id = q.id
     WHERE o.id = $order_id
 ")->fetch_assoc();
 
-// Get materials if any
+// Get materials list
 $materials = $conn->query("
     SELECT m.*, om.quantity as used_quantity
     FROM order_materials om
@@ -36,10 +34,8 @@ $materials = $conn->query("
     WHERE om.order_id = $order_id
 ")->fetch_all(MYSQLI_ASSOC);
 
-if ($materials) {
-    $order['materials'] = $materials;
-}
+$order['materials'] = $materials;
 
 // Generate PDF
 $pdf = new PDFGenerator($order_id);
-$pdf->generatePDF($order, 'order');
+$pdf->generatePDF($order, 'supervisor_order');

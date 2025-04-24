@@ -728,3 +728,30 @@ form {
     gap: 10px;
     justify-content: flex-end;
 }
+
+/* Reference Numbers */
+.reference-numbers {
+    margin-bottom: 15px;
+}
+
+.reference-numbers h3, .reference-numbers h4 {
+    margin: 0;
+    line-height: 1.4;
+}
+
+.reference-numbers h4 {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.reference-header {
+    display: flex;
+    gap: 15px;
+    align-items: baseline;
+    margin-bottom: 20px;
+}
+
+.reference-header h3 {
+    color: #666;
+    font-size: 1.2em;
+}
