@@ -41,6 +41,86 @@ $orders = $conn->query("
                         <th>Actions</th>
                     </tr>
                 </thead>
+                <style>
+/* Table Container */
+.table-container {
+    margin-top: 20px;
+    overflow-x: auto; /* Enable horizontal scrolling for small screens */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+/* Table Styling */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+    background-color: #fff;
+}
+
+.table th {
+    background-color: rgb(255, 179, 0); /* Yellow background */
+    color: black; /* Black text */
+    text-align: left;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    border-bottom: 2px solid black;
+}
+
+.table td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+    font-size: 14px;
+    color: #333;
+}
+
+.table tr:nth-child(even) {
+    background-color: #f9f9f9; /* Light gray for alternating rows */
+}
+
+.table tr:hover {
+    background-color: rgb(255, 230, 128); /* Light yellow on hover */
+    cursor: pointer;
+}
+
+/* Buttons Styling */
+.button {
+    padding: 8px 15px;
+    background-color: rgb(255, 238, 0); /* Yellow background */
+    color: black; /* Black text */
+    border: 2px solid black;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    display: inline-block;
+}
+
+.button:hover {
+    background-color: black; /* Black background on hover */
+    color: white; /* White text on hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .table th, .table td {
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    .button {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+}
+</style>
                 <tbody>
                     <?php foreach ($orders as $order): ?>
                     <tr>
