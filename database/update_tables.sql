@@ -36,3 +36,14 @@ CREATE TABLE IF NOT EXISTS wicket_door_measurements (
 
 -- Add column to quotations table to track updates
 ALTER TABLE quotations ADD COLUMN is_updated TINYINT(1) DEFAULT 0;
+
+-- Update orders table schema
+ALTER TABLE orders 
+ADD COLUMN quotation_id INT,
+ADD COLUMN total_price DECIMAL(10,2) DEFAULT 0,
+ADD COLUMN material_cost DECIMAL(10,2) DEFAULT 0,
+ADD COLUMN admin_approved TINYINT(1) DEFAULT 0,
+ADD COLUMN admin_approved_by INT,
+ADD COLUMN admin_approved_at DATETIME,
+ADD FOREIGN KEY (quotation_id) REFERENCES quotations(id),
+ADD FOREIGN KEY (admin_approved_by) REFERENCES users(id);

@@ -11,93 +11,180 @@ $quotation_texts = [
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn->begin_transaction();
     try {
-        // Prepare variables for binding
-        $quotationType = $_POST['quotation_type'];
-        $customerName = $_POST['customer_name'];
-        $customerContact = $_POST['customer_contact'];
-        $totalAmount = $_POST['total_amount'];
-        $userId = $_SESSION['user_id'];
-        $coilThickness = $_POST['coil_thickness'] ?? '';
-        $quotationText = $_POST['quotation_text'] ?? '';
+        // Handle raw materials quotation
+        if ($_POST['type'] == 'raw') {
+            // Create the main quotation first
+            $stmt = $conn->prepare("INSERT INTO quotations (
+                customer_name, customer_contact, type, created_by, total_amount
+            ) VALUES (?, ?, 'raw', ?, 0)");
+            
+            $stmt->bind_param("ssi", 
+                $_POST['customer_name'],
+                $_POST['customer_contact'],
+                $_SESSION['user_id']
+            );
+            $stmt->execute();
+            $quotation_id = $conn->insert_id;
 
-        // Insert quotation
-        $stmt = $conn->prepare("INSERT INTO quotations (
-            type, customer_name, customer_contact, total_amount, 
-            created_by, coil_thickness, quotation_text
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)");
-
-        $stmt->bind_param("sssidss", 
-            $quotationType,
-            $customerName,
-            $customerContact,
-            $totalAmount,
-            $userId,
-            $coilThickness,
-            $quotationText
-        );
-        
-        if (!$stmt->execute()) {
-            throw new Exception("Error creating quotation: " . $stmt->error);
-        }
-        
-        $quotation_id = $conn->insert_id;
-
-        // Process items
-        if (!empty($_POST['items']) && is_array($_POST['items'])) {
-            $itemStmt = $conn->prepare("INSERT INTO quotation_items (
-                quotation_id, material_id, name, quantity, unit, 
-                discount, price, taxes, amount
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-
-            foreach ($_POST['items'] as $item) {
-                // Prepare variables for item binding
-                $materialId = $item['material_id'];
-                $name = $item['name'];
-                $quantity = floatval($item['quantity']);
-                $unit = $item['unit'];
-                $discount = floatval($item['discount']);
-                $price = floatval($item['price']);
-                $taxes = floatval($item['taxes']);
-                $amount = floatval($item['amount']);
-
-                $itemStmt->bind_param("iisdsdddd",
-                    $quotation_id,
-                    $materialId,
-                    $name,
-                    $quantity,
-                    $unit,
-                    $discount,
-                    $price,
-                    $taxes,
-                    $amount
-                );
-                
-                if (!$itemStmt->execute()) {
-                    throw new Exception("Error inserting item: " . $itemStmt->error);
-                }
-
-                // Deduct stock for raw materials quotation
-                if ($_POST['quotation_type'] == 'raw_materials') {
-                    $updateStmt = $conn->prepare("UPDATE materials SET quantity = quantity - ? WHERE id = ?");
-                    $updateStmt->bind_param("di", $item['quantity'], $item['material_id']);
-                    if (!$updateStmt->execute()) {
-                        throw new Exception("Error updating stock: " . $updateStmt->error);
+            $total_amount = 0;
+            
+            foreach ($_POST['materials'] as $material_id => $data) {
+                if ($data['quantity'] > 0) {
+                    // Get material details
+                    $material = $conn->query("SELECT * FROM materials WHERE id = $material_id")->fetch_assoc();
+                    if (!$material) {
+                        throw new Exception("Material not found: ID " . $material_id);
                     }
+
+                    if ($material['quantity'] < $data['quantity']) {
+                        throw new Exception("Insufficient stock for material: " . $material['name']);
+                    }
+
+                    // Calculate amount
+                    $amount = $data['quantity'] * $data['price'];
+                    $amount = $amount * (1 - ($data['discount'] / 100));
+                    $amount = $amount * (1 + ($data['taxes'] / 100));
+                    $total_amount += $amount;
+
+                    // Insert quotation item
+                    $stmt = $conn->prepare("
+                        INSERT INTO quotation_items (
+                            quotation_id, material_id, name, quantity, unit, 
+                            price, discount, taxes, amount
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ");
+
+                    $stmt->bind_param("iisdsdddd", 
+                        $quotation_id,
+                        $material_id,
+                        $material['name'],
+                        $data['quantity'],
+                        $material['unit'],
+                        $data['price'],
+                        $data['discount'],
+                        $data['taxes'],
+                        $amount
+                    );
+                    $stmt->execute();
+
+                    // Update stock
+                    $new_quantity = $material['quantity'] - $data['quantity'];
+                    $stmt = $conn->prepare("UPDATE materials SET quantity = ? WHERE id = ?");
+                    $stmt->bind_param("di", $new_quantity, $material_id);
+                    $stmt->execute();
                 }
             }
+
+            // Update quotation with total amount
+            $stmt = $conn->prepare("UPDATE quotations SET total_amount = ? WHERE id = ?");
+            $stmt->bind_param("di", $total_amount, $quotation_id);
+            $stmt->execute();
+
+            // Create done order
+            $stmt = $conn->prepare("
+                INSERT INTO orders (
+                    customer_name, customer_contact, status, 
+                    prepared_by, quotation_id, total_price
+                ) VALUES (?, ?, 'done', ?, ?, ?)
+            ");
+            $stmt->bind_param("ssidd", 
+                $_POST['customer_name'],
+                $_POST['customer_contact'],
+                $_SESSION['user_id'],
+                $quotation_id,
+                $total_amount
+            );
+            $stmt->execute();
         } else {
-            throw new Exception("No items provided");
+            // Handle order quotation (existing code)
+            $quotationType = $_POST['quotation_type'];
+            $customerName = $_POST['customer_name'];
+            $customerContact = $_POST['customer_contact'];
+            $totalAmount = $_POST['total_amount'];
+            $userId = $_SESSION['user_id'];
+            $coilThickness = $_POST['coil_thickness'] ?? '';
+            $quotationText = $_POST['quotation_text'] ?? '';
+
+            // Insert quotation
+            $stmt = $conn->prepare("INSERT INTO quotations (
+                type, customer_name, customer_contact, total_amount, 
+                created_by, coil_thickness, quotation_text
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)");
+
+            $stmt->bind_param("sssidss", 
+                $quotationType,
+                $customerName,
+                $customerContact,
+                $totalAmount,
+                $userId,
+                $coilThickness,
+                $quotationText
+            );
+            
+            if (!$stmt->execute()) {
+                throw new Exception("Error creating quotation: " . $stmt->error);
+            }
+            
+            $quotation_id = $conn->insert_id;
+
+            // Process items
+            if (!empty($_POST['items']) && is_array($_POST['items'])) {
+                $itemStmt = $conn->prepare("INSERT INTO quotation_items (
+                    quotation_id, material_id, name, quantity, unit, 
+                    discount, price, taxes, amount
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+                foreach ($_POST['items'] as $item) {
+                    // Prepare variables for item binding
+                    $materialId = $item['material_id'];
+                    $name = $item['name'];
+                    $quantity = floatval($item['quantity']);
+                    $unit = $item['unit'];
+                    $discount = floatval($item['discount']);
+                    $price = floatval($item['price']);
+                    $taxes = floatval($item['taxes']);
+                    $amount = floatval($item['amount']);
+
+                    $itemStmt->bind_param("iisdsdddd",
+                        $quotation_id,
+                        $materialId,
+                        $name,
+                        $quantity,
+                        $unit,
+                        $discount,
+                        $price,
+                        $taxes,
+                        $amount
+                    );
+                    
+                    if (!$itemStmt->execute()) {
+                        throw new Exception("Error inserting item: " . $itemStmt->error);
+                    }
+
+                    // Deduct stock for raw materials quotation
+                    if ($_POST['quotation_type'] == 'raw_materials') {
+                        $updateStmt = $conn->prepare("UPDATE materials SET quantity = quantity - ? WHERE id = ?");
+                        $updateStmt->bind_param("di", $item['quantity'], $item['material_id']);
+                        if (!$updateStmt->execute()) {
+                            throw new Exception("Error updating stock: " . $updateStmt->error);
+                        }
+                    }
+                }
+            } else {
+                throw new Exception("No items provided");
+            }
         }
 
         $conn->commit();
         $_SESSION['success_message'] = "Quotation created successfully!";
-        header("Location: quotations.php");
+        header('Location: quotations.php');
         exit();
-        
+
     } catch (Exception $e) {
         $conn->rollback();
-        error_log("Error in quotation creation: " . $e->getMessage());
-        die("Error: " . $e->getMessage());
+        $_SESSION['error_message'] = $e->getMessage();
+        header('Location: create_quotation.php');
+        exit();
     }
 }
 ?>

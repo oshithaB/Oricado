@@ -2,14 +2,13 @@
 require_once '../config/config.php';
 checkAuth(['office_staff']);
 
-// Get quotations with items and order status
+// Get all quotations regardless of type
 $quotations = $conn->query("
     SELECT q.*, u.name as prepared_by_name,
            CASE WHEN o.id IS NOT NULL THEN 1 ELSE 0 END as has_order
     FROM quotations q
     LEFT JOIN users u ON q.created_by = u.id
     LEFT JOIN orders o ON q.id = o.quotation_id
-    WHERE q.type = 'order'
     ORDER BY q.created_at DESC
 ")->fetch_all(MYSQLI_ASSOC);
 
@@ -61,7 +60,7 @@ foreach ($quotations as &$quotation) {
                         <div class="quotation-info">
                             <p><strong>Customer:</strong> <?php echo htmlspecialchars($quotation['customer_name']); ?></p>
                             <p><strong>Contact:</strong> <?php echo htmlspecialchars($quotation['customer_contact']); ?></p>
-                            <p><strong>Type:</strong> <?php echo ucfirst($quotation['type']); ?></p>
+                            <p><strong>Type:</strong> <?php echo ucfirst($quotation['type']); ?> Quotation</p>
                             <p><strong>Date:</strong> <?php echo date('Y-m-d', strtotime($quotation['created_at'])); ?></p>
                         </div>
                     </div>
@@ -209,7 +208,7 @@ foreach ($quotations as &$quotation) {
                     <div class="quotation-actions">
                         <a href="download_quotation.php?id=<?php echo $quotation['id']; ?>" 
                            class="button download-btn">Download</a>
-                        <?php if ($quotation['type'] == 'order' && !$quotation['has_order']): ?>
+                        <?php if ($quotation['type'] == 'order' && !$quotation['has_order'] && !$quotation['is_updated']): ?>
                             <a href="create_order.php?quotation_id=<?php echo $quotation['id']; ?>" 
                                class="button add-measurements-btn">Add Measurements</a>
                         <?php endif; ?>

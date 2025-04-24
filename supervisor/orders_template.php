@@ -97,32 +97,42 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 </div>
                             <?php elseif ($status == ORDER_STATUS_CONFIRMED): ?>
                                 <div class="order-actions">
-                                    <a href="view_order.php?id=<?php echo $order['id']; ?>" class="button">View Details</a>
+                                    <a href="view_order.php?id=<?php echo $order['id']; ?>" class="button view-btn">View Details</a>
                                     <form method="POST" style="display: inline;">
                                         <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
                                         <input type="hidden" name="complete_order" value="1">
-                                        <button type="submit" onclick="return confirm('Mark this order as completed?')" class="button">Mark as Completed</button>
+                                        <button type="submit" class="button primary" onclick="return confirm('Are you sure you want to mark this order as completed?')">
+                                            Mark as Completed
+                                        </button>
                                     </form>
                                 </div>
-                                <div class="materials-list">
-                                    <h4>Materials Added:</h4>
-                                    <?php
-                                    $materials = $conn->query("
-                                        SELECT m.name, m.type, om.quantity, m.unit 
-                                        FROM order_materials om 
-                                        JOIN materials m ON om.material_id = m.id 
-                                        WHERE om.order_id = {$order['id']}
-                                    ")->fetch_all(MYSQLI_ASSOC);
-                                    ?>           
-                                    <table class="mini-table">
-                                        <?php foreach ($materials as $material): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($material['name']); ?></td>
-                                            <td><?php echo $material['quantity'] . ' ' . $material['unit']; ?></td>
-                                        </tr>
-                                        <?php endforeach; ?>
-                                    </table>
-                                </div>
+
+                                <?php if (!empty($order['material_cost'])): ?>
+                                    <div class="materials-list">
+                                        <h4>Materials Used:</h4>
+                                        <?php
+                                        $materials = $conn->query("
+                                            SELECT m.name, m.type, m.color, m.thickness, om.quantity, m.unit 
+                                            FROM order_materials om 
+                                            JOIN materials m ON om.material_id = m.id 
+                                            WHERE om.order_id = {$order['id']}
+                                        ")->fetch_all(MYSQLI_ASSOC);
+                                        ?>           
+                                        <table class="mini-table">
+                                            <?php foreach ($materials as $material): ?>
+                                            <tr>
+                                                <td>
+                                                    <?php echo htmlspecialchars($material['name']); ?>
+                                                    <?php if ($material['type'] == 'coil'): ?>
+                                                        (<?php echo $material['thickness']; ?> - <?php echo str_replace('_', ' ', $material['color']); ?>)
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td><?php echo $material['quantity'] . ' ' . $material['unit']; ?></td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        </table>
+                                    </div>
+                                <?php endif; ?>
                             <?php elseif ($status == ORDER_STATUS_REVIEWED): ?>
                                 <div class="order-actions">
                                     <a href="view_order.php?id=<?php echo $order['id']; ?>" class="button">View Details</a>
