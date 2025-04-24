@@ -40,6 +40,137 @@ $materials = $conn->query("
     <title>View Order Details</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
+<style>
+/* General Page Styling */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4; /* Light gray background */
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+.dashboard {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Section Styling */
+.section {
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section h3 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #d4af37; /* Gold color for headings */
+    border-bottom: 2px solid #d4af37;
+    padding-bottom: 5px;
+}
+
+/* Info Grid Styling */
+.info-grid, .measurements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.info-grid p, .measurements-grid p {
+    background-color: #f9f9f9;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    font-size: 14px;
+    color: #333;
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+table th {
+    background-color: #d4af37; /* Gold background */
+    color: white;
+    text-align: left;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: bold;
+    border-bottom: 2px solid #b8860b;
+}
+
+table td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+    color: #333;
+}
+
+table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+table tr:hover {
+    background-color: #f7e8c1; /* Light gold on hover */
+}
+
+/* Buttons Styling */
+.button {
+    padding: 10px 20px;
+    background-color: #d4af37; /* Gold background */
+    color: white;
+    border: 2px solid #b8860b;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.button:hover {
+    background-color: #b8860b; /* Darker gold on hover */
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .info-grid, .measurements-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    table th, table td {
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    .button {
+        font-size: 12px;
+        padding: 8px 15px;
+    }
+}
+</style>
 <body>
     <div class="dashboard">
         <?php include 'includes/navigation.php'; ?>

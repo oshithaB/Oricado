@@ -44,6 +44,147 @@ $total_material_cost = array_sum(array_column($materials, 'material_cost'));
     <title>Order Details</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
+<style>
+    .navigation {
+    background: #333; /* Black background for navigation */
+    color: white;
+    padding: 20px;
+}
+
+.logo-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.navigation-logo {
+    max-width: 150px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-radius: 50%; /* Makes the logo circular */
+    border: 2px solid #FFD700; /* Gold color for the border */
+    box-shadow: 0 0 10px 2px #FFD700; /* Optional: Add a glowing effect */
+}
+/* General Page Styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4; /* Light gray background */
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+.dashboard {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Section Header */
+h2 {
+    color: #d4af37; /* Gold color for headings */
+    border-bottom: 2px solid #d4af37;
+    padding-bottom: 5px;
+    margin-bottom: 20px;
+}
+
+/* Order Card Styling */
+.order-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.order-card h3, .order-card h4 {
+    margin: 0;
+    color: #d4af37; /* Gold color for order titles */
+}
+
+.order-details, .financial-summary {
+    margin-top: 15px;
+}
+
+.order-details p, .financial-summary p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Button Group Styling */
+.order-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+/* General Button Styling */
+.button {
+    padding: 12px 20px; /* Consistent padding for all buttons */
+    font-size: 16px; /* Consistent font size for all buttons */
+    font-weight: bold;
+    border-radius: 8px; /* Rounded corners for a modern look */
+    text-decoration: none;
+    color: white;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+    min-width: 200px; /* Ensures all buttons have the same width */
+}
+
+/* Back to Orders Button */
+.back-btn {
+    background-color: #007bff; /* Blue */
+    border: 2px solid #0056b3;
+}
+
+.back-btn:hover {
+    background-color: #0056b3;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05); /* Slight zoom effect on hover */
+}
+
+/* Download Details Button */
+.download-btn {
+    background-color: #28a745; /* Green */
+    border: 2px solid #218838;
+}
+
+.download-btn:hover {
+    background-color: #218838;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05); /* Slight zoom effect on hover */
+}
+
+/* Approve Order Button */
+.approve-btn {
+    background-color: #d4af37; /* Gold */
+    border: 2px solid #b8860b;
+}
+
+.approve-btn:hover {
+    background-color: #b8860b;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05); /* Slight zoom effect on hover */
+}
+/* Responsive Design */
+@media (max-width: 768px) {
+    .order-card {
+        padding: 15px;
+    }
+
+    .button {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+}
+    </style>
 <body>
     <div class="dashboard">
         <?php include 'includes/navigation.php'; ?>

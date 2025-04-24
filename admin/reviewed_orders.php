@@ -69,6 +69,140 @@ $orders = $conn->query("
     <title>Review Orders</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
+<style>
+    .navigation {
+    background: #333; /* Black background for navigation */
+    color: white;
+    padding: 20px;
+}
+
+.logo-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.navigation-logo {
+    max-width: 150px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-radius: 50%; /* Makes the logo circular */
+    border: 2px solid #FFD700; /* Gold color for the border */
+    box-shadow: 0 0 10px 2px #FFD700; /* Optional: Add a glowing effect */
+}
+/* General Page Styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4; /* Light gray background */
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+.dashboard {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Section Header */
+h2 {
+    color: #d4af37; /* Gold color for headings */
+    border-bottom: 2px solid #d4af37;
+    padding-bottom: 5px;
+    margin-bottom: 20px;
+}
+
+/* Order Card Styling */
+.order-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.order-card h3, .order-card h4 {
+    margin: 0;
+    color: #d4af37; /* Gold color for order titles */
+}
+
+.order-details, .financial-summary {
+    margin-top: 15px;
+}
+
+.order-details p, .financial-summary p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Button Group Styling */
+.order-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.button {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 6px;
+    text-decoration: none;
+    color: white;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+}
+
+.view-btn {
+    background-color: #28a745; /* Green */
+    border: 1px solid #218838;
+}
+
+.view-btn:hover {
+    background-color: #218838;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.download-btn {
+    background-color: #007bff; /* Blue */
+    border: 1px solid #0056b3;
+}
+
+.download-btn:hover {
+    background-color: #0056b3;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.approve-btn {
+    background-color: #d4af37; /* Gold */
+    border: 1px solid #b8860b;
+}
+
+.approve-btn:hover {
+    background-color: #b8860b;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .order-card {
+        padding: 15px;
+    }
+
+    .button {
+        font-size: 12px;
+        padding: 8px 15px;
+    }
+}
+    </style>
 <body>
     <div class="dashboard">
         <?php include 'includes/navigation.php'; ?>
