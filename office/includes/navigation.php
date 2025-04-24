@@ -38,6 +38,8 @@
         <li><a href="add_material.php">Add Material</a></li>
         <li><a href="contacts.php">Contacts</a></li>
         <li><a href="add_contact.php">Add Contact</a></li>
+        <li><a href="buy_materials.php">Buy Materials</a></li>
+        <li><a href="supplier_quotations.php">Supplier Quotations</a></li>
         <li><a href="../logout.php">Logout</a></li>
     </ul>
 </nav>

@@ -2,15 +2,13 @@
 require_once '../config/config.php';
 checkAuth(['office_staff']);
 
-// Get only sell type quotations
+// Get supplier quotations
 $quotations = $conn->query("
-    SELECT q.*, u.name as prepared_by_name,
-           CASE WHEN o.id IS NOT NULL THEN 1 ELSE 0 END as has_order
-    FROM quotations q
-    LEFT JOIN users u ON q.created_by = u.id
-    LEFT JOIN orders o ON q.id = o.quotation_id
-    WHERE q.quotation_type = 'sell'
-    ORDER BY q.created_at DESC
+    SELECT sq.*, q.*, u.name as created_by_name
+    FROM supplier_quotations sq
+    JOIN quotations q ON sq.quotation_id = q.id
+    LEFT JOIN users u ON sq.created_by = u.id
+    ORDER BY sq.created_at DESC
 ")->fetch_all(MYSQLI_ASSOC);
 
 // Get items for each quotation
@@ -19,7 +17,7 @@ foreach ($quotations as &$quotation) {
         SELECT qi.*, m.color, m.thickness, m.type
         FROM quotation_items qi
         LEFT JOIN materials m ON qi.material_id = m.id
-        WHERE qi.quotation_id = {$quotation['id']}
+        WHERE qi.quotation_id = {$quotation['quotation_id']}
     ")->fetch_all(MYSQLI_ASSOC);
 }
 ?>
@@ -27,42 +25,24 @@ foreach ($quotations as &$quotation) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Quotations</title>
+    <title>Supplier Quotations</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
     <div class="dashboard">
         <?php include 'includes/navigation.php'; ?>
         <div class="content">
-            <?php if (isset($_SESSION['success_message'])): ?>
-                <div class="alert success">
-                    <?php 
-                    echo $_SESSION['success_message']; 
-                    unset($_SESSION['success_message']);
-                    ?>
-                </div>
-            <?php endif; ?>
-
-            <?php if (isset($_SESSION['error_message'])): ?>
-                <div class="alert error">
-                    <?php 
-                    echo $_SESSION['error_message'];
-                    unset($_SESSION['error_message']);
-                    ?>
-                </div>
-            <?php endif; ?>
-
-            <div class="section">
-                <h2>Quotations</h2>
-                <?php foreach ($quotations as $quotation): ?>
+            <h2>Supplier Quotations</h2>
+            
+            <?php foreach ($quotations as $quotation): ?>
                 <div class="quotation-card">
                     <div class="quotation-header">
                         <h3>Quotation #<?php echo $quotation['id']; ?></h3>
-                        <div class="quotation-info">
-                            <p><strong>Customer:</strong> <?php echo htmlspecialchars($quotation['customer_name']); ?></p>
-                            <p><strong>Contact:</strong> <?php echo htmlspecialchars($quotation['customer_contact']); ?></p>
-                            <p><strong>Type:</strong> <?php echo ucfirst($quotation['type']); ?> Quotation</p>
+                        <div class="supplier-info">
+                            <p><strong>Supplier:</strong> <?php echo htmlspecialchars($quotation['supplier_name']); ?></p>
+                            <p><strong>Contact:</strong> <?php echo htmlspecialchars($quotation['supplier_contact']); ?></p>
                             <p><strong>Date:</strong> <?php echo date('Y-m-d', strtotime($quotation['created_at'])); ?></p>
+                            <p><strong>Created By:</strong> <?php echo htmlspecialchars($quotation['created_by_name']); ?></p>
                         </div>
                     </div>
 
@@ -70,12 +50,10 @@ foreach ($quotations as &$quotation) {
                         <thead>
                             <tr>
                                 <th>Item</th>
-                                <th>Details</th>
+                                <th>Specifications</th>
                                 <th>Quantity</th>
                                 <th>Unit</th>
                                 <th>Price</th>
-                                <th>Discount</th>
-                                <th>Taxes</th>
                                 <th>Amount</th>
                             </tr>
                         </thead>
@@ -92,29 +70,23 @@ foreach ($quotations as &$quotation) {
                                 <td><?php echo $item['quantity']; ?></td>
                                 <td><?php echo htmlspecialchars($item['unit']); ?></td>
                                 <td>Rs. <?php echo number_format($item['price'], 2); ?></td>
-                                <td><?php echo $item['discount']; ?>%</td>
-                                <td><?php echo $item['taxes']; ?>%</td>
                                 <td>Rs. <?php echo number_format($item['amount'], 2); ?></td>
                             </tr>
                             <?php endforeach; ?>
                             <tr class="total-row">
-                                <td colspan="7" align="right"><strong>Total Amount:</strong></td>
+                                <td colspan="5" align="right"><strong>Total Amount:</strong></td>
                                 <td><strong>Rs. <?php echo number_format($quotation['total_amount'], 2); ?></strong></td>
                             </tr>
                         </tbody>
                     </table>
 
                     <div class="quotation-actions">
-                        <a href="download_quotation.php?id=<?php echo $quotation['id']; ?>" 
-                           class="button download-btn">Download</a>
-                        <?php if ($quotation['type'] == 'order' && !$quotation['has_order'] && !$quotation['is_updated']): ?>
-                            <a href="create_order.php?quotation_id=<?php echo $quotation['id']; ?>" 
-                               class="button add-measurements-btn">Add Measurements</a>
-                        <?php endif; ?>
+                 
+                        <a href="print_supplier_quotation.php?id=<?php echo $quotation['quotation_id']; ?>" 
+                           class="button download-btn">Print Quotation</a>
                     </div>
                 </div>
-                <?php endforeach; ?>
-            </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </body>

@@ -47,3 +47,20 @@ ADD COLUMN admin_approved_by INT,
 ADD COLUMN admin_approved_at DATETIME,
 ADD FOREIGN KEY (quotation_id) REFERENCES quotations(id),
 ADD FOREIGN KEY (admin_approved_by) REFERENCES users(id);
+
+-- Add column to quotations table for quotation type
+ALTER TABLE quotations 
+ADD COLUMN quotation_type ENUM('sell', 'buy') DEFAULT 'sell' AFTER type;
+
+-- Create supplier_quotations table
+CREATE TABLE IF NOT EXISTS supplier_quotations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    quotation_id INT,
+    supplier_name VARCHAR(255),
+    supplier_contact VARCHAR(100),
+    total_amount DECIMAL(10,2),
+    created_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (quotation_id) REFERENCES quotations(id),
+    FOREIGN KEY (created_by) REFERENCES users(id)
+);
