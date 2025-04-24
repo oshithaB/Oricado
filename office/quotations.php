@@ -78,6 +78,108 @@ foreach ($quotations as &$quotation) {
                                 <th>Taxes</th>
                                 <th>Amount</th>
                             </tr>
+                            <style>
+/* Table Styling */
+.items-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #fff;
+    border: 2px solid black;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.items-table th {
+    background-color: rgb(255, 179, 0); /* Yellow background */
+    color: black; /* Black text */
+    text-align: left;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    border-bottom: 2px solid black;
+}
+
+.items-table td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+    font-size: 14px;
+    color: #333;
+}
+
+.items-table tr:nth-child(even) {
+    background-color: #f9f9f9; /* Light gray for alternating rows */
+}
+
+.items-table tr:hover {
+    background-color: rgb(255, 230, 128); /* Light yellow on hover */
+    cursor: pointer;
+}
+
+/* Total Row Styling */
+.total-row {
+    background-color: rgb(255, 179, 0); /* Yellow background */
+    color: black; /* Black text */
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* Buttons Styling */
+.button {
+    padding: 10px 20px;
+    background-color: rgb(255, 179, 0); /* Yellow background */
+    color: black; /* Black text */
+    border: 2px solid black;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.button:hover {
+    background-color: black; /* Black background on hover */
+    color: white; /* White text on hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Card Styling */
+.quotation-card {
+    background-color: #fff;
+    border: 2px solid black;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.quotation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.quotation-header h3 {
+    margin: 0;
+    font-size: 20px;
+    color: black;
+}
+
+.quotation-info p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #333;
+}
+</style>
+                                </style>
                         </thead>
                         <tbody>
                             <?php foreach ($quotation['items'] as $item): ?>

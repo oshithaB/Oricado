@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                             JOIN materials m ON om.material_id = m.id 
                                             WHERE om.order_id = {$order['id']}
                                         ")->fetch_all(MYSQLI_ASSOC);
-                                        ?>
+                                        ?>           
                                         <table class="mini-table">
                                             <?php foreach ($materials as $material): ?>
                                             <tr>

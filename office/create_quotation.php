@@ -222,10 +222,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
 
                     <div class="form-group">
-                        <label>Customer Name:</label>
-                        <input type="text" name="customer_name" id="customerName" required autocomplete="off">
-                        <div id="customerSuggestions" class="suggestions-dropdown"></div>
-                    </div>
+                    <style>
+/* Suggestions Dropdown Styling */
+.suggestions-dropdown {
+    position: absolute; /* Position relative to the input field */
+    top: 100%; /* Position below the input field */
+    left: 0; /* Align with the left edge of the input field */
+    width: 100%; /* Match the width of the input field */
+    background-color: #fff; /* White background for the dropdown */
+    border: 1px solid #ddd; /* Light border for the dropdown */
+    border-radius: 4px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for better visibility */
+    z-index: 1000; /* Ensure it appears above other elements */
+    max-height: 200px; /* Limit the height of the dropdown */
+    overflow-y: auto; /* Add scroll if the content exceeds the height */
+}
+
+.suggestions-dropdown div {
+    padding: 10px; /* Padding for each suggestion */
+    cursor: pointer; /* Pointer cursor for interactivity */
+    font-size: 14px; /* Font size for readability */
+    color: #333; /* Text color */
+}
+
+.suggestions-dropdown div:hover {
+    background-color: #f0f0f0; /* Highlight on hover */
+}
+</style>
+<div class="form-group" style="position: relative;">
+    <label>Customer Name:</label>
+    <input type="text" name="customer_name" id="customerName" required autocomplete="off">
+    <div id="customerSuggestions" class="suggestions-dropdown"></div>
+</div>
 
                     <div class="form-group">
                         <label>Customer Contact:</label>

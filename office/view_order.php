@@ -49,6 +49,136 @@ $total_material_cost = array_sum(array_column($materials, 'material_cost'));
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
+    <style>
+/* General Page Styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+.dashboard {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Section Styling */
+.section {
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.section h3 {
+    margin-top: 0;
+    font-size: 18px;
+    color: rgb(255, 179, 0); /* Yellow color for headings */
+    border-bottom: 2px solid rgb(255, 179, 0);
+    padding-bottom: 5px;
+}
+
+/* Measurements Grid */
+.measurements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.measurements-grid p {
+    background-color: #f9f9f9;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+table th {
+    background-color: rgb(255, 179, 0); /* Yellow background */
+    color: black;
+    text-align: left;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: bold;
+    border-bottom: 2px solid black;
+}
+
+table td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+    color: #333;
+}
+
+table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+table tr:hover {
+    background-color: rgb(255, 230, 128); /* Light yellow on hover */
+}
+
+/* Buttons Styling */
+
+.button {
+    padding: 10px 20px;
+    background-color: rgb(255, 179, 0); /* Yellow background */
+    color: black;
+    border: 2px solid black;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.button:hover {
+    background-color: black; /* Black background on hover */
+    color: white; /* White text on hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .measurements-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    table th, table td {
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    .button {
+        font-size: 12px;
+        padding: 8px 15px;
+    }
+}
+</style>
     <div class="dashboard">
         <?php include __DIR__ . '/includes/navigation.php'; ?>
         

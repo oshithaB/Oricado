@@ -26,7 +26,9 @@ $orders = $conn->query("
 <head>
     <title>Pending Orders</title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
+
 <body>
     <div class="dashboard">
         <?php include 'includes/navigation.php'; ?>
@@ -70,15 +72,18 @@ $orders = $conn->query("
                                     <small>Created: <?php echo date('Y-m-d', strtotime($order['created_at'])); ?></small>
                                 </td>
                                 <td>
-                                    <div class="button-group">
-                                        <a href="view_order.php?id=<?php echo $order['id']; ?>" 
-                                           class="button view-btn">View Details</a>
-                                        <a href="review_order.php?id=<?php echo $order['id']; ?>" 
-                                           class="button add-materials-btn">Add Materials</a>
-                                        <a href="download_order.php?id=<?php echo $order['id']; ?>" 
-                                           class="button download-btn">Download</a>
-                                    </div>
-                                </td>
+    <div class="button-group">
+        <a href="view_order.php?id=<?php echo $order['id']; ?>" class="button view-btn">
+            <i class="fas fa-eye"></i> View Details
+        </a>
+        <a href="review_order.php?id=<?php echo $order['id']; ?>" class="button add-materials-btn">
+            <i class="fas fa-plus"></i> Add Materials
+        </a>
+        <a href="download_order.php?id=<?php echo $order['id']; ?>" class="button download-btn">
+            <i class="fas fa-download"></i> Download
+        </a>
+    </div>
+</td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
