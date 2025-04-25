@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Calculate square feet
         $height = floatval($_POST['section1']) + floatval($_POST['section2']);
         $width = floatval($_POST['door_width']);
-        $calc_sqft = $height * $width;
+        $calculated_sqft = $height * $width;
 
         // Set initial status
         $status = 'pending';  // Make sure this is set to 'pending'
@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $customer_address,
                 $user_id,
                 $status,      // Make sure 'pending' is being passed here
-                $calc_sqft,
+                $calculated_sqft,
                 $total_price
             );
         } 
@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $customer_address,
                 $user_id,
                 $quotation_id,
-                $calc_sqft,
+                $calculated_sqft,
                 $total_price
             );
         }
@@ -202,8 +202,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $wicketQuery->execute();
         }
 
+        // After successfully creating order and saving measurements, check quotation if exists
+        if ($quotation_id) {
+            $roller_door_item = $conn->query("
+                SELECT qi.* FROM quotation_items qi
+                WHERE qi.quotation_id = $quotation_id 
+                AND qi.name LIKE '%Roller Door%'
+                LIMIT 1
+            ")->fetch_assoc();
+
+            if ($roller_door_item && abs($calculated_sqft - $roller_door_item['quantity']) > 0.01) {
+                $_SESSION['order_id'] = $order_id; // Save the order ID
+                $_SESSION['calculated_sqft'] = $calculated_sqft;
+                $conn->commit(); // Commit the transaction since order is created
+
+                // Redirect to edit quotation
+                header("Location: edit_quotation.php?id=$quotation_id&calculated_sqft=$calculated_sqft&order_id=$order_id");
+                exit();
+            }
+        }
+
         $conn->commit();
-        $_SESSION['success_message'] = "Order created successfully!";
+        $_SESSION['success_message'] = "Order #$order_id created successfully!";
         header("Location: pending_orders.php");
         exit();
 

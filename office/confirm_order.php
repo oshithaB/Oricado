@@ -27,22 +27,55 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         // Use quotation amount if available, otherwise use POST value
         $total_price = $order['quotation_amount'] ?? $_POST['total_price'];
-        
+
+        // Get order materials
+        $materials = $conn->query("
+            SELECT om.material_id, om.quantity, m.quantity as current_stock
+            FROM order_materials om
+            JOIN materials m ON om.material_id = m.id
+            WHERE om.order_id = $order_id
+        ")->fetch_all(MYSQLI_ASSOC);
+
+        // Check stock availability
+        foreach ($materials as $material) {
+            if ($material['current_stock'] < $material['quantity']) {
+                throw new Exception("Insufficient stock for material ID: " . $material['material_id']);
+            }
+        }
+
+        // Deduct materials from stock
+        foreach ($materials as $material) {
+            $new_quantity = $material['current_stock'] - $material['quantity'];
+            $material_id = $material['material_id'];
+            
+            $stmt = $conn->prepare("UPDATE materials SET quantity = ? WHERE id = ?");
+            $stmt->bind_param("di", $new_quantity, $material_id);
+            if (!$stmt->execute()) {
+                throw new Exception("Error updating stock for material ID: " . $material_id);
+            }
+        }
+
+        // Update order status
         $stmt = $conn->prepare("
             UPDATE orders 
-            SET status = 'confirmed',
-                total_price = ?
+            SET status = 'confirmed', 
+                total_price = ?,
+                material_cost = (
+                    SELECT SUM(m.price * om.quantity)
+                    FROM order_materials om
+                    JOIN materials m ON om.material_id = m.id
+                    WHERE om.order_id = ?
+                )
             WHERE id = ?
         ");
         
-        $stmt->bind_param("di", $total_price, $order_id);
-        
+        $stmt->bind_param("dii", $total_price, $order_id, $order_id);
         if (!$stmt->execute()) {
-            throw new Exception("Error confirming order: " . $stmt->error);
+            throw new Exception("Error confirming order");
         }
 
         $conn->commit();
-        $_SESSION['success_message'] = "Order confirmed successfully!";
+        $_SESSION['success_message'] = "Order confirmed and materials deducted from stock.";
         header('Location: confirmed_orders.php');
         exit();
 

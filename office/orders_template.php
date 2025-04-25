@@ -7,7 +7,7 @@ $status = $status ?? ORDER_STATUS_PENDING;
 $title = ucfirst($status) . ' Orders';
 
 $orders = $conn->query("
-    SELECT o.*, u1.name as prepared_by_name, u2.name as checked_by_name 
+    SELECT o.id as order_id, o.*, u1.name as prepared_by_name, u2.name as checked_by_name 
     FROM orders o 
     LEFT JOIN users u1 ON o.prepared_by = u1.id
     LEFT JOIN users u2 ON o.checked_by = u2.id
@@ -39,87 +39,112 @@ $orders = $conn->query("
                 <tbody>
                     <?php foreach ($orders as $order): ?>
                     <tr>
-                        <td>#<?php echo $order['id']; ?></td>
+                        <td>#<?php echo $order['order_id']; ?></td>
                         <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
                         <td><?php echo date('Y-m-d', strtotime($order['created_at'])); ?></td>
                         <td>
                             <?php if ($status == ORDER_STATUS_REVIEWED): ?>
-                                <div class="order-detail-header">
-                                    <div class="customer-quick-info">
-                                        <strong><?php echo htmlspecialchars($order['customer_name']); ?></strong>
-                                        <span><?php echo htmlspecialchars($order['customer_contact']); ?></span>
-                                    </div>
-                                </div>
-                                <div class="order-actions">
-                                    <button type="button" onclick="toggleSection('materials-<?php echo $order['id']; ?>')" class="button">View Materials</button>
-                                    <button type="button" onclick="toggleSection('measurements-<?php echo $order['id']; ?>')" class="button">View Measurements</button>
-                                    <a href="download_materials.php?id=<?php echo $order['id']; ?>" class="button">Download Materials List</a>
-                                </div>
-                                
-                                <div class="price-confirmation">
-                                    <form method="POST" action="confirm_order.php">
-                                        <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
-                                        <div class="form-group">
-                                            <label>Enter Total Price:</label>
-                                            <input type="number" name="total_price" step="0.01" required>
+                                <div class="order-card">
+                                    <div class="order-header">
+                                        <div class="reference-numbers">
+                                            <h3>Order #<?php echo $order['order_id']; ?></h3>
+                                            <?php if ($order['quotation_id']): ?>
+                                                <h4>Quotation #<?php echo $order['quotation_id']; ?></h4>
+                                            <?php endif; ?>
                                         </div>
-                                        <button type="submit" name="action" value="confirm" class="button">Confirm Order</button>
-                                    </form>
-                                </div>
-
-                                <!-- Materials List Section -->
-                                <div id="materials-<?php echo $order['id']; ?>" class="collapsible-section" style="display: none;">
-                                    <h4>Materials Required</h4>
-                                    <div class="materials-list scrollable">
-                                        <table class="mini-table">
-                                            <?php
-                                            $materials = $conn->query("
-                                                SELECT m.name, m.type, om.quantity, m.unit 
-                                                FROM order_materials om 
-                                                JOIN materials m ON om.material_id = m.id 
-                                                WHERE om.order_id = {$order['id']}
-                                            ")->fetch_all(MYSQLI_ASSOC);
-                                            
-                                            foreach ($materials as $material): ?>
-                                            <tr>
-                                                <td><?php echo htmlspecialchars($material['name']); ?></td>
-                                                <td><?php echo $material['quantity'] . ' ' . $material['unit']; ?></td>
-                                            </tr>
-                                            <?php endforeach; ?>
-                                        </table>
+                                        <div class="customer-quick-info">
+                                            <strong><?php echo htmlspecialchars($order['customer_name']); ?></strong>
+                                            <span><?php echo htmlspecialchars($order['customer_contact']); ?></span>
+                                        </div>
                                     </div>
-                                </div>
+                                    <div class="order-actions">
+                                        <button type="button" onclick="toggleSection('materials-<?php echo $order['id']; ?>')" class="button">View Materials</button>
+                                        <button type="button" onclick="toggleSection('measurements-<?php echo $order['id']; ?>')" class="button">View Measurements</button>
+                                        <a href="download_materials.php?id=<?php echo $order['id']; ?>" class="button">Download Materials List</a>
+                                    </div>
+                                    
+                                    <div class="price-confirmation">
+                                        <form method="POST" action="confirm_order.php">
+                                            <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
+                                            <div class="form-group">
+                                                <label>Enter Total Price:</label>
+                                                <input type="number" name="total_price" step="0.01" required>
+                                            </div>
+                                            <button type="submit" name="action" value="confirm" class="button">Confirm Order</button>
+                                        </form>
+                                    </div>
 
-                                <!-- Measurements Section -->
-                                <div id="measurements-<?php echo $order['id']; ?>" class="collapsible-section" style="display: none;">
-                                    <h4>Measurements</h4>
-                                    <?php
-                                    $measurements = $conn->query("
-                                        SELECT rdm.*, wdm.* 
-                                        FROM orders o
-                                        LEFT JOIN roller_door_measurements rdm ON o.id = rdm.order_id
-                                        LEFT JOIN wicket_door_measurements wdm ON o.id = wdm.order_id
-                                        WHERE o.id = {$order['id']}
-                                    ")->fetch_assoc();
-                                    ?>
-                                    <strong>Roller Door:</strong>
-                                    <ul class="measurement-list">
-                                        <li>Outside Width: <?php echo $measurements['outside_width']; ?></li>
-                                        <li>Inside Width: <?php echo $measurements['inside_width']; ?></li>
-                                        <li>Door Width: <?php echo $measurements['door_width']; ?></li>
-                                        <li>Tower Height: <?php echo $measurements['tower_height']; ?></li>
-                                        <li>Tower Type: <?php echo ucfirst($measurements['tower_type']); ?></li>
-                                    </ul>
-                                    <?php if ($measurements['point1']): ?>
-                                    <strong>Wicket Door:</strong>
-                                    <ul class="measurement-list">
-                                        <li>Point 1: <?php echo $measurements['point1']; ?></li>
-                                        <li>Point 2: <?php echo $measurements['point2']; ?></li>
-                                        <li>Point 3: <?php echo $measurements['point3']; ?></li>
-                                        <li>Point 4: <?php echo $measurements['point4']; ?></li>
-                                        <li>Point 5: <?php echo $measurements['point5']; ?></li>
-                                    </ul>
-                                    <?php endif; ?>
+                                    <!-- Materials List Section -->
+                                    <div id="materials-<?php echo $order['id']; ?>" class="collapsible-section" style="display: none;">
+                                        <h4>Materials Required</h4>
+                                        <div class="materials-list scrollable">
+                                            <table class="mini-table">
+                                                <?php
+                                                $materials = $conn->query("
+                                                    SELECT m.name, m.type, om.quantity, m.unit 
+                                                    FROM order_materials om 
+                                                    JOIN materials m ON om.material_id = m.id 
+                                                    WHERE om.order_id = {$order['id']}
+                                                ")->fetch_all(MYSQLI_ASSOC);
+                                                
+                                                foreach ($materials as $material): ?>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($material['name']); ?></td>
+                                                    <td><?php echo $material['quantity'] . ' ' . $material['unit']; ?></td>
+                                                </tr>
+                                                <?php endforeach; ?>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Measurements Section -->
+                                    <div id="measurements-<?php echo $order['id']; ?>" class="collapsible-section" style="display: none;">
+                                        <h4>Measurements</h4>
+                                        <?php
+                                        $measurements = $conn->query("
+                                            SELECT rdm.*, wdm.* 
+                                            FROM orders o
+                                            LEFT JOIN roller_door_measurements rdm ON o.id = rdm.order_id
+                                            LEFT JOIN wicket_door_measurements wdm ON o.id = wdm.order_id
+                                            WHERE o.id = {$order['id']}
+                                        ")->fetch_assoc();
+
+                                        if ($measurements): ?>
+                                            <strong>Roller Door:</strong>
+                                            <ul class="measurement-list">
+                                                <li>Section 1: <?php echo $measurements['section1']; ?></li>
+                                                <li>Section 2: <?php echo $measurements['section2']; ?></li>
+                                                <li>Total Height: <?php echo $measurements['section1'] + $measurements['section2']; ?></li>
+                                                <li>Outside Width: <?php echo $measurements['outside_width']; ?></li>
+                                                <li>Inside Width: <?php echo $measurements['inside_width']; ?></li>
+                                                <li>Door Width: <?php echo $measurements['door_width']; ?></li>
+                                                <li>Tower Height: <?php echo $measurements['tower_height']; ?></li>
+                                                <li>Tower Type: <?php echo ucfirst($measurements['tower_type']); ?></li>
+                                                <li>Coil Color: <?php echo str_replace('_', ' ', ucfirst($measurements['coil_color'])); ?></li>
+                                                <li>Thickness: <?php echo $measurements['thickness']; ?></li>
+                                                <li>Covering: <?php echo ucfirst($measurements['covering']); ?></li>
+                                                <li>Side Lock: <?php echo $measurements['side_lock'] ? 'Yes' : 'No'; ?></li>
+                                                <li>Motor: <?php echo $measurements['motor']; ?></li>
+                                                <li>Fixing: <?php echo ucfirst($measurements['fixing']); ?></li>
+                                                <li>Down Lock: <?php echo $measurements['down_lock'] ? 'Yes' : 'No'; ?></li>
+                                            </ul>
+
+                                            <?php if ($measurements['point1']): ?>
+                                                <strong>Wicket Door:</strong>
+                                                <ul class="measurement-list">
+                                                    <li>Point 1: <?php echo $measurements['point1']; ?></li>
+                                                    <li>Point 2: <?php echo $measurements['point2']; ?></li>
+                                                    <li>Point 3: <?php echo $measurements['point3']; ?></li>
+                                                    <li>Point 4: <?php echo $measurements['point4']; ?></li>
+                                                    <li>Point 5: <?php echo $measurements['point5']; ?></li>
+                                                    <li>Door Opening: <?php echo str_replace('_', ' ', ucfirst($measurements['door_opening'])); ?></li>
+                                                    <li>Handle: <?php echo $measurements['handle'] ? 'Yes' : 'No'; ?></li>
+                                                    <li>Letter Box: <?php echo $measurements['letter_box'] ? 'Yes' : 'No'; ?></li>
+                                                    <li>Color: <?php echo str_replace('_', ' ', ucfirst($measurements['coil_color'])); ?></li>
+                                                </ul>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
                             <?php elseif ($status == ORDER_STATUS_DONE): ?>
                                 <div class="order-actions">

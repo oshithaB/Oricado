@@ -185,7 +185,7 @@ table tr:hover {
         <div class="content">
             <h2>Order Details</h2>
             <div class="order-reference">
-                <p>Order #<?php echo $order['id']; ?></p>
+                <p>Order #<?php echo $order['order_id']; ?></p>
                 <?php if ($order['quotation_id']): ?>
                     <p>Quotation #<?php echo $order['quotation_id']; ?></p>
                 <?php endif; ?>

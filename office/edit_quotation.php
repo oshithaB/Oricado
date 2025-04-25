@@ -39,67 +39,55 @@ if (!$quotation) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn->begin_transaction();
     try {
-        // Update coil quantity and recalculate amount
+        // Update quotation item with new square footage
         $stmt = $conn->prepare("
             UPDATE quotation_items 
-            SET quantity = ?,
-                amount = ? * price * (1 - discount/100) * (1 + taxes/100)
+            SET quantity = ?, price = ?, discount = ?, taxes = ?, amount = ?
             WHERE quotation_id = ? AND material_id = ?
         ");
+
+        $quantity = floatval($_POST['quantity']);
+        $price = floatval($_POST['price']);
+        $discount = floatval($_POST['discount']);
+        $taxes = floatval($_POST['taxes']);
         
-        if (!$stmt) {
-            throw new Exception("Error preparing statement: " . $conn->error);
-        }
+        // Calculate new amount
+        $amount = $quantity * $price;
+        $amount = $amount * (1 - ($discount/100));
+        $amount = $amount * (1 + ($taxes/100));
 
-        $stmt->bind_param("ddii", 
-            $calculated_sqft,
-            $calculated_sqft,
-            $quotation_id,
-            $_POST['material_id']
+        $stmt->bind_param("dddddii", 
+            $quantity, $price, $discount, $taxes, $amount,
+            $quotation_id, $_POST['material_id']
         );
+        $stmt->execute();
 
-        if (!$stmt->execute()) {
-            throw new Exception("Error updating quotation item: " . $stmt->error);
-        }
-
-        // Update total amount and mark as updated
+        // Update quotation total
         $stmt = $conn->prepare("
             UPDATE quotations 
             SET total_amount = (
-                SELECT SUM(amount) 
-                FROM quotation_items 
-                WHERE quotation_id = ?
+                SELECT SUM(amount) FROM quotation_items WHERE quotation_id = ?
             ),
             is_updated = 1
             WHERE id = ?
         ");
-        
         $stmt->bind_param("ii", $quotation_id, $quotation_id);
-        if (!$stmt->execute()) {
-            throw new Exception("Error updating total: " . $stmt->error);
-        }
+        $stmt->execute();
 
         $conn->commit();
         
-        // If order was already created, redirect to pending orders
+        // Redirect back to pending orders if order was already created
         if (isset($_GET['order_id'])) {
-            $_SESSION['success_message'] = "Order created and quotation updated successfully!";
             header('Location: pending_orders.php');
-            exit();
-        }
-
-        // Return to order creation with original measurements
-        if (isset($_SESSION['order_data'])) {
-            header("Location: create_order.php?quotation_id=" . $quotation_id . "&measurements=" . base64_encode(json_encode($_SESSION['order_data'])));
             exit();
         }
 
         header('Location: quotations.php');
         exit();
-        
+
     } catch (Exception $e) {
         $conn->rollback();
-        $error = "Error updating quotation: " . $e->getMessage();
+        $_SESSION['error_message'] = $e->getMessage();
     }
 }
 ?>

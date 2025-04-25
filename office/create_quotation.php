@@ -3,8 +3,78 @@ require_once '../config/config.php';
 checkAuth(['office_staff']);
 
 $quotation_texts = [
-    '0.60' => 'Default text for 0.60 thickness quotation...',
-    '0.47' => 'Default text for 0.47 thickness quotation...'
+    '0.60' => "Features of the Roller Door
+914mm wide, 0.60mm thick powder-coated roller door panel
+Includes Springs, Pulleys, GI Center Bar, Dust Seal, Nylon Strip, Aluminum Bottom Bars, and Side Locks
+Available Colors
+Black, Buttermilk, Beige, Coffee Brown, Blue, Green, Maroon, Autumn Red, Maroon (sand finished)
+Warranty
+10-Year Warranty on non-corrosive states of the door panel (Conditions Apply)
+Warranty Card issued upon installation after full payment
+2-Year Warranty for motor & 1-Year Warranty for remotes (Conditions Apply)
+Terms & Conditions
+Validity: Quotation valid for 7 days only.
+Payment: 50% of the grand total is due as an advance payment within 3 days of the quotation date. This payment is non-refundable and non-transferable.
+Site Access:
+
+The customer agrees to allow company representatives to visit the installation site during office hours at a mutually convenient time.
+The customer or an authorized representative must be present during site visits.
+The company is not responsible for any delays or additional costs due to restricted access or delays by the customer.
+The customer must prepare the site within 12 working days of the advance payment. Any delays in site preparation may result in price adjustments, and the advance payment will not be refunded.
+Final Payment: Full payment is required prior to delivery and installation. Ownership remains with ORICADO ROLLER DOORS until full payment is received. In case of non-payment, the company reserves the right to claim any damages and costs, and the advance payment will be forfeited.
+Price Adjustments: Prices are subject to change based on government budget updates or exchange rate fluctuations.
+Tax Exclusion: Prices exclude applicable taxes.
+Bank Details
+Account Name: RIYON INTERNATIONAL (PVT) LTD
+Bank: HATTON NATIONAL BANK - MALABE
+Account Number: 1560 1000 9853
+For inquiries, please contact  Ms. Poojani at +94 76 827 4015 /  Ms. Chathuri at +94 74 156 8098.   
+
+We are committed to providing high-quality products using the latest technology and premium materials.
+
+Thank you for considering ORICADO ROLLER DOOR.
+
+Yours Sincerely,
+
+ORICADO ROLLER DOORS
+
+
+
+Prepared By: ......................................	Checked By:...........................................	Authorized By:...................................................",
+
+    '0.47' => "Features of the Roller Door
+Panel: 914mm wide, 0.47mm thick Zinc Aluminum Roller Door Panel
+Components: Includes Springs, Pulleys, GI Center Bar, Dust Seal, Nylon Strip, Aluminium Bottom Bars, and Side Locks
+Available Colors
+Black, Buttermilk, Beige, Coffee Brown, Blue, Green, Maroon, Autumn Red, Maroon (sand finished)
+Terms & Conditions
+Validity: Quotation valid for 7 days from the date issued.
+Advance Payment: 50% of the grand total is due within 3 days of the quotation date as a non-refundable, non-transferable advance.
+Site Access:
+
+The customer agrees to allow company representatives to access the site during office hours for installation.
+The customer or an authorized representative must be present during site visits.
+ORICADO ROLLER DOORS is not liable for delays or extra costs if access is restricted.
+The customer should ensure the site is ready for installation within 12 working days of the advance payment. Delays in preparation may lead to price adjustments, and the advance payment will not be refunded.
+Final Payment: Full payment is required prior to delivery and installation. Ownership remains with ORICADO ROLLER DOORS until full payment is received. In case of non-payment, the company reserves the right to claim any damages and costs, and the advance payment will be forfeited.
+Price Adjustments: Prices are based on the current government budget and may be revised in case of any government price changes or budget updates.
+Currency Fluctuation: Prices are subject to change due to fluctuations in the US Dollar exchange rate.
+Exclusion of Taxes: Prices are exclusive of all applicable taxes.
+Bank Details
+Account Name: RIYON INTERNATIONAL (PVT) LTD
+Bank: HATTON NATIONAL BANK - MALABE
+Account Number: 1560 1000 9853
+For inquiries, please contact  Ms. Poojani at +94 76 827 4015. /  Ms. Chathuri at +94 74 156 8098.
+
+We trust this quotation meets your requirements. ORICADO ROLLER DOORS is committed to delivering high-quality products using advanced technology and premium materials.
+
+Yours Sincerely,
+
+ORICADO ROLLER DOORS
+
+
+
+Prepared By: ......................................	Checked By:.........................................	Authorized By:..........................................."
 ];
 
 // Handle form submission

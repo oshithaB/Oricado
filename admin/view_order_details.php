@@ -207,19 +207,40 @@ h2 {
 
             <div class="section">
                 <h3>Measurements</h3>
+                
+                <!-- Roller Door Measurements -->
                 <h4>Roller Door</h4>
                 <div class="measurements-grid">
                     <p><strong>Section 1:</strong> <?php echo $order['section1']; ?></p>
                     <p><strong>Section 2:</strong> <?php echo $order['section2']; ?></p>
+                    <p><strong>Total Height:</strong> <?php echo $order['section1'] + $order['section2']; ?></p>
+                    <p><strong>Outside Width:</strong> <?php echo $order['outside_width']; ?></p>
+                    <p><strong>Inside Width:</strong> <?php echo $order['inside_width']; ?></p>
                     <p><strong>Door Width:</strong> <?php echo $order['door_width']; ?></p>
-                    <!-- Add other measurements -->
+                    <p><strong>Tower Height:</strong> <?php echo $order['tower_height']; ?></p>
+                    <p><strong>Tower Type:</strong> <?php echo ucfirst($order['tower_type']); ?></p>
+                    <p><strong>Coil Color:</strong> <?php echo str_replace('_', ' ', ucfirst($order['coil_color'])); ?></p>
+                    <p><strong>Thickness:</strong> <?php echo $order['thickness']; ?></p>
+                    <p><strong>Covering:</strong> <?php echo ucfirst($order['covering']); ?></p>
+                    <p><strong>Side Lock:</strong> <?php echo $order['side_lock'] ? 'Yes' : 'No'; ?></p>
+                    <p><strong>Motor:</strong> <?php echo $order['motor']; ?></p>
+                    <p><strong>Fixing:</strong> <?php echo ucfirst($order['fixing']); ?></p>
+                    <p><strong>Down Lock:</strong> <?php echo $order['down_lock'] ? 'Yes' : 'No'; ?></p>
                 </div>
 
+                <!-- Wicket Door Measurements (if exists) -->
                 <?php if ($order['point1']): ?>
                 <h4>Wicket Door</h4>
                 <div class="measurements-grid">
                     <p><strong>Point 1:</strong> <?php echo $order['point1']; ?></p>
-                    <!-- Add other wicket door measurements -->
+                    <p><strong>Point 2:</strong> <?php echo $order['point2']; ?></p>
+                    <p><strong>Point 3:</strong> <?php echo $order['point3']; ?></p>
+                    <p><strong>Point 4:</strong> <?php echo $order['point4']; ?></p>
+                    <p><strong>Point 5:</strong> <?php echo $order['point5']; ?></p>
+                    <p><strong>Door Opening:</strong> <?php echo str_replace('_', ' ', ucfirst($order['door_opening'])); ?></p>
+                    <p><strong>Handle:</strong> <?php echo $order['handle'] ? 'Yes' : 'No'; ?></p>
+                    <p><strong>Letter Box:</strong> <?php echo $order['letter_box'] ? 'Yes' : 'No'; ?></p>
+                    <p><strong>Color:</strong> <?php echo str_replace('_', ' ', ucfirst($order['coil_color'])); ?></p>
                 </div>
                 <?php endif; ?>
             </div>
