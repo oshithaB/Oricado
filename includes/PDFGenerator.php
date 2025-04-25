@@ -12,9 +12,20 @@ class PDFGenerator {
         
         $logoPath = __DIR__ . '/../assets/images/oricado logo.jpg';
         $logoHtml = file_exists($logoPath) ? 
-            '<img src="data:image/jpeg;base64,' . base64_encode(file_get_contents($logoPath)) . '" 
-                  style="max-width: 200px; display: block; margin: 0 auto;">' : 
-            '';
+        '<div style="
+        display: inline-block;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%; /* Makes the logo circular */
+        border: 5px solid #FFD700; /* Gold border */
+        box-shadow: 0 0 10px 10px #FFD700; /* Shine effect */
+        overflow: hidden; /* Ensures the logo stays within the circle */
+        margin: 20px auto; /* Adds space above and below the logo */
+    ">
+        <img src="data:image/jpeg;base64,' . base64_encode(file_get_contents($logoPath)) . '" 
+             alt="Oricado Logo" 
+             style="width: 100%; height: 100%; object-fit: cover;">
+    </div>' : '';
 
         $title = '';
         switch ($type) {
@@ -176,73 +187,69 @@ class PDFGenerator {
 
     private function getQuotationHTML($quotation) {
         $html = '<div class="section">
-            <h2>Quotation Details</h2>
-            <table>
+            <h2 style="color: #d4af37; border-bottom: 2px solid #d4af37; padding-bottom: 5px;">Quotation Details</h2>
+            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
                 <tr>
-                    <th>Customer Name</th>
-                    <td>' . htmlspecialchars($quotation['customer_name']) . '</td>
+                    <th style="background: #d4af37; color: white; padding: 10px; text-align: left;">Customer Name</th>
+                    <td style="border: 1px solid #ddd; padding: 10px;">' . htmlspecialchars($quotation['customer_name']) . '</td>
                 </tr>
                 <tr>
-                    <th>Customer Contact</th>
-                    <td>' . htmlspecialchars($quotation['customer_contact']) . '</td>
+                    <th style="background: #d4af37; color: white; padding: 10px; text-align: left;">Customer Contact</th>
+                    <td style="border: 1px solid #ddd; padding: 10px;">' . htmlspecialchars($quotation['customer_contact']) . '</td>
                 </tr>
                 <tr>
-                    <th>Type</th>
-                    <td>' . ucfirst($quotation['type']) . ' Quotation</td>
+                    <th style="background: #d4af37; color: white; padding: 10px; text-align: left;">Type</th>
+                    <td style="border: 1px solid #ddd; padding: 10px;">' . ucfirst($quotation['type']) . ' Quotation</td>
                 </tr>
                 <tr>
-                    <th>Created Date</th>
-                    <td>' . date('Y-m-d', strtotime($quotation['created_at'])) . '</td>
+                    <th style="background: #d4af37; color: white; padding: 10px; text-align: left;">Created Date</th>
+                    <td style="border: 1px solid #ddd; padding: 10px;">' . date('Y-m-d', strtotime($quotation['created_at'])) . '</td>
                 </tr>
             </table>';
-
+    
         // Add quotation text for order type
         if ($quotation['type'] === 'order') {
-            $html .= '<div class="additional-info">
+            $html .= '<div class="additional-info" style="margin: 20px 0; font-style: italic; color: #555;">
                 <div>' . nl2br(htmlspecialchars($quotation['quotation_text'])) . '</div>
             </div>';
         }
-
+    
         // Items table with all details
-        $html .= '<table class="items-table">
+        $html .= '<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
             <thead>
                 <tr>
-                    <th>Item</th>
-                    <th>Details</th>
-                    <th>Quantity</th>
-                    <th>Unit</th>
-                    <th>Price (Rs.)</th>
-                    <th>Discount (%)</th>
-                    <th>Taxes (%)</th>
-                    <th>Amount (Rs.)</th>
+                    <th style="background: #d4af37; color: white; padding: 10px; text-align: left;">Item</th>
+                    <th style="background: #d4af37; color: white; padding: 10px; text-align: left;">Details</th>
+                    <th style="background: #d4af37; color: white; padding: 10px; text-align: center;">Quantity</th>
+                    <th style="background: #d4af37; color: white; padding: 10px; text-align: center;">Unit</th>
+                    <th style="background: #d4af37; color: white; padding: 10px; text-align: right;">Price (Rs.)</th>
+                    <th style="background: #d4af37; color: white; padding: 10px; text-align: right;">Amount (Rs.)</th>
                 </tr>
             </thead>
             <tbody>';
-
+    
         foreach ($quotation['items'] as $item) {
             $html .= '<tr>
-                <td>' . htmlspecialchars($item['name']) . '</td>
-                <td>' . ($item['type'] == 'coil' ? 
+                <td style="border: 1px solid #ddd; padding: 10px;">' . htmlspecialchars($item['name']) . '</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">' . ($item['type'] == 'coil' ? 
                     'Color: ' . str_replace('_', ' ', ucfirst($item['color'])) . '<br>Thickness: ' . $item['thickness'] 
                     : '') . '</td>
-                <td>' . number_format($item['quantity'], 2) . '</td>
-                <td>' . htmlspecialchars($item['unit']) . '</td>
-                <td>' . number_format($item['price'], 2) . '</td>
-                <td>' . number_format($item['discount'], 2) . '</td>
-                <td>' . number_format($item['taxes'], 2) . '</td>
-                <td>' . number_format($item['amount'], 2) . '</td>
+                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">' . number_format($item['quantity'], 2) . '</td>
+                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">' . htmlspecialchars($item['unit']) . '</td>
+                <td style="border: 1px solid #ddd; padding: 10px; text-align: right;">' . number_format($item['price'], 2) . '</td>
+                <td style="border: 1px solid #ddd; padding: 10px; text-align: right;">' . number_format($item['amount'], 2) . '</td>
             </tr>';
         }
-
+    
         $html .= '</tbody>
             <tfoot>
                 <tr>
-                    <th colspan="7" style="text-align: right">Total Amount:</th>
-                    <td>Rs. ' . number_format($quotation['total_amount'], 2) . '</td>
+                    <th colspan="5" style="text-align: right; background: #d4af37; color: white; padding: 10px;">Total Amount:</th>
+                    <td style="border: 1px solid #ddd; padding: 10px; text-align: right;">Rs. ' . number_format($quotation['total_amount'], 2) . '</td>
                 </tr>
             </tfoot>
         </table>';
-
+    
         return $html . '</div>';
     }
 
