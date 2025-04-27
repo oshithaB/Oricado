@@ -1,10 +1,11 @@
 <?php
-define('DB_HOST', 'sql303.infinityfree.com');
-define('DB_USER', 'if0_38830131');
-define('DB_PASS', 'mNUka4Qsrp');
-define('DB_NAME', 'if0_38830131_oricado');
+define('DB_HOST', 'mysql-12b8ac00-oxxakala-e9f8.j.aivencloud.com');
+define('DB_USER', 'avnadmin');
+define('DB_PASS', 'AVNS_cTlR-1QPHWr_QjUBCgn');
+define('DB_NAME', 'defaultdb');
+define('DB_PORT', 18952);
 
-$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
