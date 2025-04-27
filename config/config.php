@@ -1,8 +1,8 @@
 <?php
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'oricado');
+define('DB_HOST', 'sql303.infinityfree.com');
+define('DB_USER', 'if0_38830131');
+define('DB_PASS', 'mNUka4Qsrp');
+define('DB_NAME', 'if0_38830131_oricado');
 
 $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
