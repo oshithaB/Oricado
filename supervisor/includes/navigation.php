@@ -30,7 +30,7 @@
         <li><a href="confirmed_orders.php">Confirmed Orders</a></li>
         <li><a href="completed_orders.php">Completed Orders</a></li>
         <li><a href="done_orders.php">Done Orders</a></li>
-        <li><a href="../logout.php">Logout</a></li>
+        <li><a href="../index.php">Logout</a></li>
     </ul>
 </nav>
 <script>

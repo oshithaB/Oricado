@@ -41,6 +41,6 @@
         <li><a href="add_contact.php">Add Contact</a></li>
         <li><a href="buy_materials.php">Buy Materials</a></li>
         <li><a href="supplier_quotations.php">Supplier Quotations</a></li>
-        <li><a href="../logout.php">Logout</a></li>
+        <li><a href="../index.php">Logout</a></li>
     </ul>
 </nav>
