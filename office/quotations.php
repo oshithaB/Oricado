@@ -208,7 +208,13 @@ foreach ($quotations as &$quotation) {
 
                     <div class="quotation-actions">
                         <a href="download_quotation.php?id=<?php echo $quotation['id']; ?>" 
-                           class="button download-btn">Download</a>
+                           class="button download-btn">Download Quotation</a>
+                        
+                        <?php if ($quotation['type'] == 'raw_materials'): ?>
+                            <a href="download_material_invoice.php?id=<?php echo $quotation['id']; ?>" 
+                               class="button invoice-btn">Download Invoice</a>
+                        <?php endif; ?>
+                        
                         <?php if ($quotation['type'] == 'order' && !$quotation['has_order'] && !$quotation['is_updated']): ?>
                             <a href="create_order.php?quotation_id=<?php echo $quotation['id']; ?>" 
                                class="button add-measurements-btn">Add Measurements</a>

@@ -60,10 +60,21 @@ if (isset($_GET['measurements'])) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn->begin_transaction();
     try {
+        // Convert inches to feet
+        $section1_inches = floatval($_POST['section1']);
+        $section2_inches = floatval($_POST['section2']);
+        $door_width_inches = floatval($_POST['door_width']);
+        
+        // Convert to feet (1 foot = 12 inches)
+        $section1_feet = $section1_inches / 12;
+        $section2_feet = $section2_inches / 12;
+        $door_width_feet = $door_width_inches / 12;
+        
+        // Calculate total height in feet
+        $height = $section1_feet + $section2_feet;
+        
         // Calculate square feet
-        $height = floatval($_POST['section1']) + floatval($_POST['section2']);
-        $width = floatval($_POST['door_width']);
-        $calculated_sqft = $height * $width;
+        $calculated_sqft = $height * $door_width_feet;
 
         // Set initial status
         $status = 'pending';  // Make sure this is set to 'pending'
@@ -95,11 +106,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } 
         // Insert with quotation_id
         else {
-            $query = $conn->prepare("
+            $stmt = $conn->prepare("
                 INSERT INTO orders (
                     customer_name, customer_contact, customer_address, 
-                    prepared_by, status, quotation_id, total_sqft, total_price, created_at
-                ) VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, NOW())
+                    prepared_by, status, quotation_id, total_sqft, total_price,
+                    balance_amount
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
             $customer_name = $_POST['customer_name'];
@@ -107,20 +119,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $customer_address = $_POST['customer_address'];
             $user_id = $_SESSION['user_id'];
             $total_price = $quotation['total_amount'] ?? 0;
+            $balance = $total_price; // Set initial balance equal to total price
 
-            $query->bind_param("sssiidi", 
+            $stmt->bind_param("sssisiddd", 
                 $customer_name,
                 $customer_contact,
                 $customer_address,
                 $user_id,
+                $status,
                 $quotation_id,
                 $calculated_sqft,
-                $total_price
+                $total_price,
+                $balance
             );
         }
 
-        if (!$query->execute()) {
-            throw new Exception("Error inserting order: " . $query->error);
+        if (!$stmt->execute()) {
+            throw new Exception("Error inserting order: " . $stmt->error);
         }
 
         $order_id = $conn->insert_id;
@@ -132,11 +147,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             side_lock, motor, fixing, down_lock
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-        $section1 = floatval($_POST['section1']);
-        $section2 = floatval($_POST['section2']);
+        // Use original inch measurements for storage
+        $section1 = $section1_inches;
+        $section2 = $section2_inches;
         $outsideWidth = floatval($_POST['outside_width']);
         $insideWidth = floatval($_POST['inside_width']);
-        $doorWidth = floatval($_POST['door_width']);
+        $doorWidth = $door_width_inches;
         $towerHeight = floatval($_POST['tower_height']);
         $towerType = $_POST['tower_type'];
         $coilColor = $_POST['coil_color'];
@@ -242,6 +258,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <title>Create New Order</title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <script>
+    function calculateSquareFeet() {
+        const section1 = parseFloat(document.getElementsByName('section1')[0].value) || 0;
+        const section2 = parseFloat(document.getElementsByName('section2')[0].value) || 0;
+        const doorWidth = parseFloat(document.getElementsByName('door_width')[0].value) || 0;
+        
+        // Convert inches to feet
+        const heightFeet = (section1 + section2) / 12;
+        const widthFeet = doorWidth / 12;
+        
+        // Calculate square feet
+        const squareFeet = heightFeet * widthFeet;
+        
+        // Display the calculation if you want to show it to the user
+        if (!isNaN(squareFeet)) {
+            document.getElementById('sqft_display').textContent = 
+                `Square Feet: ${squareFeet.toFixed(2)} (Height: ${heightFeet.toFixed(2)}' × Width: ${widthFeet.toFixed(2)}')`;
+        }
+    }
+    </script>
 </head>
 <body>
     <div class="dashboard">
@@ -297,14 +333,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <!-- Add Section 1 and 2 measurements -->
                     <div class="measurement-sections">
                         <div class="form-group">
-                            <label>Section 1:</label>
+                            <label>Section 1 (inches):</label>
                             <input type="number" name="section1" step="0.01" 
-                                   value="<?php echo htmlspecialchars($measurements['section1'] ?? ''); ?>" required>
+                                   value="<?php echo htmlspecialchars($measurements['section1'] ?? ''); ?>" 
+                                   required onchange="calculateSquareFeet()">
                         </div>
                         <div class="form-group">
-                            <label>Section 2:</label>
+                            <label>Section 2 (inches):</label>
                             <input type="number" name="section2" step="0.01" 
-                                   value="<?php echo htmlspecialchars($measurements['section2'] ?? ''); ?>" required>
+                                   value="<?php echo htmlspecialchars($measurements['section2'] ?? ''); ?>" 
+                                   required onchange="calculateSquareFeet()">
                         </div>
                     </div>
 
@@ -320,9 +358,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
                     
                     <div class="form-group">
-                        <label>Door Width:</label>
-                        <input type="number" name="door_width" step="0.01" required>
+                        <label>Door Width (inches):</label>
+                        <input type="number" name="door_width" step="0.01" required onchange="calculateSquareFeet()">
                     </div>
+                    
+                    <div id="sqft_display" style="margin: 10px 0; font-weight: bold; color: #007bff;"></div>
                     
                     <div class="form-group">
                         <label>Tower Height:</label>

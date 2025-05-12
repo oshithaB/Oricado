@@ -35,6 +35,14 @@ class PDFGenerator {
             case 'quotation':
                 $title = 'Sales Quotation';
                 break;
+            case 'invoice_advance':
+                $title = 'Advance Payment Invoice';
+                echo $this->generateAdvanceInvoiceHTML($data);
+                break;
+            case 'invoice_final':
+                $title = 'Final Payment Invoice';
+                echo $this->generateFinalInvoiceHTML($data);
+                break;
             default:
                 $title = ucfirst($type);
         }
@@ -505,5 +513,95 @@ class PDFGenerator {
                 <td>' . str_replace('_', ' ', ucfirst($order['door_opening'])) . '</td>
             </tr>
         </table>';
+    }
+
+    private function generateAdvanceInvoiceHTML($invoice) {
+        return '
+        <div class="invoice-section">
+            <h2>Advance Payment Invoice</h2>
+            <div class="customer-details">
+                <p><strong>Customer:</strong> ' . htmlspecialchars($invoice['customer_name']) . '</p>
+                <p><strong>Contact:</strong> ' . htmlspecialchars($invoice['customer_contact']) . '</p>
+                <p><strong>Address:</strong> ' . htmlspecialchars($invoice['customer_address']) . '</p>
+                <p><strong>Order #:</strong> ' . $invoice['order_id'] . '</p>
+            </div>
+            
+            <div class="payment-details">
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>Total Amount:</strong></td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Rs. ' . number_format($invoice['total_price'], 2) . '</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>Amount Paid:</strong></td>
+                        <td style="padding: 10px; border: 1px solid #ddd; color: #ff0000;">Rs. ' . number_format($invoice['amount'], 2) . '</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>Balance Amount:</strong></td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Rs. ' . number_format($invoice['balance_amount'], 2) . '</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <p><strong>Created By:</strong> ' . htmlspecialchars($invoice['created_by_name']) . '</p>
+            </div>
+            
+            <div style="margin-top: 50px; display: flex; justify-content: space-between;">
+                <div style="text-align: center; width: 200px;">
+                    <div>____________________</div>
+                    <div>Customer Signature</div>
+                </div>
+                <div style="text-align: center; width: 200px;">
+                    <div>____________________</div>
+                    <div>Authorized Signature</div>
+                </div>
+            </div>
+        </div>';
+    }
+
+    private function generateFinalInvoiceHTML($invoice) {
+        return '
+        <div class="invoice-section">
+            <h2>Final Payment Invoice</h2>
+            <div class="customer-details">
+                <p><strong>Customer:</strong> ' . htmlspecialchars($invoice['customer_name']) . '</p>
+                <p><strong>Contact:</strong> ' . htmlspecialchars($invoice['customer_contact']) . '</p>
+                <p><strong>Address:</strong> ' . htmlspecialchars($invoice['customer_address']) . '</p>
+                <p><strong>Order #:</strong> ' . $invoice['order_id'] . '</p>
+            </div>
+            
+            <div class="payment-details">
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>Advance Paid:</strong></td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">Rs. ' . number_format($invoice['advance_amount'], 2) . '</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>Balance Amount Paid:</strong></td>
+                        <td style="padding: 10px; border: 1px solid #ddd; color: #ff0000;">Rs. ' . number_format($invoice['amount'], 2) . '</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd;"><strong>Total Amount Paid:</strong></td>
+                        <td style="padding: 10px; border: 1px solid #ddd; color: #ff0000;">Rs. ' . number_format($invoice['total_price'], 2) . '</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <p><strong>Created By:</strong> ' . htmlspecialchars($invoice['created_by_name']) . '</p>
+            </div>
+            
+            <div style="margin-top: 50px; display: flex; justify-content: space-between;">
+                <div style="text-align: center; width: 200px;">
+                    <div>____________________</div>
+                    <div>Customer Signature</div>
+                </div>
+                <div style="text-align: center; width: 200px;">
+                    <div>____________________</div>
+                    <div>Authorized Signature</div>
+                </div>
+            </div>
+        </div>';
     }
 }

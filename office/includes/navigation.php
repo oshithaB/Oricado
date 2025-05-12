@@ -34,6 +34,8 @@
         <li><a href="confirmed_orders.php">Confirmed Orders</a></li>
         <li><a href="completed_orders.php">Completed Orders</a></li>
         <li><a href="done_orders.php">Done Orders</a></li>
+        <li><a href="invoices.php?type=advance">Advance Invoices</a></li>
+        <li><a href="invoices.php?type=final">Final Invoices</a></li>
         <li><a href="manage_stock.php">Manage Stock</a></li>
         <li><a href="material_report.php">Material Report</a></li>
         <li><a href="add_material.php">Add Material</a></li>

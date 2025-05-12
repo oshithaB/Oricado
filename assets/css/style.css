@@ -755,3 +755,31 @@ form {
     color: #666;
     font-size: 1.2em;
 }
+
+/* Invoice Buttons */
+.invoice-btn {
+    background-color: #28a745;
+    border: 2px solid #1e7e34;
+    padding: 8px 16px;
+    margin-right: 10px;
+}
+
+.invoice-btn:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+/* Payment Status */
+.payment-status {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 4px;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+}
+
+.payment-status.paid {
+    background: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}

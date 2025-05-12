@@ -81,9 +81,11 @@ foreach ($quotations as &$quotation) {
                     </table>
 
                     <div class="quotation-actions">
-                 
                         <a href="print_supplier_quotation.php?id=<?php echo $quotation['quotation_id']; ?>" 
                            class="button download-btn">Print Quotation</a>
+                        
+                        <a href="download_supplier_invoice.php?id=<?php echo $quotation['quotation_id']; ?>" 
+                           class="button invoice-btn">Download Invoice</a>
                     </div>
                 </div>
             <?php endforeach; ?>
