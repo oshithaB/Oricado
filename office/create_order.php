@@ -58,6 +58,28 @@ if (isset($_GET['measurements'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (isset($_POST['check_quotation']) && $quotation_id) {
+        // Calculate square feet
+        $section1_inches = floatval($_POST['section1']);
+        $section2_inches = floatval($_POST['section2']);
+        $door_width_inches = floatval($_POST['door_width']);
+        
+        $section1_feet = $section1_inches / 12;
+        $section2_feet = $section2_inches / 12;
+        $door_width_feet = $door_width_inches / 12;
+        
+        $height = $section1_feet + $section2_feet;
+        $calculated_sqft = $height * $door_width_feet;
+
+        // Store all form data in session
+        $_SESSION['order_data'] = $_POST;
+        $_SESSION['calculated_sqft'] = $calculated_sqft;
+
+        // Redirect to edit quotation first
+        header("Location: edit_quotation.php?id=$quotation_id&calculated_sqft=$calculated_sqft");
+        exit();
+    }
+
     $conn->begin_transaction();
     try {
         // Convert inches to feet
@@ -502,7 +524,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
                 </div>
 
-                <button type="submit">Create Order</button>
+                <button type="submit" name="<?php echo $quotation_id ? 'check_quotation' : 'submit'; ?>">
+                    <?php echo $quotation_id ? 'Check Measurements' : 'Create Order'; ?>
+                </button>
             </form>
         </div>
     </div>

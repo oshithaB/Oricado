@@ -39,59 +39,197 @@ if (!$quotation) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn->begin_transaction();
     try {
-        // Update quotation item with new square footage
-        $stmt = $conn->prepare("
-            UPDATE quotation_items 
-            SET quantity = ?, price = ?, discount = ?, taxes = ?, amount = ?
-            WHERE quotation_id = ? AND material_id = ?
-        ");
+        if (isset($_POST['create_order']) && isset($_SESSION['order_data'])) {
+            // Create order using updated quotation data and stored measurements
+            $orderData = $_SESSION['order_data'];
+            $calculated_sqft = $_SESSION['calculated_sqft'];
 
-        $quantity = floatval($_POST['quantity']);
-        $price = floatval($_POST['price']);
-        $discount = floatval($_POST['discount']);
-        $taxes = floatval($_POST['taxes']);
-        
-        // Calculate new amount
-        $amount = $quantity * $price;
-        $amount = $amount * (1 - ($discount/100));
-        $amount = $amount * (1 + ($taxes/100));
+            $stmt = $conn->prepare("
+                INSERT INTO orders (
+                    customer_name, customer_contact, customer_address, 
+                    prepared_by, status, quotation_id, total_sqft, total_price,
+                    balance_amount
+                ) VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, ?)
+            ");
 
-        $stmt->bind_param("dddddii", 
-            $quantity, $price, $discount, $taxes, $amount,
-            $quotation_id, $_POST['material_id']
-        );
-        $stmt->execute();
+            // Get updated quotation total
+            $quotation = $conn->query("SELECT total_amount FROM quotations WHERE id = $quotation_id")->fetch_assoc();
+            $total_price = $quotation['total_amount'];
 
-        // Update quotation total
-        $stmt = $conn->prepare("
-            UPDATE quotations 
-            SET total_amount = (
-                SELECT SUM(amount) FROM quotation_items WHERE quotation_id = ?
-            ),
-            is_updated = 1
-            WHERE id = ?
-        ");
-        $stmt->bind_param("ii", $quotation_id, $quotation_id);
-        $stmt->execute();
+            $stmt->bind_param("sssisddd", 
+                $orderData['customer_name'],
+                $orderData['customer_contact'],
+                $orderData['customer_address'],
+                $_SESSION['user_id'],
+                $quotation_id,
+                $calculated_sqft,
+                $total_price,
+                $total_price // Initial balance equals total price
+            );
+            
+            $stmt->execute();
+            $order_id = $conn->insert_id;
 
-        $conn->commit();
-        
-        // Redirect back to pending orders if order was already created
-        if (isset($_GET['order_id'])) {
+            // Insert measurements
+            $measureQuery = $conn->prepare("INSERT INTO roller_door_measurements (
+                order_id, section1, section2, outside_width, inside_width, door_width, 
+                tower_height, tower_type, coil_color, thickness, covering, 
+                side_lock, motor, fixing, down_lock
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+            // Prepare variables for bind_param
+            $section1 = $orderData['section1'];
+            $section2 = $orderData['section2'];
+            $outsideWidth = $orderData['outside_width'];
+            $insideWidth = $orderData['inside_width'];
+            $doorWidth = $orderData['door_width'];
+            $towerHeight = $orderData['tower_height'];
+            $towerType = $orderData['tower_type'];
+            $coilColor = $orderData['coil_color'];
+            $thickness = $orderData['thickness'];
+            $covering = $orderData['covering'];
+            $sideLock = $orderData['side_lock'];
+            $motor = $orderData['motor'];
+            $fixing = $orderData['fixing'];
+            $downLock = intval($orderData['down_lock']);
+
+            $measureQuery->bind_param('iddddddsssssssi',
+                $order_id,
+                $section1,
+                $section2,
+                $outsideWidth,
+                $insideWidth,
+                $doorWidth,
+                $towerHeight,
+                $towerType,
+                $coilColor,
+                $thickness,
+                $covering,
+                $sideLock,
+                $motor,
+                $fixing,
+                $downLock
+            );
+            
+            $measureQuery->execute();
+
+            // Handle wicket door if exists
+            if (isset($orderData['has_wicket_door'])) {
+                $wicketQuery = $conn->prepare("INSERT INTO wicket_door_measurements (
+                    order_id, point1, point2, point3, point4, point5,
+                    thickness, door_opening, handle, letter_box, coil_color
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+                // Prepare variables for bind_param
+                $point1 = floatval($orderData['point1']);
+                $point2 = floatval($orderData['point2']);
+                $point3 = floatval($orderData['point3']);
+                $point4 = floatval($orderData['point4']);
+                $point5 = floatval($orderData['point5']);
+                $wThickness = $orderData['thickness'];
+                $doorOpening = $orderData['door_opening'];
+                $handle = isset($orderData['handle']) ? 1 : 0;
+                $letterBox = isset($orderData['letter_box']) ? 1 : 0;
+                $wCoilColor = $orderData['coil_color'];
+
+                $wicketQuery->bind_param('idddddssiss',
+                    $order_id,
+                    $point1,
+                    $point2,
+                    $point3,
+                    $point4,
+                    $point5,
+                    $wThickness,
+                    $doorOpening,
+                    $handle,
+                    $letterBox,
+                    $wCoilColor
+                );
+
+                $wicketQuery->execute();
+            }
+
+            $conn->commit();
+            unset($_SESSION['order_data'], $_SESSION['calculated_sqft']);
+            $_SESSION['success_message'] = "Order #$order_id created successfully!";
             header('Location: pending_orders.php');
             exit();
+        } else {
+            // Update quotation item with new square footage
+            $stmt = $conn->prepare("
+                UPDATE quotation_items 
+                SET quantity = ?, 
+                    price = ?, 
+                    discount = ?, 
+                    taxes = ?, 
+                    amount = ?
+                WHERE quotation_id = ? AND material_id = ?
+            ");
+
+            if (!$stmt) {
+                throw new Exception("Error preparing update statement: " . $conn->error);
+            }
+
+            $quantity = floatval($_POST['quantity']);
+            $price = floatval($_POST['price']);
+            $discount = floatval($_POST['discount']);
+            $taxes = floatval($_POST['taxes']);
+            
+            // Calculate new amount
+            $amount = $quantity * $price;
+            $amount = $amount * (1 - ($discount/100));
+            $amount = $amount * (1 + ($taxes/100));
+
+            $material_id = intval($_POST['material_id']);
+
+            if (!$stmt->bind_param("dddddii", 
+                $quantity, $price, $discount, $taxes, $amount,
+                $quotation_id, $material_id
+            )) {
+                throw new Exception("Error binding parameters: " . $stmt->error);
+            }
+
+            if (!$stmt->execute()) {
+                throw new Exception("Error updating quotation item: " . $stmt->error);
+            }
+
+            // Update quotation total
+            $stmt = $conn->prepare("
+                UPDATE quotations 
+                SET total_amount = (
+                    SELECT SUM(amount) FROM quotation_items WHERE quotation_id = ?
+                ),
+                is_updated = 1
+                WHERE id = ?
+            ");
+
+            if (!$stmt->bind_param("ii", $quotation_id, $quotation_id)) {
+                throw new Exception("Error binding parameters for total update: " . $stmt->error);
+            }
+
+            if (!$stmt->execute()) {
+                throw new Exception("Error updating quotation total: " . $stmt->error);
+            }
+
+            $_SESSION['quotation_updated'] = true;
+            $conn->commit();
+            
+            // Refresh page to show create order button
+            header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . $quotation_id . "&calculated_sqft=" . $_SESSION['calculated_sqft']);
+            exit();
         }
-
-        header('Location: quotations.php');
-        exit();
-
     } catch (Exception $e) {
         $conn->rollback();
         $_SESSION['error_message'] = $e->getMessage();
+        // Log the error
+        error_log("Error in edit_quotation.php: " . $e->getMessage());
+        // Refresh page to show error
+        header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . $quotation_id . "&calculated_sqft=" . $calculated_sqft);
+        exit();
     }
 }
 ?>
-
+                
 <!DOCTYPE html>
 <html>
 <head>
@@ -112,7 +250,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <li>Material: <strong><?php echo htmlspecialchars($quotation['material_name'] ?? 'Unknown'); ?></strong></li>
                     </ul>
                 </div>
-
                 <form method="POST">
                     <input type="hidden" name="material_id" value="<?php echo $quotation['material_id']; ?>">
                     
@@ -140,7 +277,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                value="<?php echo $quotation['taxes']; ?>" required>
                     </div>
 
-                    <button type="submit">Update Quotation</button>
+                    <div class="form-group">
+                        <button type="submit">Update Quotation</button>
+                        <?php if (isset($_SESSION['quotation_updated'])): ?>
+                            <button type="submit" name="create_order">Create Order</button>
+                        <?php endif; ?>
+                    </div>
                 </form>
             </div>
         </div>
