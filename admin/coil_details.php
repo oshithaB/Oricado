@@ -9,7 +9,8 @@ if (!$coil_id) {
 }
 
 $coil = $conn->query("
-    SELECT * FROM materials WHERE id = $coil_id AND type = 'coil'
+    SELECT id, name, type, thickness, color, quantity, unit, price, saleprice 
+    FROM materials WHERE id = $coil_id AND type = 'coil'
 ")->fetch_assoc();
 
 $usage = $conn->query("
@@ -40,9 +41,12 @@ $total_revenue = array_sum(array_column($usage, 'total_price'));
         <div class="content">
             <div class="coil-info">
                 <h3><?php echo htmlspecialchars($coil['name']); ?></h3>
+                <p>Width: 914mm</p>
                 <p>Color: <?php echo htmlspecialchars($coil['color']); ?></p>
-                <p>Thickness: <?php echo $coil['thickness']; ?></p>
-                <p>Current Stock: <?php echo $coil['quantity'] . ' ' . $coil['unit']; ?></p>
+                <p>Thickness: <?php echo $coil['thickness']; ?>mm</p>
+                <p>Current Stock: <?php echo number_format($coil['quantity'], 2) . ' ' . $coil['unit']; ?></p>
+                <p>Purchase Price: Rs. <?php echo number_format($coil['price'], 2); ?></p>
+                <p>Sale Price: Rs. <?php echo number_format($coil['saleprice'], 2); ?></p>
                 <p>Total Usage: <?php echo number_format($total_usage, 2) . ' ' . $coil['unit']; ?></p>
                 <p>Total Revenue: Rs. <?php echo number_format($total_revenue, 2); ?></p>
             </div>

@@ -62,48 +62,48 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Calculate square feet
         $section1_inches = floatval($_POST['section1']);
         $section2_inches = floatval($_POST['section2']);
-        $door_width_inches = floatval($_POST['door_width']);
+        $outside_width_inches = floatval($_POST['outside_width']);
         
+        // Convert to feet
         $section1_feet = $section1_inches / 12;
         $section2_feet = $section2_inches / 12;
-        $door_width_feet = $door_width_inches / 12;
+        $outside_width_feet = $outside_width_inches / 12;
         
+        // Calculate total height and square feet
         $height = $section1_feet + $section2_feet;
-        $calculated_sqft = $height * $door_width_feet;
+        $calculated_sqft = $height * $outside_width_feet;
 
         // Store all form data in session
         $_SESSION['order_data'] = $_POST;
         $_SESSION['calculated_sqft'] = $calculated_sqft;
 
-        // Redirect to edit quotation first
+        // Redirect to edit quotation
         header("Location: edit_quotation.php?id=$quotation_id&calculated_sqft=$calculated_sqft");
         exit();
     }
 
     $conn->begin_transaction();
     try {
-        // Convert inches to feet
+        // Calculate measurements
         $section1_inches = floatval($_POST['section1']);
         $section2_inches = floatval($_POST['section2']);
-        $door_width_inches = floatval($_POST['door_width']);
+        $outside_width_inches = floatval($_POST['outside_width']);
         
-        // Convert to feet (1 foot = 12 inches)
+        // Convert to feet
         $section1_feet = $section1_inches / 12;
         $section2_feet = $section2_inches / 12;
-        $door_width_feet = $door_width_inches / 12;
-        
-        // Calculate total height in feet
-        $height = $section1_feet + $section2_feet;
+        $outside_width_feet = $outside_width_inches / 12;
         
         // Calculate square feet
-        $calculated_sqft = $height * $door_width_feet;
+        $height = $section1_feet + $section2_feet;
+        $calculated_sqft = $height * $outside_width_feet;
 
         // Set initial status
-        $status = 'pending';  // Make sure this is set to 'pending'
-        
-        // Basic insert without quotation_id
+        $status = 'pending';
+
+        // Prepare statement based on quotation existence
         if (!$quotation_id) {
-            $query = $conn->prepare("
+            $stmt = $conn->prepare("
                 INSERT INTO orders (
                     customer_name, customer_contact, customer_address, 
                     prepared_by, status, total_sqft, total_price, created_at
@@ -114,25 +114,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $customer_contact = $_POST['customer_contact'];
             $customer_address = $_POST['customer_address'];
             $user_id = $_SESSION['user_id'];
-            $total_price = 0; // Default to 0 if no quotation
+            $total_price = 0;
 
-            $query->bind_param("sssissd", 
-                $customer_name,
-                $customer_contact,
-                $customer_address,
-                $user_id,
-                $status,      // Make sure 'pending' is being passed here
-                $calculated_sqft,
-                $total_price
+            $stmt->bind_param("sssissd", 
+                $customer_name, $customer_contact, $customer_address,
+                $user_id, $status, $calculated_sqft, $total_price
             );
-        } 
-        // Insert with quotation_id
-        else {
+        } else {
             $stmt = $conn->prepare("
                 INSERT INTO orders (
                     customer_name, customer_contact, customer_address, 
-                    prepared_by, status, quotation_id, total_sqft, total_price,
-                    balance_amount
+                    prepared_by, status, quotation_id, total_sqft, total_price, balance_amount
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
@@ -141,18 +133,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $customer_address = $_POST['customer_address'];
             $user_id = $_SESSION['user_id'];
             $total_price = $quotation['total_amount'] ?? 0;
-            $balance = $total_price; // Set initial balance equal to total price
+            $balance = $total_price;
 
             $stmt->bind_param("sssisiddd", 
-                $customer_name,
-                $customer_contact,
-                $customer_address,
-                $user_id,
-                $status,
-                $quotation_id,
-                $calculated_sqft,
-                $total_price,
-                $balance
+                $customer_name, $customer_contact, $customer_address,
+                $user_id, $status, $quotation_id, $calculated_sqft, $total_price, $balance
             );
         }
 
@@ -169,12 +154,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             side_lock, motor, fixing, down_lock
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-        // Use original inch measurements for storage
         $section1 = $section1_inches;
         $section2 = $section2_inches;
         $outsideWidth = floatval($_POST['outside_width']);
         $insideWidth = floatval($_POST['inside_width']);
-        $doorWidth = $door_width_inches;
+        $doorWidth = floatval($_POST['door_width']);
         $towerHeight = floatval($_POST['tower_height']);
         $towerType = $_POST['tower_type'];
         $coilColor = $_POST['coil_color'];
@@ -186,21 +170,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $downLock = intval($_POST['down_lock']);
 
         $measureQuery->bind_param('iddddddsssssssi',
-            $order_id,
-            $section1,
-            $section2,
-            $outsideWidth,
-            $insideWidth,
-            $doorWidth,
-            $towerHeight,
-            $towerType,
-            $coilColor,
-            $thickness,
-            $covering,
-            $sideLock,
-            $motor,
-            $fixing,
-            $downLock
+            $order_id, $section1, $section2, $outsideWidth, $insideWidth, $doorWidth,
+            $towerHeight, $towerType, $coilColor, $thickness, $covering, 
+            $sideLock, $motor, $fixing, $downLock
         );
 
         $measureQuery->execute();
@@ -224,17 +196,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $wCoilColor = $_POST['coil_color'];
 
             $wicketQuery->bind_param('idddddssiss',
-                $order_id,
-                $point1,
-                $point2,
-                $point3,
-                $point4,
-                $point5,
-                $wThickness,
-                $doorOpening,
-                $handle,
-                $letterBox,
-                $wCoilColor
+                $order_id, $point1, $point2, $point3, $point4, $point5, 
+                $wThickness, $doorOpening, $handle, $letterBox, $wCoilColor
             );
 
             $wicketQuery->execute();
@@ -250,11 +213,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             ")->fetch_assoc();
 
             if ($roller_door_item && abs($calculated_sqft - $roller_door_item['quantity']) > 0.01) {
-                $_SESSION['order_id'] = $order_id; // Save the order ID
+                $_SESSION['order_id'] = $order_id;
                 $_SESSION['calculated_sqft'] = $calculated_sqft;
-                $conn->commit(); // Commit the transaction since order is created
-
-                // Redirect to edit quotation
+                $conn->commit();
                 header("Location: edit_quotation.php?id=$quotation_id&calculated_sqft=$calculated_sqft&order_id=$order_id");
                 exit();
             }
@@ -264,7 +225,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $_SESSION['success_message'] = "Order #$order_id created successfully!";
         header("Location: pending_orders.php");
         exit();
-
     } catch (Exception $e) {
         $conn->rollback();
         error_log("Error in create_order.php: " . $e->getMessage());
@@ -274,7 +234,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -284,16 +243,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     function calculateSquareFeet() {
         const section1 = parseFloat(document.getElementsByName('section1')[0].value) || 0;
         const section2 = parseFloat(document.getElementsByName('section2')[0].value) || 0;
-        const doorWidth = parseFloat(document.getElementsByName('door_width')[0].value) || 0;
-        
-        // Convert inches to feet
+        const outsideWidth = parseFloat(document.getElementsByName('outside_width')[0].value) || 0;
         const heightFeet = (section1 + section2) / 12;
-        const widthFeet = doorWidth / 12;
-        
-        // Calculate square feet
+        const widthFeet = outsideWidth / 12;
         const squareFeet = heightFeet * widthFeet;
-        
-        // Display the calculation if you want to show it to the user
         if (!isNaN(squareFeet)) {
             document.getElementById('sqft_display').textContent = 
                 `Square Feet: ${squareFeet.toFixed(2)} (Height: ${heightFeet.toFixed(2)}' × Width: ${widthFeet.toFixed(2)}')`;
@@ -308,14 +261,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <h2 style="color: black;">Create New Order</h2>
             <style>
                 h2 {
-    font-family: 'Roman Classic', serif; /* Use Roman Classic font */
-    font-size: 30px; /* Adjust font size */
-    font-weight: bold; /* Make the text bold */
-    color:rgb(249, 243, 243); /* Set a nice color */
-    text-align: center; /* Center the text */
-    margin-bottom: 20px; /* Add spacing below the text */
-}
-                </style>
+                    font-family: 'Roman Classic', serif;
+                    font-size: 30px;
+                    font-weight: bold;
+                    color: rgb(249, 243, 243);
+                    text-align: center;
+                    margin-bottom: 20px;
+                }
+            </style>
             <form method="POST" class="order-form">
                 <!-- Customer Details -->
                 <div class="section">
@@ -345,14 +298,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                value="<?php echo htmlspecialchars($prepared_by_contact ?? $_SESSION['contact']); ?>" readonly>
                     </div>
                 </div>
-
                 <!-- Roller Door Measurements -->
                 <div class="section">
                     <h3>Roller Door Measurements</h3>
                     <div class="measurement-guide">
                         <img src="../rollerdoor.jpg" alt="Roller Door Measurement Guide" class="guide-image">
                     </div>
-                    <!-- Add Section 1 and 2 measurements -->
                     <div class="measurement-sections">
                         <div class="form-group">
                             <label>Section 1 (inches):</label>
@@ -367,30 +318,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                    required onchange="calculateSquareFeet()">
                         </div>
                     </div>
-
-                    <!-- Add remaining roller door fields -->
                     <div class="form-group">
                         <label>Outside Width:</label>
-                        <input type="number" name="outside_width" step="0.01" required>
+                        <input type="number" name="outside_width" step="0.01" required onchange="calculateSquareFeet()">
                     </div>
-                    
                     <div class="form-group">
                         <label>Inside Width:</label>
                         <input type="number" name="inside_width" step="0.01" required>
                     </div>
-                    
                     <div class="form-group">
                         <label>Door Width (inches):</label>
-                        <input type="number" name="door_width" step="0.01" required onchange="calculateSquareFeet()">
+                        <input type="number" name="door_width" step="0.01" required>
                     </div>
-                    
                     <div id="sqft_display" style="margin: 10px 0; font-weight: bold; color: #007bff;"></div>
-                    
                     <div class="form-group">
                         <label>Tower Height:</label>
                         <input type="number" name="tower_height" step="0.01" required>
                     </div>
-                    
                     <div class="form-group">
                         <label>Tower Type:</label>
                         <select name="tower_type" required>
@@ -398,7 +342,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <option value="large">Large</option>
                         </select>
                     </div>
-                    
                     <div class="form-group">
                         <label>Coil Color:</label>
                         <select name="coil_color" required>
@@ -411,7 +354,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <option value="beige">Beige</option>
                         </select>
                     </div>
-                    
                     <div class="form-group">
                         <label>Thickness:</label>
                         <select name="thickness" id="thickness" required>
@@ -421,7 +363,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </select>
                         <input type="number" name="custom_thickness" id="custom_thickness" style="display:none" step="0.01">
                     </div>
-                    
                     <div class="form-group">
                         <label>Covering:</label>
                         <select name="covering" required>
@@ -429,7 +370,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <option value="side">Side</option>
                         </select>
                     </div>
-                    
                     <div class="form-group">
                         <label>Side Lock:</label>
                         <select name="side_lock" required>
@@ -437,7 +377,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <option value="0">No</option>
                         </select>
                     </div>
-                    
                     <div class="form-group">
                         <label>Motor:</label>
                         <select name="motor" required>
@@ -446,7 +385,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <option value="manual">Manual</option>
                         </select>
                     </div>
-                    
                     <div class="form-group">
                         <label>Fixing:</label>
                         <select name="fixing" required>
@@ -454,7 +392,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <option value="outside">Outside</option>
                         </select>
                     </div>
-                    
                     <div class="form-group">
                         <label>Down Lock:</label>
                         <select name="down_lock" required>
@@ -463,7 +400,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </select>
                     </div>
                 </div>
-
                 <!-- Wicket Door Measurements -->
                 <div class="section">
                     <h3>Wicket Door</h3>
@@ -495,7 +431,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <label>Point 5:</label>
                             <input type="number" name="point5" step="0.01">
                         </div>
-                        
                         <div class="form-group">
                             <label>Door Opening:</label>
                             <select name="door_opening">
@@ -505,7 +440,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <option value="outside_right">Outside Right</option>
                             </select>
                         </div>
-                        
                         <div class="form-group">
                             <label>Handle:</label>
                             <select name="handle">
@@ -513,7 +447,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <option value="0">No</option>
                             </select>
                         </div>
-                        
                         <div class="form-group">
                             <label>Letter Box:</label>
                             <select name="letter_box">
@@ -523,14 +456,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </div>
                     </div>
                 </div>
-
                 <button type="submit" name="<?php echo $quotation_id ? 'check_quotation' : 'submit'; ?>">
                     <?php echo $quotation_id ? 'Check Measurements' : 'Create Order'; ?>
                 </button>
             </form>
         </div>
     </div>
-
     <script src="../assets/js/order-form.js"></script>
 </body>
 </html>

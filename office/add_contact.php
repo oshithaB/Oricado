@@ -10,7 +10,8 @@ if (!file_exists($uploadDir)) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $profilePic = 'profilepic.jpg';
+    // Set default profile picture path relative to root
+    $profilePic = '../../profilepic.jpg'; // Changed from just 'profilepic.jpg'
 
     if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] == 0) {
         $info = getimagesize($_FILES['profile_picture']['tmp_name']);
@@ -19,14 +20,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $extension = image_type_to_extension($info[2]);
             $profilePic = uniqid() . $extension;
             
-            // Ensure the file is moved with proper permissions
-            if (move_uploaded_file($_FILES['profile_picture']['tmp_name'], $uploadDir . $profilePic)) {
-                chmod($uploadDir . $profilePic, 0644);
+            // Move uploaded file to uploads directory
+            if (!move_uploaded_file($_FILES['profile_picture']['tmp_name'], $uploadDir . $profilePic)) {
+                $error = "Error uploading file. Check directory permissions.";
+                $profilePic = '../profilepic.jpg'; // Changed default path
             } else {
-                $error = "Error uploading file. Check directory permissions. Error: " . error_get_last()['message'];
+                $profilePic = 'uploads/profile/' . $profilePic; // Set path relative to root
             }
         } else {
-            $error = "Invalid image file. Please upload a valid image.";
+            $error = "Invalid image file. Using default profile picture.";
+            $profilePic = '../profilepic.jpg'; // Changed default path
         }
     }
 

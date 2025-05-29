@@ -112,11 +112,15 @@ Prepared By: ......................................	​​	​​Checked By:....
             });
         }
     });
+
+    document.getElementById('vatType').addEventListener('change', updateTotal);
 });
 
-function selectCustomer(name, contact) {
+function selectCustomer(name, contact, address, taxNumber) {
     document.getElementById('customerName').value = name;
     document.getElementById('customerContact').value = contact;
+    document.getElementById('customerAddress').value = address || '';
+    document.getElementById('customerTaxId').value = taxNumber || '';
     document.getElementById('customerSuggestions').style.display = 'none';
 }
 
@@ -165,7 +169,7 @@ function selectMaterial(row, material) {
     nameInputHidden.value = material.display_name || material.name;
     materialIdInput.value = material.id;
     unitInput.value = material.unit;
-    priceInput.value = material.price || 0;
+    priceInput.value = material.saleprice || 0;
     // Remove readonly attribute from price input
     priceInput.removeAttribute('readonly');
     suggestionDiv.style.display = 'none';
@@ -190,7 +194,7 @@ function setupCustomerSearch() {
             .then(contacts => {
                 if (contacts.length > 0) {
                     customerSuggestions.innerHTML = contacts.map(contact => `
-                        <div class="suggestion-item" onclick="selectCustomer('${contact.name}', '${contact.mobile}')">
+                        <div class="suggestion-item" onclick="selectCustomer('${contact.name}', '${contact.mobile}', '${contact.address || ''}', '${contact.tax_number || ''}')">
                             ${contact.name} - ${contact.type} (${contact.mobile})
                         </div>
                     `).join('');
@@ -280,8 +284,31 @@ function updateTotal() {
     const amounts = Array.from(document.getElementsByClassName('amount'))
         .map(input => parseFloat(input.value) || 0);
     const total = amounts.reduce((sum, amount) => sum + amount, 0);
+    const vatType = document.getElementById('vatType').value;
+    const vatSection = document.getElementById('vatSection');
+    
+    let vatAmount = 0;
+    let grandTotal = total;
+    
+    if (vatType === 'vat') {
+        vatSection.style.display = 'block';
+        const vatPercentage = parseFloat(document.getElementById('vatPercentage')?.value || 18);
+        vatAmount = total * (vatPercentage / 100);
+        grandTotal = total + vatAmount;
+    } else {
+        vatSection.style.display = 'none';
+        vatAmount = 0;
+        grandTotal = total;
+    }
+    
     document.getElementById('totalAmount').textContent = total.toFixed(2);
+    document.getElementById('vatAmount').textContent = vatAmount.toFixed(2);
+    document.getElementById('grandTotal').textContent = grandTotal.toFixed(2);
+    
+    // Update hidden inputs
     document.getElementById('totalAmountInput').value = total.toFixed(2);
+    document.getElementById('vatAmountInput').value = vatAmount.toFixed(2);
+    document.getElementById('grandTotalInput').value = grandTotal.toFixed(2);
 }
 
 function removeRow(button) {
@@ -300,4 +327,103 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+document.getElementById('createVatInvoice').addEventListener('click', function() {
+    document.getElementById('vatModal').style.display = 'block';
+});
+
+function calculateVat(percentage) {
+    const totalAmount = parseFloat(document.getElementById('totalAmount').textContent);
+    const vatAmount = totalAmount * (percentage / 100);
+    const grandTotal = totalAmount + vatAmount;
+    
+    document.getElementById('vatAmount').textContent = vatAmount.toFixed(2);
+    document.getElementById('grandTotal').textContent = grandTotal.toFixed(2);
+    document.getElementById('vatAmountInput').value = vatAmount.toFixed(2);
+    document.getElementById('grandTotalInput').value = grandTotal.toFixed(2);
+    
+    // Add VAT amount as a hidden input for form submission
+    let vatInput = document.querySelector('input[name="vat_amount"]');
+    if (!vatInput) {
+        vatInput = document.createElement('input');
+        vatInput.type = 'hidden';
+        vatInput.name = 'vat_amount';
+        document.getElementById('quotationForm').appendChild(vatInput);
+    }
+    vatInput.value = vatAmount.toFixed(2);
+    
+    return { totalAmount, vatAmount, grandTotal };
+}
+
+function generateVatInvoice() {
+    const vatPercentage = parseFloat(document.getElementById('vatPercentage').value);
+    const customerTaxId = document.getElementById('customerTaxId').value;
+    const customerAddress = document.getElementById('customerAddress').value;
+    const totalAmount = parseFloat(document.getElementById('totalAmount').textContent);
+    const vatAmount = parseFloat(document.getElementById('vatAmount').textContent);
+    const grandTotal = parseFloat(document.getElementById('grandTotal').textContent);
+    
+    // Create PDF using jsPDF
+    const doc = new jsPDF();
+    
+    // Add header
+    doc.setFontSize(18);
+    doc.text('Riyon International Pvt(Ltd)', 105, 20, { align: 'center' });
+    doc.text('ORICADO', 105, 30, { align: 'center' });
+    
+    // Add company details
+    doc.setFontSize(12);
+    doc.text('VAT Number: 174924198-7000', 15, 45);
+    doc.text('Address: 456/A, MDH Jayawardhane Mawatha, kaduwela', 15, 55);
+    
+    // Add customer details
+    doc.text('Customer Details:', 15, 70);
+    doc.text(`Name: ${document.getElementById('customerName').value}`, 15, 80);
+    doc.text(`Address: ${customerAddress}`, 15, 90);
+    doc.text(`Tax ID: ${customerTaxId}`, 15, 100);
+    
+    // Add items table
+    let yPos = 120;
+    const items = Array.from(document.querySelectorAll('#itemsTable tbody tr')).map(row => ({
+        name: row.querySelector('.item-name').value,
+        quantity: row.querySelector('.quantity').value,
+        price: row.querySelector('.price').value,
+        amount: row.querySelector('.amount').value
+    }));
+    
+    // Table headers
+    doc.text('Item', 15, yPos);
+    doc.text('Qty', 90, yPos);
+    doc.text('Price', 130, yPos);
+    doc.text('Amount', 170, yPos);
+    yPos += 10;
+    
+    // Table items
+    items.forEach(item => {
+        doc.text(item.name, 15, yPos);
+        doc.text(item.quantity, 90, yPos);
+        doc.text(item.price, 130, yPos);
+        doc.text(item.amount, 170, yPos);
+        yPos += 10;
+    });
+    
+    // Add totals with VAT
+    yPos += 10;
+    doc.text(`Sub Total: ${totalAmount.toFixed(2)}`, 130, yPos);
+    yPos += 10;
+    doc.text(`VAT (${vatPercentage}%): ${vatAmount.toFixed(2)}`, 130, yPos);
+    yPos += 10;
+    doc.text(`Grand Total: ${grandTotal.toFixed(2)}`, 130, yPos);
+    
+    // Add signature lines
+    yPos += 30;
+    doc.line(20, yPos, 70, yPos);
+    doc.line(130, yPos, 180, yPos);
+    doc.text('Authorized Signature', 25, yPos + 10);
+    doc.text('Customer Signature', 135, yPos + 10);
+    
+    // Save the PDF
+    doc.save('vat-invoice.pdf');
+    document.getElementById('vatModal').style.display = 'none';
 }

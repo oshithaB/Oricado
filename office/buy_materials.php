@@ -50,21 +50,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 );
                 $stmt->execute();
 
-                // Update material
+                // Update material or insert new one
                 if (!empty($item['material_id'])) {
                     $material = $conn->query("SELECT quantity, price FROM materials WHERE id = {$item['material_id']}")->fetch_assoc();
                     $total_qty = $material['quantity'] + $quantity;
                     $avg_price = (($material['quantity'] * $material['price']) + ($quantity * $price)) / $total_qty;
                     
-                    $stmt = $conn->prepare("UPDATE materials SET quantity = ?, price = ? WHERE id = ?");
-                    $stmt->bind_param("ddi", $total_qty, $avg_price, $item['material_id']);
+                    $stmt = $conn->prepare("UPDATE materials SET quantity = ?, price = ?, saleprice = ? WHERE id = ?");
+                    $stmt->bind_param("dddi", $total_qty, $avg_price, $item['saleprice'], $item['material_id']);
                     $stmt->execute();
                 } else {
                     $stmt = $conn->prepare("
-                        INSERT INTO materials (name, type, unit, quantity, price)
-                        VALUES (?, 'other', ?, ?, ?)
+                        INSERT INTO materials (name, type, unit, quantity, price, saleprice)
+                        VALUES (?, 'other', ?, ?, ?, ?)
                     ");
-                    $stmt->bind_param("ssdd", $item['name'], $item['unit'], $quantity, $price);
+                    $stmt->bind_param("ssddd", $item['name'], $item['unit'], $quantity, $price, $item['saleprice']);
                     $stmt->execute();
                 }
             }
@@ -169,7 +169,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <tr>
                                     <th>Product Name</th>
                                     <th>Unit</th>
-                                    <th>Price</th>
+                                    <th>Buy Price</th>
+                                    <th>Sale Price</th>
                                     <th>Quantity</th>
                                     <th>Action</th>
                                 </tr>

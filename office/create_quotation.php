@@ -110,8 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         throw new Exception("Insufficient stock for material: " . $material['name']);
                     }
 
-                    // Calculate amount
-                    $amount = $data['quantity'] * $data['price'];
+                    // Calculate amount using the saleprice field
+                    $amount = $data['quantity'] * $data['saleprice'];
                     $amount = $amount * (1 - ($data['discount'] / 100));
                     $amount = $amount * (1 + ($data['taxes'] / 100));
                     $total_amount += $amount;
@@ -178,17 +178,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Insert quotation
             $stmt = $conn->prepare("INSERT INTO quotations (
                 type, customer_name, customer_contact, total_amount, 
-                created_by, coil_thickness, quotation_text
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                created_by, coil_thickness, quotation_text, vat
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
-            $stmt->bind_param("sssidss", 
+            $vatAmount = $_POST['vat_amount'] ?? 0;
+            $grandTotal = $_POST['grand_total'] ?? $totalAmount; // Use grand total instead of total amount
+
+            $stmt->bind_param("sssidssd", 
                 $quotationType,
                 $customerName,
                 $customerContact,
-                $totalAmount,
+                $grandTotal, // Store grand total as total_amount
                 $userId,
                 $coilThickness,
-                $quotationText
+                $quotationText,
+                $vatAmount
             );
             
             if (!$stmt->execute()) {
@@ -357,15 +361,53 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;"></textarea>
 </div>
 
+<div class="form-group">
+    <label>VAT Type:</label>
+    <select name="vat_type" id="vatType" required>
+        <option value="vat">VAT Quotation (18%)</option>
+        <option value="non_vat">Non-VAT Quotation</option>
+    </select>
+</div>
+
 <div class="total-section">
     <h3>Total Amount: <span id="totalAmount">0.00</span></h3>
+    <h3 id="vatSection">VAT Amount: <span id="vatAmount">0.00</span></h3>
+    <h3>Grand Total: <span id="grandTotal">0.00</span></h3>
     <input type="hidden" name="total_amount" id="totalAmountInput">
+    <input type="hidden" name="vat_amount" id="vatAmountInput">
+    <input type="hidden" name="grand_total" id="grandTotalInput">
 </div>
 
 <div class="actions">
     <button type="submit" name="action" value="save" 
             style="padding: 10px 20px; background-color:rgb(255, 179, 0); color: white; border: 2px solid black; border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease;">Create Quotation</button>
+    <button type="button" id="createVatInvoice" 
+            style="padding: 10px 20px; background-color:rgb(255, 179, 0); color: white; border: 2px solid black; border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease;">Create VAT Invoice</button>
 </div>
+
+<!-- VAT Modal -->
+<div id="vatModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h2>VAT Invoice Details</h2>
+        <div class="form-group">
+            <label>VAT Percentage:</label>
+            <input type="number" id="vatPercentage" value="18" min="0" max="100">
+        </div>
+        <div class="form-group">
+            <label>Customer Tax ID:</label>
+            <input type="text" id="customerTaxId">
+        </div>
+        <div class="form-group">
+            <label>Customer Address:</label>
+            <textarea id="customerAddress"></textarea>
+        </div>
+        <div class="actions">
+            <button onclick="generateVatInvoice()">Create VAT Invoice</button>
+            <button onclick="document.getElementById('vatModal').style.display='none'">Cancel</button>
+        </div>
+    </div>
+</div>
+
                 </form>
             </div>
         </div>

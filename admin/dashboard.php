@@ -82,7 +82,7 @@ $coils = $conn->query($coilQuery)->fetch_all(MYSQLI_ASSOC);
                             <p>Thickness: <?php echo $coil['thickness']; ?></p>
                             <p>Available: <?php echo $coil['quantity']; ?> <?php echo $coil['unit']; ?></p>
                             <p>Usage Count: <?php echo $coil['usage_count']; ?></p>
-                            <p>Revenue: Rs. <?php echo number_format($coil['total_revenue'], 2); ?></p>
+                            <p>Revenue: Rs. <?php echo number_format($coil['total_revenue'] ?? 0, 2); ?></p>
                         </div>
                         <button onclick="window.location.href='coil_details.php?id=<?php echo $coil['id']; ?>'" class="view-details-btn">
                             View Details

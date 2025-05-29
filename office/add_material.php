@@ -5,23 +5,25 @@ checkAuth(['office_staff']);
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn->begin_transaction();
     try {
-        $stmt = $conn->prepare("INSERT INTO materials (name, type, thickness, color, quantity, unit, price) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO materials (name, type, thickness, color, quantity, unit, price, saleprice) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         
         // Set default values for non-coil items
         $thickness = $_POST['type'] == 'coil' ? $_POST['thickness'] : null;
         $color = $_POST['type'] == 'coil' ? $_POST['color'] : null;
         $quantity = floatval($_POST['quantity']) ?? 0;
         $price = floatval($_POST['price']) ?? 0;
+        $saleprice = floatval($_POST['saleprice']) ?? 0;
         
-        $stmt->bind_param("ssssdsd", 
+        $stmt->bind_param("ssssdsdd", 
             $_POST['name'],
             $_POST['type'],
             $thickness,
             $color,
             $quantity,
             $_POST['unit'],
-            $price
+            $price,
+            $saleprice
         );
 
         if (!$stmt->execute()) {
@@ -110,8 +112,13 @@ $coil_colors = ['coffee_brown', 'black_shine', 'blue_color', 'butter_milk',
                     </div>
 
                     <div class="form-group">
-                        <label>Price (Rs.):</label>
+                        <label>Buy Price:</label>
                         <input type="number" name="price" step="0.01" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Sale Price:</label>
+                        <input type="number" name="saleprice" step="0.01" required>
                     </div>
 
                     <div class="form-actions">

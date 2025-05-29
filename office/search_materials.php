@@ -4,7 +4,7 @@ checkAuth(['office_staff']);
 
 $term = $_GET['term'] ?? '';
 $materials = $conn->query("
-    SELECT id, name, type, unit, price, quantity, color, thickness
+    SELECT id, name, type, unit, saleprice, quantity, color, thickness
     FROM materials 
     WHERE name LIKE '%$term%' 
     ORDER BY name 

@@ -2,21 +2,37 @@
 require_once '../config/config.php';
 checkAuth(['office_staff']);
 
-// Get only sell type quotations
-$quotations = $conn->query("
+// Get search parameters
+$search = $_GET['search'] ?? '';
+
+// Build and execute the query with search
+$query = "
     SELECT q.*, u.name as prepared_by_name,
            CASE WHEN o.id IS NOT NULL THEN 1 ELSE 0 END as has_order
     FROM quotations q
     LEFT JOIN users u ON q.created_by = u.id
     LEFT JOIN orders o ON q.id = o.quotation_id
-    WHERE q.quotation_type = 'sell'
-    ORDER BY q.created_at DESC
-")->fetch_all(MYSQLI_ASSOC);
+    WHERE 1=1
+";
+
+if (!empty($search)) {
+    $search = $conn->real_escape_string($search);
+    $query .= " AND (q.customer_name LIKE '%$search%' 
+                 OR q.customer_contact LIKE '%$search%'
+                 OR q.id LIKE '%$search%')";
+}
+
+$query .= " ORDER BY q.created_at DESC";
+$quotations = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
 
 // Get items for each quotation
 foreach ($quotations as &$quotation) {
     $quotation['items'] = $conn->query("
-        SELECT qi.*, m.color, m.thickness, m.type
+        SELECT 
+            qi.id, qi.quotation_id, qi.material_id, qi.name, 
+            qi.quantity, qi.discount, qi.price, qi.taxes, 
+            qi.amount, qi.unit,
+            m.color, m.thickness, m.type
         FROM quotation_items qi
         LEFT JOIN materials m ON qi.material_id = m.id
         WHERE qi.quotation_id = {$quotation['id']}
@@ -29,6 +45,32 @@ foreach ($quotations as &$quotation) {
 <head>
     <title>Quotations</title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        /* Add new search section styles while keeping existing styles */
+        .search-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border: 2px solid black;
+            border-radius: 8px;
+        }
+        
+        .search-form {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .search-form input[type="text"] {
+            padding: 8px 12px;
+            border: 2px solid black;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 300px;
+        }
+        
+        /* ...existing styles... */
+    </style>
 </head>
 <body>
     <div class="dashboard">
@@ -51,6 +93,21 @@ foreach ($quotations as &$quotation) {
                     ?>
                 </div>
             <?php endif; ?>
+
+            <!-- Update search form placeholder -->
+            <div class="search-section">
+                <form method="GET" class="search-form">
+                    <input type="text" 
+                           name="search" 
+                           value="<?php echo htmlspecialchars($search); ?>" 
+                           placeholder="Search by quotation ID, customer name or contact"
+                           style="width: 350px;">
+                    <button type="submit" class="button">Search</button>
+                    <?php if (!empty($search)): ?>
+                        <a href="quotations.php" class="button">Clear</a>
+                    <?php endif; ?>
+                </form>
+            </div>
 
             <div class="section">
                 <h2>Quotations</h2>
@@ -219,6 +276,9 @@ foreach ($quotations as &$quotation) {
                             <a href="create_order.php?quotation_id=<?php echo $quotation['id']; ?>" 
                                class="button add-measurements-btn">Add Measurements</a>
                         <?php endif; ?>
+
+                        <a href="view_quotation.php?id=<?php echo $quotation['id']; ?>" class="btn btn-primary">View</a>
+                        <a href="download_vat_invoice.php?id=<?php echo $quotation['id']; ?>" class="btn btn-warning">Download VAT Invoice</a>
                     </div>
                 </div>
                 <?php endforeach; ?>

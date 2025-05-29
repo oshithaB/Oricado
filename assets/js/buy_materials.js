@@ -47,8 +47,9 @@ document.addEventListener('DOMContentLoaded', function() {
             </td>
             <td><input type="text" name="items[${currentRow}][unit]" readonly></td>
             <td><input type="number" name="items[${currentRow}][price]" step="0.01" required></td>
+            <td><input type="number" name="items[${currentRow}][saleprice]" step="0.01" required></td>
             <td><input type="number" name="items[${currentRow}][quantity]" step="0.01" required></td>
-            <td><button type="button" class="remove-btn">Remove</button></td>
+            <td><button type="button" class="remove-btn" onclick="this.closest('tr').remove()">Remove</button></td>
         `;
 
         setupMaterialSearch(row, currentRow);
@@ -73,8 +74,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 </select>
             </td>
             <td><input type="number" name="items[${currentRow}][price]" step="0.01" required></td>
+            <td><input type="number" name="items[${currentRow}][saleprice]" step="0.01" required></td>
             <td><input type="number" name="items[${currentRow}][quantity]" step="0.01" required></td>
-            <td><button type="button" class="remove-btn">Remove</button></td>
+            <td><button type="button" class="remove-btn" onclick="this.closest('tr').remove()">Remove</button></td>
         `;
     };
 
