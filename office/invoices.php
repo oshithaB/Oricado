@@ -38,6 +38,91 @@ $invoices = $result->fetch_all(MYSQLI_ASSOC);
 <head>
     <title><?php echo ucfirst($type); ?> Invoices</title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        .invoices-title {
+            text-align: center;
+            color: #d4af37;
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 30px 0 40px 0;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 8px rgba(212,175,55,0.15);
+        }
+        .invoice-card {
+            margin-bottom: 32px;
+            border: 2px solid #e0e0e0;
+            border-radius: 14px;
+            background: #fafbfc;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            padding: 24px 28px;
+            transition: box-shadow 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .invoice-card:hover {
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+        }
+        .invoice-info h3 {
+            font-size: 1.3em;
+            margin: 0 0 8px 0;
+        }
+        .invoice-info p {
+            margin: 4px 0;
+        }
+        .invoice-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .button, .invoice-btn {
+            background: #2196f3;
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            padding: 12px 28px;
+            font-size: 1.1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(33,150,243,0.08);
+            outline: none;
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+        }
+        .button:hover, .invoice-btn:hover, .button:focus, .invoice-btn:focus {
+            background: #1769aa;
+            box-shadow: 0 4px 16px rgba(33,150,243,0.18);
+        }
+        .invoice-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .invoice-tabs {
+            margin-top: 10px;
+            display: flex;
+            gap: 16px;
+        }
+        .invoice-tabs a {
+            padding: 8px 22px;
+            border-radius: 6px;
+            background: #f3f3f3;
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s;
+        }
+        .invoice-tabs a.active, .invoice-tabs a:hover {
+            background: #d4af37;
+            color: #fff;
+        }
+        .button.invoice-btn {
+            margin-top: 18px;
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard">
@@ -45,7 +130,7 @@ $invoices = $result->fetch_all(MYSQLI_ASSOC);
         <div class="content">
             <div class="section">
                 <div class="invoice-header">
-                    <h2><?php echo ucfirst($type); ?> Invoices</h2>
+                    <h2 class="invoices-title"><?php echo ucfirst($type); ?> Invoices</h2>
                     <div class="invoice-tabs">
                         <a href="?type=advance" class="<?php echo $type == 'advance' ? 'active' : ''; ?>">
                             Advance Invoices

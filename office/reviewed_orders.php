@@ -23,18 +23,64 @@ $orders = $conn->query("
 <head>
     <title>Reviewed Orders</title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        .reviewed-title {
+            text-align: center;
+            color: #d4af37;
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 30px 0 40px 0;
+            letter-spacing: 2px;
+            /* Removed black outline */
+            /* -webkit-text-stroke: 2px #000; */
+            /* text-stroke: 2px #000; */
+            text-shadow: 0 2px 8px rgba(212,175,55,0.15);
+        }
+        .order-card {
+            margin-bottom: 32px;
+            border: 2px solid #e0e0e0;
+            border-radius: 14px;
+            background: #fafbfc;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            padding: 24px 28px;
+            transition: box-shadow 0.2s;
+        }
+        .order-card:hover {
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+        }
+        .order-header h3 {
+            font-size: 1.5em;
+            margin: 0 0 12px 0;
+        }
+        .order-header .order-word {
+            font-family: 'Segoe Script', 'Comic Sans MS', cursive;
+            color: #007bff;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .order-details p, .cost-summary p {
+            margin: 4px 0;
+        }
+        .actions {
+            margin-top: 18px;
+            display: flex;
+            gap: 16px;
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard">
         <?php include 'includes/navigation.php'; ?>
         <div class="content">
             <div class="section">
-                <h2>Reviewed Orders</h2>
+                <h2 class="reviewed-title">Reviewed Orders</h2>
                 <?php foreach ($orders as $order): ?>
                     <div class="order-card">
                         <div class="order-header">
                             <div class="reference-numbers">
-                                <h3>Order #<?php echo $order['id']; ?></h3>
+                                <h3>
+                                    <span class="order-word">Order</span> #<?php echo $order['id']; ?>
+                                </h3>
                                 <?php if ($order['quotation_id']): ?>
                                     <h4>Quotation #<?php echo $order['quotation_id']; ?></h4>
                                 <?php endif; ?>

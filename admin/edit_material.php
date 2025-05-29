@@ -42,7 +42,7 @@ $coil_colors = ['coffee_brown', 'black_shine', 'blue_color', 'butter_milk', 'cho
 <head>
     <title>Edit Material</title>
     <link rel="stylesheet" href="../assets/css/style.css">
-</head>
+</head>  
 <body>
     <div class="dashboard">
         <nav>
