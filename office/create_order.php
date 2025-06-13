@@ -73,9 +73,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $height = $section1_feet + $section2_feet;
         $calculated_sqft = $height * $outside_width_feet;
 
+        // Get quotation VAT information
+        $quotation_details = $conn->query("
+            SELECT is_vat_quotation FROM quotations WHERE id = $quotation_id
+        ")->fetch_assoc();
+
         // Store all form data in session
         $_SESSION['order_data'] = $_POST;
         $_SESSION['calculated_sqft'] = $calculated_sqft;
+        $_SESSION['is_vat_quotation'] = ($quotation_details['is_vat_quotation'] ?? false);
 
         // Redirect to edit quotation
         header("Location: edit_quotation.php?id=$quotation_id&calculated_sqft=$calculated_sqft");
@@ -205,19 +211,130 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         // After successfully creating order and saving measurements, check quotation if exists
         if ($quotation_id) {
-            $roller_door_item = $conn->query("
-                SELECT qi.* FROM quotation_items qi
+            // First get quotation data with VAT status
+            $quotation_data = $conn->query("
+                SELECT q.is_vat_quotation, q.id, q.type
+                FROM quotations q
+                WHERE q.id = $quotation_id
+            ")->fetch_assoc();
+
+            // Get roller door item
+            $roller_door = $conn->query("
+                SELECT qi.* 
+                FROM quotation_items qi
                 WHERE qi.quotation_id = $quotation_id 
-                AND qi.name LIKE '%Roller Door%'
+                AND qi.name LIKE '%Powder-Coated Roller Door%'
                 LIMIT 1
             ")->fetch_assoc();
 
-            if ($roller_door_item && abs($calculated_sqft - $roller_door_item['quantity']) > 0.01) {
-                $_SESSION['order_id'] = $order_id;
-                $_SESSION['calculated_sqft'] = $calculated_sqft;
-                $conn->commit();
-                header("Location: edit_quotation.php?id=$quotation_id&calculated_sqft=$calculated_sqft&order_id=$order_id");
-                exit();
+            if ($roller_door && abs($calculated_sqft - $roller_door['quantity']) > 0.01) {
+                error_log("Starting update process - Quotation ID: $quotation_id");
+
+                try {
+                    $conn->begin_transaction();
+
+                    // 1. Update roller door quantity and amount
+                    $price_per_sqft = $roller_door['price'] ?? 0;
+                    $new_door_amount = $calculated_sqft * $price_per_sqft;
+                    
+                    $update_door = $conn->prepare("
+                        UPDATE quotation_items 
+                        SET quantity = ?, amount = ?
+                        WHERE quotation_id = ? AND name LIKE '%Powder-Coated Roller Door%'
+                    ");
+                    
+                    if (!$update_door->bind_param("ddi", $calculated_sqft, $new_door_amount, $quotation_id)) {
+                        throw new Exception("Failed to bind door parameters");
+                    }
+                    
+                    if (!$update_door->execute()) {
+                        throw new Exception("Failed to update door: " . $update_door->error);
+                    }
+
+                    // 2. Calculate new subtotal from updated items
+                    $get_items = $conn->query("
+                        SELECT SUM(amount) as new_subtotal 
+                        FROM quotation_items 
+                        WHERE quotation_id = $quotation_id
+                    ");
+                    $subtotal_row = $get_items->fetch_assoc();
+                    $new_subtotal = round(floatval($subtotal_row['new_subtotal']), 2);
+
+                    // 3. Calculate VAT if applicable
+                    $is_vat_quotation = (bool)$quotation_data['is_vat_quotation'];
+                    $new_vat = $is_vat_quotation ? round($new_subtotal * 0.18, 2) : 0;
+                    $new_total_amount = $new_subtotal + $new_vat;
+
+                    error_log("Updating quotation - Subtotal: $new_subtotal, VAT: $new_vat, Total: $new_total_amount");
+
+                    // 4. Update quotation with new values - THIS IS THE KEY PART
+                    $update_quotation = $conn->prepare("
+                        UPDATE quotations 
+                        SET subtotal = ?,
+                            vat = ?,
+                            total_amount = ?,
+                            is_updated = 1
+                        WHERE id = ?
+                    ");
+                    
+                    if (!$update_quotation->bind_param("dddi", 
+                        $new_subtotal,
+                        $new_vat,
+                        $new_total_amount,
+                        $quotation_id
+                    )) {
+                        throw new Exception("Failed to bind quotation parameters");
+                    }
+                    
+                    if (!$update_quotation->execute()) {
+                        throw new Exception("Failed to update quotation: " . $update_quotation->error);
+                    }
+
+                    // 5. Verify the update immediately
+                    $verify = $conn->query("
+                        SELECT subtotal, vat, total_amount, is_vat_quotation 
+                        FROM quotations 
+                        WHERE id = $quotation_id
+                    ")->fetch_assoc();
+
+                    if ($verify['subtotal'] != $new_subtotal || 
+                        $verify['vat'] != $new_vat || 
+                        $verify['total_amount'] != $new_total_amount) {
+                        throw new Exception("Values not updated correctly in database");
+                    }
+
+                    // 6. Update order with final amount
+                    $update_order = $conn->prepare("
+                        UPDATE orders 
+                        SET total_price = ?,
+                            balance_amount = ? 
+                        WHERE id = ?
+                    ");
+                    
+                    if (!$update_order->bind_param("ddi", $new_total_amount, $new_total_amount, $order_id)) {
+                        throw new Exception("Failed to bind order parameters");
+                    }
+                    
+                    if (!$update_order->execute()) {
+                        throw new Exception("Failed to update order: " . $update_order->error);
+                    }
+
+                    // 7. Commit all changes
+                    $conn->commit();
+
+                    $_SESSION['success_message'] = "Order created and quotation updated successfully! " .
+                        "Subtotal: Rs. " . number_format($new_subtotal, 2) . 
+                        ($is_vat_quotation ? ", VAT (18%): Rs. " . number_format($new_vat, 2) : "") . 
+                        ", Total: Rs. " . number_format($new_total_amount, 2);
+
+                    header("Location: quotations.php");
+                    exit();
+
+                } catch (Exception $e) {
+                    $conn->rollback();
+                    error_log("Error updating quotation: " . $e->getMessage());
+                    throw new Exception("Failed to update quotation: " . $e->getMessage());
+                }
             }
         }
 

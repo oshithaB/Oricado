@@ -25,19 +25,19 @@ foreach ($quotations as &$quotation) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Supplier Quotations</title>
+    <title>Material Requests</title>
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
     <div class="dashboard">
         <?php include 'includes/navigation.php'; ?>
         <div class="content">
-            <h2>Supplier Quotations</h2>
+            <h2>Purchase Records</h2>
             
             <?php foreach ($quotations as $quotation): ?>
                 <div class="quotation-card">
                     <div class="quotation-header">
-                        <h3>Quotation #<?php echo $quotation['id']; ?></h3>
+                        <h3>Purchase #<?php echo $quotation['id']; ?></h3>
                         <div class="supplier-info">
                             <p><strong>Supplier:</strong> <?php echo htmlspecialchars($quotation['supplier_name']); ?></p>
                             <p><strong>Contact:</strong> <?php echo htmlspecialchars($quotation['supplier_contact']); ?></p>

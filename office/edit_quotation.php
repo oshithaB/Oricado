@@ -155,7 +155,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Location: pending_orders.php');
             exit();
         } else {
-            // Update quotation item with new square footage
+            // Get VAT status first
+            $vat_query = "SELECT is_vat_quotation FROM quotations WHERE id = ?";
+            $vat_stmt = $conn->prepare($vat_query);
+            $vat_stmt->bind_param("i", $quotation_id);
+            $vat_stmt->execute();
+            $vat_result = $vat_stmt->get_result();
+            $vat_data = $vat_result->fetch_assoc();
+            $is_vat_quotation = (bool)$vat_data['is_vat_quotation'];
+
+            // First update the roller door item
             $stmt = $conn->prepare("
                 UPDATE quotation_items 
                 SET quantity = ?, 
@@ -175,41 +184,56 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $discount = floatval($_POST['discount']);
             $taxes = floatval($_POST['taxes']);
             
-            // Calculate new amount
+            // Calculate new amount for this item
             $amount = $quantity * $price;
             $amount = $amount * (1 - ($discount/100));
             $amount = $amount * (1 + ($taxes/100));
-
             $material_id = intval($_POST['material_id']);
 
-            if (!$stmt->bind_param("dddddii", 
+            $stmt->bind_param("dddddii", 
                 $quantity, $price, $discount, $taxes, $amount,
                 $quotation_id, $material_id
-            )) {
-                throw new Exception("Error binding parameters: " . $stmt->error);
-            }
+            );
+            $stmt->execute();
 
-            if (!$stmt->execute()) {
-                throw new Exception("Error updating quotation item: " . $stmt->error);
-            }
+            // Calculate new subtotal from all items
+            $subtotal_query = "SELECT SUM(amount) as subtotal FROM quotation_items WHERE quotation_id = ?";
+            $subtotal_stmt = $conn->prepare($subtotal_query);
+            $subtotal_stmt->bind_param("i", $quotation_id);
+            $subtotal_stmt->execute();
+            $subtotal_result = $subtotal_stmt->get_result();
+            $subtotal_data = $subtotal_result->fetch_assoc();
+            $new_subtotal = round(floatval($subtotal_data['subtotal']), 2);
 
-            // Update quotation total
-            $stmt = $conn->prepare("
+            // Calculate VAT and total
+            $new_vat = $is_vat_quotation ? round($new_subtotal * 0.18, 2) : 0;
+            $new_total_amount = $new_subtotal + $new_vat;
+
+            // Update quotation with all values
+            $update_query = "
                 UPDATE quotations 
-                SET total_amount = (
-                    SELECT SUM(amount) FROM quotation_items WHERE quotation_id = ?
-                ),
-                is_updated = 1
+                SET subtotal = ?,
+                    vat = ?,
+                    total_amount = ?,
+                    is_updated = 1
                 WHERE id = ?
-            ");
-
-            if (!$stmt->bind_param("ii", $quotation_id, $quotation_id)) {
-                throw new Exception("Error binding parameters for total update: " . $stmt->error);
+            ";
+            
+            $update_stmt = $conn->prepare($update_query);
+            $update_stmt->bind_param("dddi", 
+                $new_subtotal,
+                $new_vat,
+                $new_total_amount,
+                $quotation_id
+            );
+            
+            if (!$update_stmt->execute()) {
+                throw new Exception("Failed to update quotation amounts");
             }
 
-            if (!$stmt->execute()) {
-                throw new Exception("Error updating quotation total: " . $stmt->error);
-            }
+            // Debug log
+            error_log("Updated Quotation $quotation_id - IsVAT: " . ($is_vat_quotation ? 'Yes' : 'No') . 
+                     ", Subtotal: $new_subtotal, VAT: $new_vat, Total: $new_total_amount");
 
             $_SESSION['quotation_updated'] = true;
             $conn->commit();

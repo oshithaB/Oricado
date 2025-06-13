@@ -1,17 +1,26 @@
 <?php
-define('DB_HOST', 'mysql-12b8ac00-oxxakala-e9f8.j.aivencloud.com');
-define('DB_USER', 'avnadmin');
-define('DB_PASS', 'AVNS_cTlR-1QPHWr_QjUBCgn');
-define('DB_NAME', 'defaultdb');
-define('DB_PORT', 18952);
+// Only start session if one hasn't been started already
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
+// Database configuration
+$db_host = 'localhost';
+$db_user = 'root';
+$db_pass = '';
+$db_name = 'oricado';
 
+// Create database connection
+$conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
+
+// Check connection
 if ($conn->connect_error) {
+    error_log("Connection failed: " . $conn->connect_error);
     die("Connection failed: " . $conn->connect_error);
 }
 
-session_start();
+// Set charset to utf8mb4
+$conn->set_charset("utf8mb4");
 
 function checkAuth($allowedRoles = []) {
     if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || !isset($_SESSION['name'])) {

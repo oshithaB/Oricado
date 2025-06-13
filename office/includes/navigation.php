@@ -23,6 +23,7 @@
 }
     </style>
     <h2>Office Staff Dashboard</h2>
+    <div class="nav-section">
     <ul>
         <li><a href="dashboard.php">Dashboard</a></li>
         <li><a href="create_quotation.php">Create Quotation</a></li>
@@ -34,8 +35,8 @@
         <li><a href="confirmed_orders.php">Confirmed Orders</a></li>
         <li><a href="completed_orders.php">Completed Orders</a></li>
         <li><a href="done_orders.php">Done Orders</a></li>
-        <li><a href="invoices.php?type=advance">Advance Invoices</a></li>
-        <li><a href="invoices.php?type=final">Final Invoices</a></li>
+        <li><a href="invoices.php?type=advance">Invoices</a></li>
+        
         <li><a href="manage_stock.php">Manage Stock</a></li>
         <li><a href="material_report.php">Material Report</a></li>
         <li><a href="add_material.php">Add Material</a></li>
@@ -43,6 +44,11 @@
         <li><a href="add_contact.php">Add Contact</a></li>
         <li><a href="buy_materials.php">Buy Materials</a></li>
         <li><a href="supplier_quotations.php">Supplier Quotations</a></li>
+        <li><a href="reports.php" class="nav-item">
+        <i class="fas fa-chart-bar"></i>
+        <span>Reports</span>
+    </a></li>
         <li><a href="../index.php">Logout</a></li>
     </ul>
+    </div>
 </nav>

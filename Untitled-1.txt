@@ -1,0 +1,2 @@
+cd C:\wamp64\www\Oricado
+type nul > reset_password.php
