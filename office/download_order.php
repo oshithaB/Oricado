@@ -38,180 +38,252 @@ $materials = $conn->query("
 if ($materials) {
     $order['materials'] = $materials;
 }
+
+// Get order status
+$stmt = $conn->prepare("SELECT status FROM orders WHERE id = ?");
+$stmt->bind_param("i", $order_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$order_status = $result->fetch_assoc()['status'] ?? null;
+
+// Only show signatures for reviewed, completed, or done orders
+$showSignature = in_array($order_status, ['reviewed', 'completed', 'done']);
 ?>
 <!DOCTYPE html>
 <html>
 <head>
     <title>Order #<?php echo $order_id; ?> Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
             background: white;
+            padding: 40px 0;
         }
-        .logo {
+        .order-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+        .logo-section {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
         }
-        .logo img {
+        .logo-section img {
             max-width: 200px;
             height: auto;
         }
-        h1 {
-            color: #CC8800;
-            text-align: center;
-            margin: 20px 0;
-        }
-        .section {
-            margin-bottom: 20px;
+        .section-title {
+            background-color: #f8f9fa;
+            color: #333;
             padding: 15px;
-            border: 1px solid #CC8800;
+            margin-bottom: 20px;
             border-radius: 5px;
+            font-weight: bold;
+            border-left: 5px solid rgb(255, 179, 0);
         }
-        h2 {
-            background: #CC8800;
-            color: white;
-            padding: 8px 15px;
-            margin: 0 0 15px 0;
-            border-radius: 3px;
-        }
-        table {
+        .info-table {
             width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0;
+            margin-bottom: 30px;
         }
-        th {
-            background: #CC8800;
-            color: white;
+        .info-table td {
             padding: 10px;
-            text-align: left;
+            border-bottom: 1px solid #eee;
         }
-        td {
-            padding: 8px;
-            border: 1px solid #CC8800;
+        .info-table td:first-child {
+            font-weight: bold;
+            width: 200px;
         }
-        tr:nth-child(even) {
-            background: #FFF0D9;
+        .materials-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 20px 0;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
         }
-        tr:hover {
-            background: #FFE0B3;
-        }
-        .materials-header {
-            background: #CC8800;
-            color: white;
-            padding: 10px;
+        .materials-table th {
+            background-color: rgb(255, 179, 0);
+            color: black;
+            padding: 12px;
             font-weight: bold;
         }
-        .total-row {
-            background: #CC8800;
-            color: white;
-            font-weight: bold;
+        .materials-table td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .materials-table tr:nth-child(even) {
+            background-color: #f8f9fa;
         }
         .signature-section {
             margin-top: 50px;
             text-align: center;
-            border-top: 2px solid #CC8800;
-            padding-top: 20px;
+            padding-top: 30px;
+            border-top: 2px solid #eee;
         }
         .signature-section img {
-            width: 150px;
+            max-width: 150px;
             margin: 10px auto;
-            display: block;
         }
         .signature-text {
-            color: black;
-            font-weight: bold;
             margin-top: 10px;
+            font-weight: bold;
+            color: #333;
         }
         @media print {
-            .no-print { display: none; }
             body { padding: 0; }
-            .section { border-color: black; }
-            h2 { background: white; color: black; border-bottom: 2px solid #CC8800; }
-            th { background: white !important; color: black; border: 1px solid black; }
-            td { border-color: black; }
-            .signature-section { border-top-color: black; }
+            .order-container { box-shadow: none; }
         }
     </style>
-    <script>
-        window.onload = function() {
-            window.print();
-        }
-    </script>
 </head>
 <body>
-    <div class="logo">
-        <img src="../logo.jpg" alt="Company Logo">
+    <div class="order-container">
+        <!-- Logo Section -->
+        <div class="logo-section">
+            <img src="../logo.jpg" alt="Company Logo" class="mb-3">
+            <h1 class="fs-2 text-center mb-0">Order #<?php echo $order_id; ?></h1>
+        </div>
+
+        <!-- Customer Information -->
+        <div class="mb-4">
+            <h2 class="section-title">Customer Information</h2>
+            <table class="info-table">
+                <tr>
+                    <td>Name:</td>
+                    <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
+                </tr>
+                <tr>
+                    <td>Contact:</td>
+                    <td><?php echo htmlspecialchars($order['customer_contact']); ?></td>
+                </tr>
+                <tr>
+                    <td>Address:</td>
+                    <td><?php echo htmlspecialchars($order['customer_address']); ?></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Roller Door Measurements -->
+        <div class="mb-4">
+            <h2 class="section-title">Roller Door Specifications</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="info-table">
+                        <tr>
+                            <td>Section 1:</td>
+                            <td><?php echo $order['section1'] ? $order['section1'] . ' inches' : 'N/A'; ?></td>
+                        </tr>
+                        <tr>
+                            <td>Section 2:</td>
+                            <td><?php echo $order['section2'] ? $order['section2'] . ' inches' : 'N/A'; ?></td>
+                        </tr>
+                        <tr>
+                            <td>Door Width:</td>
+                            <td><?php echo $order['door_width'] ? $order['door_width'] . ' inches' : 'N/A'; ?></td>
+                        </tr>
+                        <tr>
+                            <td>Total Square Feet:</td>
+                            <td><?php echo $order['total_sqft'] ? $order['total_sqft'] : 'N/A'; ?></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="info-table">
+                        <tr>
+                            <td>Coil Color:</td>
+                            <td><?php echo $order['coil_color'] ? str_replace('_', ' ', ucfirst($order['coil_color'])) : 'N/A'; ?></td>
+                        </tr>
+                        <tr>
+                            <td>Thickness:</td>
+                            <td><?php echo $order['thickness'] ? $order['thickness'] : 'N/A'; ?></td>
+                        </tr>
+                        <tr>
+                            <td>Motor:</td>
+                            <td><?php echo $order['motor'] ? ($order['motor'] === 'L' ? 'Left' : ($order['motor'] === 'R' ? 'Right' : 'Manual')) : 'N/A'; ?></td>
+                        </tr>
+                        <tr>
+                            <td>Fixing:</td>
+                            <td><?php echo $order['fixing'] ? ucfirst($order['fixing']) : 'N/A'; ?></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wicket Door if exists -->
+        <?php if ($order['point1']): ?>
+        <div class="mb-4">
+            <h2 class="section-title">Wicket Door Specifications</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="info-table">
+                        <tr><td>Point 1:</td><td><?php echo $order['point1']; ?></td></tr>
+                        <tr><td>Point 2:</td><td><?php echo $order['point2']; ?></td></tr>
+                        <tr><td>Point 3:</td><td><?php echo $order['point3']; ?></td></tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="info-table">
+                        <tr><td>Door Opening:</td><td><?php echo str_replace('_', ' ', ucfirst($order['door_opening'])); ?></td></tr>
+                        <tr><td>Handle:</td><td><?php echo $order['handle'] ? 'Yes' : 'No'; ?></td></tr>
+                        <tr><td>Letter Box:</td><td><?php echo $order['letter_box'] ? 'Yes' : 'No'; ?></td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Materials Section if exists -->
+        <?php if (!empty($materials)): ?>
+        <div class="mb-4">
+            <h2 class="section-title">Materials</h2>
+            <table class="materials-table">
+                <thead>
+                    <tr>
+                        <th>Material</th>
+                        <th>Specifications</th>
+                        <th>Quantity</th>
+                        <th>Unit</th>
+                        <th>Price</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($materials as $material): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($material['name']); ?></td>
+                        <td>
+                            <?php if (isset($material['type']) && $material['type'] == 'coil'): ?>
+                                Color: <?php echo str_replace('_', ' ', ucfirst($material['color'] ?? 'N/A')); ?><br>
+                                Thickness: <?php echo $material['thickness'] ?? 'N/A'; ?>
+                            <?php endif; ?>
+                        </td>
+                        <td><?php echo $material['used_quantity']; ?></td>
+                        <td><?php echo htmlspecialchars($material['unit']); ?></td>
+                        <td>Rs. <?php echo number_format($material['price'], 2); ?></td>
+                        <td>Rs. <?php echo number_format($material['price'] * $material['used_quantity'], 2); ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php endif; ?>
+
+        <!-- Signature Section -->
+        <?php if ($showSignature): ?>
+        <div class="signature-section">
+            <img src="../esign.jpg" alt="Signature">
+            <div class="signature-text">Authorized Signature</div>
+        </div>
+        <?php endif; ?>
     </div>
 
-    <h1>Order #<?php echo $order_id; ?></h1>
-    
-    <!-- Customer Information -->
-    <div class="section">
-        <h2>Customer Information</h2>
-        <p><strong>Name:</strong> <?php echo htmlspecialchars($order['customer_name']); ?></p>
-        <p><strong>Contact:</strong> <?php echo htmlspecialchars($order['customer_contact']); ?></p>
-        <p><strong>Address:</strong> <?php echo htmlspecialchars($order['customer_address']); ?></p>
-    </div>
-
-    <!-- Roller Door Measurements -->
-    <div class="section">
-        <h2>Roller Door Measurements</h2>
-        <p><strong>Section 1:</strong> <?php echo $order['section1']; ?> inches</p>
-        <p><strong>Section 2:</strong> <?php echo $order['section2']; ?> inches</p>
-        <p><strong>Door Width:</strong> <?php echo $order['door_width']; ?> inches</p>
-        <p><strong>Total Square Feet:</strong> <?php echo $order['total_sqft']; ?></p>
-    </div>
-
-    <!-- Wicket Door if exists -->
-    <?php if ($order['point1']): ?>
-    <div class="section">
-        <h2>Wicket Door Measurements</h2>
-        <p><strong>Point 1:</strong> <?php echo $order['point1']; ?></p>
-        <p><strong>Point 2:</strong> <?php echo $order['point2']; ?></p>
-        <p><strong>Point 3:</strong> <?php echo $order['point3']; ?></p>
-        <p><strong>Point 4:</strong> <?php echo $order['point4']; ?></p>
-        <p><strong>Point 5:</strong> <?php echo $order['point5']; ?></p>
-        <p><strong>Door Opening:</strong> <?php echo str_replace('_', ' ', ucfirst($order['door_opening'])); ?></p>
-        <p><strong>Handle:</strong> <?php echo $order['handle'] ? 'Yes' : 'No'; ?></p>
-        <p><strong>Letter Box:</strong> <?php echo $order['letter_box'] ? 'Yes' : 'No'; ?></p>
-    </div>
-    <?php endif; ?>
-
-    <!-- Materials -->
-    <?php if (!empty($materials)): ?>
-    <div class="section">
-        <h2>Materials</h2>
-        <table>
-            <tr>
-                <th>Material</th>
-                <th>Quantity</th>
-                <th>Unit</th>
-            </tr>
-            <?php foreach ($materials as $material): ?>
-            <tr>
-                <td><?php echo htmlspecialchars($material['name']); ?></td>
-                <td><?php echo $material['used_quantity']; ?></td>
-                <td><?php echo htmlspecialchars($material['unit']); ?></td>
-            </tr>
-            <?php endforeach; ?>
-        </table>
-    </div>
-    <?php endif; ?>
-
-    <!-- Total -->
-    <div class="section">
-        <h2>Order Summary</h2>
-        <p><strong>Total Price:</strong> Rs. <?php echo number_format($order['total_price'], 2); ?></p>
-        <p><strong>Status:</strong> <?php echo ucfirst($order['status']); ?></p>
-        <p><strong>Created Date:</strong> <?php echo date('Y-m-d H:i', strtotime($order['created_at'])); ?></p>
-    </div>
-
-    <!-- Signature -->
-    <div class="signature-section">
-        <img src="../esign.jpg" alt="Signature">
-        <div class="signature-text">Sign</div>
-    </div>
+    <script>window.onload = function() { window.print(); }</script>
 </body>
 </html>

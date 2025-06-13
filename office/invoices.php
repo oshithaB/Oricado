@@ -2,6 +2,10 @@
 require_once '../config/config.php';
 checkAuth(['office_staff']);
 
+// Get search parameters
+$search = $_GET['search'] ?? '';
+
+// Get invoice type
 $type = $_GET['type'] ?? 'advance';
 
 // Validate invoice type
@@ -9,15 +13,27 @@ if (!in_array($type, ['advance', 'final'])) {
     $type = 'advance';
 }
 
-// Fix the invoice type in the query
+// Build the query with search conditions
 $query = "
     SELECT i.*, o.customer_name, o.customer_contact, o.customer_address,
-           o.total_price, o.paid_amount, o.balance_amount
+           o.total_price, u.name as created_by_name,
+           COALESCE(SUM(CASE WHEN inv.invoice_type = 'advance' THEN inv.amount ELSE 0 END), 0) as advance_paid,
+           o.total_price - COALESCE(SUM(CASE WHEN inv.invoice_type = 'advance' THEN inv.amount ELSE 0 END), 0) as balance_amount
     FROM invoices i
     JOIN orders o ON i.order_id = o.id
-    WHERE i.invoice_type = ?
-    ORDER BY i.created_at DESC
-";
+    LEFT JOIN users u ON i.created_by = u.id
+    LEFT JOIN invoices inv ON o.id = inv.order_id
+    WHERE 1=1";
+
+// Add search condition if search term exists
+if (!empty($search)) {
+    $search = $conn->real_escape_string($search);
+    $query .= " AND (o.id LIKE '%$search%' 
+                OR o.customer_name LIKE '%$search%'
+                OR o.customer_contact LIKE '%$search%')";
+}
+
+$query .= " AND i.invoice_type = ? GROUP BY i.id ORDER BY i.created_at DESC";
 
 $stmt = $conn->prepare($query);
 if (!$stmt) {
@@ -73,7 +89,11 @@ $invoices = $result->fetch_all(MYSQLI_ASSOC);
         .invoice-actions {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 8px;
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
         }
         .button, .invoice-btn {
             background: #2196f3;
@@ -122,6 +142,121 @@ $invoices = $result->fetch_all(MYSQLI_ASSOC);
         .button.invoice-btn {
             margin-top: 18px;
         }
+        .search-section {
+            background: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            max-width: 600px;
+        }
+        .search-form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .search-input {
+            flex: 1;
+            height: 7px;
+            padding: 0 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .search-button {
+            height: 35px;
+            padding: 0 14px ;
+            font-size: 13px;
+            border-radius: 4px;
+            border: none;
+            background: #0d6efd;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 3;
+        }
+        .btn-clear {
+            background-color: #6c757d;
+            color: white;
+            border: 1px solid #565e64;
+        }
+        .btn-clear:hover {
+            background-color: #5c636a;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Invoice Action Buttons */
+        .invoice-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .invoice-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 200px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-advance {
+            background-color: #0d6efd;
+            border: 1px solid #0a58ca;
+            color: white;
+        }
+
+        .btn-advance:hover {
+            background-color: #0b5ed7;
+            border-color: #0a58ca;
+            color: white;
+        }
+
+        .btn-final {
+            background-color: #198754;
+            border: 1px solid #146c43;
+            color: white;
+        }
+
+        .btn-final:hover {
+            background-color: #157347;
+            border-color: #146c43;
+            color: white;
+        }
+
+        .btn-download {
+            background-color: #6c757d;
+            border: 1px solid #565e64;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background-color: #5c636a;
+            border-color: #565e64;
+            color: white;
+        }
+
+        .current-advance {
+            background: rgba(255,255,255,0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .badge {
+            font-size: 0.9em;
+            padding: 5px 8px;
+        }
     </style>
 </head>
 <body>
@@ -141,6 +276,22 @@ $invoices = $result->fetch_all(MYSQLI_ASSOC);
                     </div>
                 </div>
 
+                <!-- Search Section -->
+                <div class="search-section">
+                    <form method="GET" class="search-form">
+                        <input type="hidden" name="type" value="<?php echo $type; ?>">
+                        <input type="text" 
+                               name="search" 
+                               class="search-input" 
+                               value="<?php echo htmlspecialchars($search); ?>" 
+                               placeholder="Search by Order ID, Customer Name or Contact">
+                        <button type="submit" class="search-button">Search</button>
+                        <?php if (!empty($search)): ?>
+                            <button type="button" onclick="window.location.href='?type=<?php echo $type; ?>'" class="search-button btn-clear">Clear</button>
+                        <?php endif; ?>
+                    </form>
+                </div>
+
                 <div class="invoices-list">
                     <?php foreach ($invoices as $invoice): ?>
                     <div class="invoice-card">
@@ -148,22 +299,32 @@ $invoices = $result->fetch_all(MYSQLI_ASSOC);
                             <h3>Invoice #<?php echo $invoice['id']; ?></h3>
                             <p><strong>Order #:</strong> <?php echo $invoice['order_id']; ?></p>
                             <p><strong>Customer:</strong> <?php echo htmlspecialchars($invoice['customer_name']); ?></p>
-                            <p><strong>Amount:</strong> Rs. <?php echo number_format($invoice['amount'], 2); ?></p>
-                            <?php if ($type == 'advance'): ?>
+                            <p><strong>Total Order Amount:</strong> Rs. <?php echo number_format($invoice['total_price'], 2); ?></p>
+                            <?php if ($invoice['invoice_type'] == 'advance'): ?>
+                                <p><strong>Advance Amount:</strong> Rs. <?php echo number_format($invoice['amount'], 2); ?></p>
                                 <p><strong>Balance:</strong> Rs. <?php echo number_format($invoice['balance_amount'], 2); ?></p>
-                                <?php if ($invoice['balance_amount'] > 0): ?>
-                                    <a href="create_invoice.php?id=<?php echo $invoice['order_id']; ?>&type=final" class="button invoice-btn">
-                                        Create Final Invoice
-                                    </a>
-                                <?php endif; ?>
                             <?php else: ?>
-                                <p><strong>Advance Paid:</strong> Rs. <?php echo number_format($invoice['advance_amount'], 2); ?></p>
+                                <p><strong>Previous Advance:</strong> Rs. <?php echo number_format($invoice['advance_amount'], 2); ?></p>
+                                <p><strong>Final Amount:</strong> Rs. <?php echo number_format($invoice['amount'], 2); ?></p>
                             <?php endif; ?>
                         </div>
                         <div class="invoice-actions">
-                            <a href="download_invoice.php?id=<?php echo $invoice['id']; ?>" class="button">
-                                Download Invoice
-                            </a>
+                            <?php if ($invoice['invoice_type'] === 'advance' && $invoice['balance_amount'] > 0): ?>
+                                <?php if ($type !== 'final'): ?>
+                                    <a href="create_invoice.php?id=<?php echo $invoice['order_id']; ?>&type=advance" 
+                                       class="invoice-btn btn-advance">
+                                        <span>Add to Advance</span>
+                                        <?php if ($invoice['advance_paid'] > 0): ?>
+                                            <span class="current-advance">Rs. <?php echo number_format($invoice['advance_paid'], 2); ?></span>
+                                        <?php endif; ?>
+                                    </a>
+                                    <a href="create_invoice.php?id=<?php echo $invoice['order_id']; ?>&type=final" 
+                                       class="invoice-btn btn-final">Create Final Invoice</a>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                            
+                            <a href="download_invoice.php?id=<?php echo $invoice['id']; ?>" 
+                               class="invoice-btn btn-download">Download Invoice</a>
                         </div>
                     </div>
                     <?php endforeach; ?>

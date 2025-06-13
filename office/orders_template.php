@@ -113,6 +113,18 @@ $orders = $conn->query("
         .button:active {
             background: #0d47a1;
         }
+
+        .balance-pending {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .balance-paid {
+            color: #28a745;
+            font-weight: bold;
+            background: #d4edda;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -135,21 +147,33 @@ $orders = $conn->query("
                         }
                     ?>
                 </h2>
-                <table>
+                <table class="orders-table">
                     <thead>
                         <tr>
-                            <th>Order ID</th>
+                            <th>Order #</th>
                             <th>Customer</th>
-                            <th>Created Date</th>
+                            <th>Contact</th>
+                            <th>Date</th>
+                            <th>Total Price</th>
+                            <th>Balance</th>  <!-- New column -->
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($orders as $order): ?>
                         <tr>
-                            <td>#<?php echo $order['order_id']; ?></td>
+                            <td>#<?php echo $order['id']; ?></td>
                             <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
+                            <td><?php echo htmlspecialchars($order['customer_contact']); ?></td>
                             <td><?php echo date('Y-m-d', strtotime($order['created_at'])); ?></td>
+                            <td>Rs. <?php echo number_format($order['total_price'], 2); ?></td>
+                            <td>
+                                <?php if ($order['balance_amount'] > 0): ?>
+                                    <span class="balance-pending">Rs. <?php echo number_format($order['balance_amount'], 2); ?></span>
+                                <?php else: ?>
+                                    <span class="balance-paid">PAID</span>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <?php if ($status == ORDER_STATUS_REVIEWED): ?>
                                     <div class="order-card">

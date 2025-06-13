@@ -2,79 +2,163 @@
 require_once '../config/config.php';
 checkAuth(['office_staff']);
 
-$quotation_texts = [
-    '0.60' => "Features of the Roller Door
-914mm wide, 0.60mm thick powder-coated roller door panel
-Includes Springs, Pulleys, GI Center Bar, Dust Seal, Nylon Strip, Aluminum Bottom Bars, and Side Locks
-Available Colors
-Black, Buttermilk, Beige, Coffee Brown, Blue, Green, Maroon, Autumn Red, Maroon (sand finished)
-Warranty
-10-Year Warranty on non-corrosive states of the door panel (Conditions Apply)
-Warranty Card issued upon installation after full payment
-2-Year Warranty for motor & 1-Year Warranty for remotes (Conditions Apply)
-Terms & Conditions
-Validity: Quotation valid for 7 days only.
-Payment: 50% of the grand total is due as an advance payment within 3 days of the quotation date. This payment is non-refundable and non-transferable.
-Site Access:
 
-The customer agrees to allow company representatives to visit the installation site during office hours at a mutually convenient time.
-The customer or an authorized representative must be present during site visits.
-The company is not responsible for any delays or additional costs due to restricted access or delays by the customer.
-The customer must prepare the site within 12 working days of the advance payment. Any delays in site preparation may result in price adjustments, and the advance payment will not be refunded.
-Final Payment: Full payment is required prior to delivery and installation. Ownership remains with ORICADO ROLLER DOORS until full payment is received. In case of non-payment, the company reserves the right to claim any damages and costs, and the advance payment will be forfeited.
-Price Adjustments: Prices are subject to change based on government budget updates or exchange rate fluctuations.
-Tax Exclusion: Prices exclude applicable taxes.
-Bank Details
+$quotation_texts = [
+    '0.60' => "FEATURES OF THE ROLLER DOOR
+
+Panel:
+ 914mm wide, 0.60mm thick powder-coated roller door panel
+
+1. Components Include:
+ Springs
+ Pulleys
+ GI Center Bar
+ Dust Seal
+ Nylon Strip
+ Aluminum Bottom Bars
+ Side Locks
+
+2. AVAILABLE COLORS
+ Black
+ Buttermilk
+ Beige
+ Coffee Brown
+ Blue
+ Green
+ Maroon
+ Autumn Red
+ Maroon (sand finished)
+
+3. WARRANTY
+ 10-Year Warranty on non-corrosive states of the door panel (Conditions Apply)
+ Warranty Card issued upon installation after full payment
+ 2-Year Warranty for motor
+ 1-Year Warranty for remotes (Conditions Apply)
+
+4. TERMS & CONDITIONS
+
+Validity:
+ Quotation valid for 7 days only.
+
+Payment:
+ 50% of the grand total is due as an advance payment within 3 days of the quotation date.
+ This payment is non-refundable and non-transferable.
+
+Site Access:
+ The customer agrees to allow company representatives to visit the installation site during office hours at a mutually convenient time.
+ The customer or an authorized representative must be present during site visits.
+ The company is not responsible for any delays or additional costs due to restricted access or delays by the customer.
+ The customer must prepare the site within 12 working days of the advance payment.
+ Any delays in site preparation may result in price adjustments, and the advance payment will not be refunded.
+
+Final Payment:
+ Full payment is required prior to delivery and installation.
+ Ownership remains with ORICADO ROLLER DOORS until full payment is received.
+ In case of non-payment, the company reserves the right to claim any damages and costs.
+ The advance payment will be forfeited.
+
+Price Adjustments:
+ Prices are subject to change based on government budget updates or exchange rate fluctuations.
+
+Tax Exclusion:
+ Prices exclude applicable taxes.
+
+BANK DETAILS
 Account Name: RIYON INTERNATIONAL (PVT) LTD
 Bank: HATTON NATIONAL BANK - MALABE
 Account Number: 1560 1000 9853
-For inquiries, please contact  Ms. Poojani at +94 76 827 4015 /  Ms. Chathuri at +94 74 156 8098.   
+
+For Inquiries:
+ Ms. Poojani: +94 76 827 4015
+ Ms. Chathuri: +94 74 156 8098
 
 We are committed to providing high-quality products using the latest technology and premium materials.
 
 Thank you for considering ORICADO ROLLER DOOR.
 
 Yours Sincerely,
-
 ORICADO ROLLER DOORS
 
+Prepared By: ......................................
+Checked By: ...........................................
+Authorized By: ...................................................",
 
+    '0.47' => "FEATURES OF THE ROLLER DOOR
 
-Prepared By: ......................................	Checked By:...........................................	Authorized By:...................................................",
+Panel:
+• 914mm wide, 0.47mm thick Zinc Aluminum Roller Door Panel
 
-    '0.47' => "Features of the Roller Door
-Panel: 914mm wide, 0.47mm thick Zinc Aluminum Roller Door Panel
-Components: Includes Springs, Pulleys, GI Center Bar, Dust Seal, Nylon Strip, Aluminium Bottom Bars, and Side Locks
-Available Colors
-Black, Buttermilk, Beige, Coffee Brown, Blue, Green, Maroon, Autumn Red, Maroon (sand finished)
-Terms & Conditions
-Validity: Quotation valid for 7 days from the date issued.
-Advance Payment: 50% of the grand total is due within 3 days of the quotation date as a non-refundable, non-transferable advance.
+Components Include:
+• Springs
+• Pulleys
+• GI Center Bar
+• Dust Seal
+• Nylon Strip
+• Aluminium Bottom Bars
+• Side Locks
+
+AVAILABLE COLORS
+• Black
+• Buttermilk
+• Beige
+• Coffee Brown
+• Blue
+• Green
+• Maroon
+• Autumn Red
+• Maroon (sand finished)
+
+TERMS & CONDITIONS
+
+Validity:
+• Quotation valid for 7 days from the date issued.
+
+Advance Payment:
+• 50% of the grand total is due within 3 days of the quotation date.
+• This is a non-refundable, non-transferable advance.
+
 Site Access:
+• The customer agrees to allow company representatives to access the site during office hours for installation.
+• The customer or an authorized representative must be present during site visits.
+• ORICADO ROLLER DOORS is not liable for delays or extra costs if access is restricted.
+• The customer should ensure the site is ready for installation within 12 working days of the advance payment.
+• Delays in preparation may lead to price adjustments, and the advance payment will not be refunded.
 
-The customer agrees to allow company representatives to access the site during office hours for installation.
-The customer or an authorized representative must be present during site visits.
-ORICADO ROLLER DOORS is not liable for delays or extra costs if access is restricted.
-The customer should ensure the site is ready for installation within 12 working days of the advance payment. Delays in preparation may lead to price adjustments, and the advance payment will not be refunded.
-Final Payment: Full payment is required prior to delivery and installation. Ownership remains with ORICADO ROLLER DOORS until full payment is received. In case of non-payment, the company reserves the right to claim any damages and costs, and the advance payment will be forfeited.
-Price Adjustments: Prices are based on the current government budget and may be revised in case of any government price changes or budget updates.
-Currency Fluctuation: Prices are subject to change due to fluctuations in the US Dollar exchange rate.
-Exclusion of Taxes: Prices are exclusive of all applicable taxes.
-Bank Details
+Final Payment:
+• Full payment is required prior to delivery and installation.
+• Ownership remains with ORICADO ROLLER DOORS until full payment is received.
+• In case of non-payment, the company reserves the right to claim any damages and costs.
+• The advance payment will be forfeited.
+
+Price Adjustments:
+• Prices are based on the current government budget and may be revised in case of any government price changes or budget updates.
+
+Currency Fluctuation:
+• Prices are subject to change due to fluctuations in the US Dollar exchange rate.
+
+Exclusion of Taxes:
+• Prices are exclusive of all applicable taxes.
+
+BANK DETAILS
 Account Name: RIYON INTERNATIONAL (PVT) LTD
 Bank: HATTON NATIONAL BANK - MALABE
 Account Number: 1560 1000 9853
-For inquiries, please contact  Ms. Poojani at +94 76 827 4015. /  Ms. Chathuri at +94 74 156 8098.
 
-We trust this quotation meets your requirements. ORICADO ROLLER DOORS is committed to delivering high-quality products using advanced technology and premium materials.
+For Inquiries:
+• Ms. Poojani: +94 76 827 4015
+• Ms. Chathuri: +94 74 156 8098
+
+We trust this quotation meets your requirements.
+ORICADO ROLLER DOORS is committed to delivering high-quality products using advanced technology and premium materials.
 
 Yours Sincerely,
-
 ORICADO ROLLER DOORS
 
+Prepared By:   ......................................
+Checked By:    ......................................
+Authorized By: ......................................
 
-
-Prepared By: ......................................	Checked By:.........................................	Authorized By:..........................................."
+"
 ];
 
 // Handle form submission
@@ -110,13 +194,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         throw new Exception("Insufficient stock for material: " . $material['name']);
                     }
 
-                    // Calculate amount using the saleprice field
-                    $amount = $data['quantity'] * $data['saleprice'];
-                    $amount = $amount * (1 - ($data['discount'] / 100));
-                    $amount = $amount * (1 + ($data['taxes'] / 100));
+                    // Calculate amount using the saleprice field with proper decimal handling
+                    $amount = round(floatval($data['quantity']) * floatval($data['saleprice']), 2);
+                    $amount = round($amount * (1 - (floatval($data['discount']) / 100)), 2);
+                    $amount = round($amount * (1 + (floatval($data['taxes']) / 100)), 2);
                     $total_amount += $amount;
 
-                    // Insert quotation item
+                    // Insert quotation item with DECIMAL precision
                     $stmt = $conn->prepare("
                         INSERT INTO quotation_items (
                             quotation_id, material_id, name, quantity, unit, 
@@ -124,15 +208,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ");
 
+                    $price = round(floatval($data['price']), 2);
+                    $discount = round(floatval($data['discount']), 2);
+                    $taxes = round(floatval($data['taxes']), 2);
+
                     $stmt->bind_param("iisdsdddd", 
                         $quotation_id,
                         $material_id,
                         $material['name'],
                         $data['quantity'],
                         $material['unit'],
-                        $data['price'],
-                        $data['discount'],
-                        $data['taxes'],
+                        $price,
+                        $discount,
+                        $taxes,
                         $amount
                     );
                     $stmt->execute();
@@ -166,86 +254,100 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             );
             $stmt->execute();
         } else {
-            // Handle order quotation (existing code)
+            // Handle order quotation
             $quotationType = $_POST['quotation_type'];
             $customerName = $_POST['customer_name'];
             $customerContact = $_POST['customer_contact'];
-            $totalAmount = $_POST['total_amount'];
+            $subtotal = round(floatval($_POST['total_amount']), 2);
+            $isVatQuotation = $_POST['vat_type'] === 'vat' ? 1 : 0; // Convert to explicit 1 or 0 for boolean
+            $vat = $isVatQuotation ? round($subtotal * 0.18, 2) : 0;
+            $totalAmount = round($subtotal + $vat, 2);
             $userId = $_SESSION['user_id'];
             $coilThickness = $_POST['coil_thickness'] ?? '';
             $quotationText = $_POST['quotation_text'] ?? '';
 
-            // Insert quotation
-            $stmt = $conn->prepare("INSERT INTO quotations (
-                type, customer_name, customer_contact, total_amount, 
-                created_by, coil_thickness, quotation_text, vat
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            // For order quotations, preserve text formatting
+            if ($_POST['type'] != 'raw') {
+                // Replace standard line breaks with DB-safe line breaks
+                $quotationText = str_replace(["\r\n", "\r", "\n"], PHP_EOL, $_POST['quotation_text']);
+                
+                $stmt = $conn->prepare("INSERT INTO quotations (
+                    type, customer_name, customer_contact, subtotal, vat, 
+                    total_amount, created_by, coil_thickness, quotation_text, 
+                    is_vat_quotation, note
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-            $vatAmount = $_POST['vat_amount'] ?? 0;
-            $grandTotal = $_POST['grand_total'] ?? $totalAmount; // Use grand total instead of total amount
+                $stmt->bind_param("sssdddsssis",  // Changed 'b' to 'i' for boolean field
+                    $quotationType,
+                    $customerName,
+                    $customerContact,
+                    $subtotal,
+                    $vat,
+                    $totalAmount,
+                    $userId,
+                    $coilThickness,
+                    $quotationText,
+                    $isVatQuotation,
+                    $_POST['note']  // Add note to binding
+                );
+                
+                if (!$stmt->execute()) {
+                    throw new Exception("Error creating quotation: " . $stmt->error);
+                }
+                
+                $quotation_id = $conn->insert_id;
 
-            $stmt->bind_param("sssidssd", 
-                $quotationType,
-                $customerName,
-                $customerContact,
-                $grandTotal, // Store grand total as total_amount
-                $userId,
-                $coilThickness,
-                $quotationText,
-                $vatAmount
-            );
-            
-            if (!$stmt->execute()) {
-                throw new Exception("Error creating quotation: " . $stmt->error);
-            }
-            
-            $quotation_id = $conn->insert_id;
+                // Process items
+                if (!empty($_POST['items']) && is_array($_POST['items'])) {
+                    $itemStmt = $conn->prepare("INSERT INTO quotation_items (
+                        quotation_id, material_id, name, quantity, unit, 
+                        discount, price, taxes, amount
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-            // Process items
-            if (!empty($_POST['items']) && is_array($_POST['items'])) {
-                $itemStmt = $conn->prepare("INSERT INTO quotation_items (
-                    quotation_id, material_id, name, quantity, unit, 
-                    discount, price, taxes, amount
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    foreach ($_POST['items'] as $item) {
+                        // Get item variables
+                        $materialId = intval($item['material_id']);
+                        $name = $item['name']; // Make sure name is set
+                        $quantity = number_format(round(floatval($item['quantity']), 2), 2, '.', '');
+                        $unit = $item['unit'];
+                        $discount = number_format(round(floatval($item['discount']), 2), 2, '.', '');
+                        $price = number_format(round(floatval($item['price']), 2), 2, '.', '');
+                        $taxes = number_format(round(floatval($item['taxes']), 2), 2, '.', '');
+                        $amount = number_format(round(floatval($item['amount']), 2), 2, '.', '');
 
-                foreach ($_POST['items'] as $item) {
-                    // Prepare variables for item binding
-                    $materialId = $item['material_id'];
-                    $name = $item['name'];
-                    $quantity = floatval($item['quantity']);
-                    $unit = $item['unit'];
-                    $discount = floatval($item['discount']);
-                    $price = floatval($item['price']);
-                    $taxes = floatval($item['taxes']);
-                    $amount = floatval($item['amount']);
+                        // Verify name is not empty
+                        if (empty($name)) {
+                            throw new Exception("Item name cannot be empty");
+                        }
 
-                    $itemStmt->bind_param("iisdsdddd",
-                        $quotation_id,
-                        $materialId,
-                        $name,
-                        $quantity,
-                        $unit,
-                        $discount,
-                        $price,
-                        $taxes,
-                        $amount
-                    );
-                    
-                    if (!$itemStmt->execute()) {
-                        throw new Exception("Error inserting item: " . $itemStmt->error);
-                    }
+                        $itemStmt->bind_param("iisssssss",  // Changed numeric types to s
+                            $quotation_id,
+                            $materialId,
+                            $name,
+                            $quantity,
+                            $unit,
+                            $discount,
+                            $price,
+                            $taxes,
+                            $amount
+                        );
+                        
+                        if (!$itemStmt->execute()) {
+                            throw new Exception("Error inserting item: " . $itemStmt->error);
+                        }
 
-                    // Deduct stock for raw materials quotation
-                    if ($_POST['quotation_type'] == 'raw_materials') {
-                        $updateStmt = $conn->prepare("UPDATE materials SET quantity = quantity - ? WHERE id = ?");
-                        $updateStmt->bind_param("di", $item['quantity'], $item['material_id']);
-                        if (!$updateStmt->execute()) {
-                            throw new Exception("Error updating stock: " . $updateStmt->error);
+                        // Deduct stock for raw materials quotation
+                        if ($_POST['quotation_type'] == 'raw_materials') {
+                            $updateStmt = $conn->prepare("UPDATE materials SET quantity = quantity - ? WHERE id = ?");
+                            $updateStmt->bind_param("di", $item['quantity'], $item['material_id']);
+                            if (!$updateStmt->execute()) {
+                                throw new Exception("Error updating stock: " . $updateStmt->error);
+                            }
                         }
                     }
+                } else {
+                    throw new Exception("No items provided");
                 }
-            } else {
-                throw new Exception("No items provided");
             }
         }
 
@@ -268,145 +370,286 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <title>Create Quotation</title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Navigation styles */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: #2c3e50;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px 0;
+            color: white;
+            z-index: 1000;
+        }
+
+        .sidebar .logo-container {
+            padding: 0 20px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar .logo-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-menu li {
+            margin: 5px 0;
+        }
+
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .nav-menu a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffd700;
+        }
+
+        .nav-menu a.active {
+            background: #34495e;
+            color: #ffd700;
+            border-left: 4px solid #ffd700;
+        }
+
+        .nav-menu i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .content {
+           
+            padding: 20px;
+            flex: 1;          /* Make content grow to fill available space */
+            width: calc(100% - 250px); /* Set explicit width accounting for sidebar */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dashboard {
+            min-height: 100vh;
+            background: #f8f9fa;
+            display: flex;    /* Enable flex layout */
+            width: 100%;      /* Ensure dashboard takes full width */
+        }
+        
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            flex: 1;          /* Allow section to grow */
+            width: 100%;      /* Make section take full width of parent */
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .custom-btn {
+            background-color: rgb(255, 179, 0);
+            border: 2px solid black;
+            color: black;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .custom-btn:hover {
+            background-color: black;
+            color: rgb(255, 179, 0);
+            transform: translateY(-2px);
+        }
+
+        .total-section {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 2rem 0;
+        }
+
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+        }
+
+        .suggestions-dropdown {
+            position: absolute;
+            width: 100%;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .suggestions-dropdown div {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+
+        .suggestions-dropdown div:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard">
         <?php include 'includes/navigation.php'; ?>
         <div class="content">
             <div class="section">
-                <h2>Create New Quotation</h2>
-                <form method="POST" id="quotationForm">
-                    <div class="form-group">
-                        <label>Quotation Type:</label>
-                        <select name="quotation_type" id="quotationType" required>
-                            <option value="">Select Type</option>
-                            <option value="raw_materials">Raw Materials Quotation</option>
-                            <option value="order">Order Quotation</option>
-                        </select>
-                    </div>
+                <h2 class="mb-4">Create New Quotation</h2>
+                <form method="POST" id="quotationForm" class="needs-validation" novalidate>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <select class="form-select" name="quotation_type" id="quotationType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="raw_materials">Raw Materials Quotation</option>
+                                    <option value="order">Order Quotation</option>
+                                </select>
+                                <label>Quotation Type</label>
+                            </div>
+                        </div>
 
-                    <div id="coilThicknessSection" style="display: none;">
-                        <div class="form-group">
-                            <label>Coil Thickness:</label>
-                            <select name="coil_thickness" id="coilThickness">
-                                <option value="0.60">0.60</option>
-                                <option value="0.47">0.47</option>
-                            </select>
+                        <div class="col-md-6" id="coilThicknessSection" style="display: none;">
+                            <div class="form-floating mb-3">
+                                <select class="form-select" name="coil_thickness" id="coilThickness">
+                                    <option value="0.60">0.60</option>
+                                    <option value="0.47">0.47</option>
+                                </select>
+                                <label>Coil Thickness</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" name="customer_name" id="customerName" required>
+                                <label>Customer Name</label>
+                                <div id="customerSuggestions" class="suggestions-dropdown"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" name="customer_contact" id="customerContact" required>
+                                <label>Customer Contact</label>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                    <style>
-/* Suggestions Dropdown Styling */
-.suggestions-dropdown {
-    position: absolute; /* Position relative to the input field */
-    top: 100%; /* Position below the input field */
-    left: 0; /* Align with the left edge of the input field */
-    width: 100%; /* Match the width of the input field */
-    background-color: #fff; /* White background for the dropdown */
-    border: 1px solid #ddd; /* Light border for the dropdown */
-    border-radius: 4px; /* Rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for better visibility */
-    z-index: 1000; /* Ensure it appears above other elements */
-    max-height: 200px; /* Limit the height of the dropdown */
-    overflow-y: auto; /* Add scroll if the content exceeds the height */
-}
-
-.suggestions-dropdown div {
-    padding: 10px; /* Padding for each suggestion */
-    cursor: pointer; /* Pointer cursor for interactivity */
-    font-size: 14px; /* Font size for readability */
-    color: #333; /* Text color */
-}
-
-.suggestions-dropdown div:hover {
-    background-color: #f0f0f0; /* Highlight on hover */
-}
-</style>
-<div class="form-group" style="position: relative;">
-    <label>Customer Name:</label>
-    <input type="text" name="customer_name" id="customerName" required autocomplete="off">
-    <div id="customerSuggestions" class="suggestions-dropdown"></div>
-</div>
-
-                    <div class="form-group">
-                        <label>Customer Contact:</label>
-                        <input type="text" name="customer_contact" id="customerContact" required>
+                    <div class="card mt-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Items</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="itemsTable" class="table table-hover align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Quantity</th>
+                                            <th>Unit</th>
+                                            <th>Discount (%)</th>
+                                            <th>Price</th>
+                                            <th>Taxes</th>
+                                            <th>Amount</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                            <button type="button" id="addItem" class="btn custom-btn mt-3">
+                                <i class="fas fa-plus me-2"></i>Add Product
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="items-section">
-    <h3>Items</h3>
-    <table id="itemsTable" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-        <thead>
-            <tr>
-                <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Name</th>
-                <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Quantity</th>
-                <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Unit</th>
-                <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Discount (%)</th>
-                <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Price</th>
-                <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Taxes</th>
-                <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Amount</th>
-                <th style="text-align: left; padding: 10px; border: 1px solid #ddd;">Action</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-    <button type="button" id="addItem" 
-            style="padding: 10px 20px; background-color:rgb(255, 179, 0); color: white; border:2px solid black; border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease; margin-top: 10px;">Add Product</button>
-</div>
+                    <div class="quotation-text" id="quotationTextSection" style="display: none;">
+                        <label>Quotation Text:</label>
+                        <textarea name="quotation_text" id="quotationText" rows="15" 
+                                  class="form-control" style="white-space: pre-wrap; font-family: 'Courier New', monospace;"><?php 
+                                if (isset($_POST['coil_thickness'])) {
+                                    echo htmlspecialchars($quotation_texts[$_POST['coil_thickness']]);
+                                }
+                            ?></textarea>
+                    </div>
 
-<div class="quotation-text" id="quotationTextSection" style="display: none;">
-    <label>Quotation Text:</label>
-    <textarea name="quotation_text" id="quotationText" rows="5" 
-              style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;"></textarea>
-</div>
+                    <!-- Add Note Field -->
+                    <div class="form-group">
+                        <label>Additional Note:</label>
+                        <textarea name="note" rows="3" class="form-control"
+                        placeholder="Add any additional notes or remarks for this quotation"></textarea>
+                    </div>
 
-<div class="form-group">
-    <label>VAT Type:</label>
-    <select name="vat_type" id="vatType" required>
-        <option value="vat">VAT Quotation (18%)</option>
-        <option value="non_vat">Non-VAT Quotation</option>
-    </select>
-</div>
+                    <div class="form-group">
+                        <label>VAT Type:</label>
+                        <select name="vat_type" id="vatType" class="form-select" required>
+                            <option value="vat">VAT Quotation (18%)</option>
+                            <option value="non_vat">Non-VAT Quotation</option>
+                        </select>
+                    </div>
 
-<div class="total-section">
-    <h3>Total Amount: <span id="totalAmount">0.00</span></h3>
-    <h3 id="vatSection">VAT Amount: <span id="vatAmount">0.00</span></h3>
-    <h3>Grand Total: <span id="grandTotal">0.00</span></h3>
-    <input type="hidden" name="total_amount" id="totalAmountInput">
-    <input type="hidden" name="vat_amount" id="vatAmountInput">
-    <input type="hidden" name="grand_total" id="grandTotalInput">
-</div>
+                    <div class="total-section">
+                        <h3>Total Amount: <span id="totalAmount">0.00</span></h3>
+                        <h3 id="vatSection">VAT Amount: <span id="vatAmount">0.00</span></h3>
+                        <h3>Grand Total: <span id="grandTotal">0.00</span></h3>
+                        <input type="hidden" name="total_amount" id="totalAmountInput">
+                        <input type="hidden" name="vat_amount" id="vatAmountInput">
+                        <input type="hidden" name="grand_total" id="grandTotalInput">
+                    </div>
 
-<div class="actions">
-    <button type="submit" name="action" value="save" 
-            style="padding: 10px 20px; background-color:rgb(255, 179, 0); color: white; border: 2px solid black; border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease;">Create Quotation</button>
-    <button type="button" id="createVatInvoice" 
-            style="padding: 10px 20px; background-color:rgb(255, 179, 0); color: white; border: 2px solid black; border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease;">Create VAT Invoice</button>
-</div>
+                    <div class="actions">
+                        <button type="submit" name="action" value="save" class="btn custom-btn">
+                            <i class="fas fa-save me-2"></i>Create Quotation
+                        </button>
+                        <button type="button" id="createVatInvoice" class="btn custom-btn">
+                            <i class="fas fa-file-invoice me-2"></i>Create VAT Invoice
+                        </button>
+                    </div>
 
-<!-- VAT Modal -->
-<div id="vatModal" class="modal" style="display: none;">
-    <div class="modal-content">
-        <h2>VAT Invoice Details</h2>
-        <div class="form-group">
-            <label>VAT Percentage:</label>
-            <input type="number" id="vatPercentage" value="18" min="0" max="100">
-        </div>
-        <div class="form-group">
-            <label>Customer Tax ID:</label>
-            <input type="text" id="customerTaxId">
-        </div>
-        <div class="form-group">
-            <label>Customer Address:</label>
-            <textarea id="customerAddress"></textarea>
-        </div>
-        <div class="actions">
-            <button onclick="generateVatInvoice()">Create VAT Invoice</button>
-            <button onclick="document.getElementById('vatModal').style.display='none'">Cancel</button>
-        </div>
-    </div>
-</div>
+                    <!-- VAT Modal -->
+                    <div id="vatModal" class="modal" style="display: none;">
+                        <div class="modal-content">
+                            <h2>VAT Invoice Details</h2>
+                            <div class="form-group">
+                                <label>VAT Percentage:</label>
+                                <input type="number" id="vatPercentage" value="18" min="0" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label>Customer Tax ID:</label>
+                                <input type="text" id="customerTaxId">
+                            </div>
+                            <div class="form-group">
+                                <label>Customer Address:</label>
+                                <textarea id="customerAddress"></textarea>
+                            </div>
+                            <div class="actions">
+                                <button onclick="generateVatInvoice()">Create VAT Invoice</button>
+                                <button onclick="document.getElementById('vatModal').style.display='none'">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
 
                 </form>
             </div>
