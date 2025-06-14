@@ -62,170 +62,173 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <title>Add Contact</title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <!-- Add Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Add Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        .content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .form-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin: 20px;
+        }
+        .section-title {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        .form-label {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        .radio-group {
+            gap: 15px;
+            padding: 10px 0;
+        }
+        .profile-preview-container {
+            width: 150px;
+            height: 150px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+            border: 2px dashed #ddd;
+        }
+        #profilePicturePreview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .submit-btn {
+            padding: 12px 30px;
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard">
         <?php include 'includes/navigation.php'; ?>
         <div class="content">
-            <div class="section">
-                <h2>Add New Contact</h2>
-                <form method="POST" enctype="multipart/form-data" class="contact-form">
-                <div class="form-group">
-    <label>Type:</label>
-    <div class="radio-group">
-        <label class="radio-option">
-            <input type="radio" name="type" value="individual" required>
-            <span>Individual</span>
-        </label>
-        <label class="radio-option">
-            <input type="radio" name="type" value="company">
-            <span>Company</span>
-        </label>
-        <style>
-            .radio-group {
-    display: flex;
-    gap: 20px; /* Add spacing between options */
-    margin-top: 10px;
-}
+            <div class="container py-4">
+                <div class="form-section">
+                    <h2 class="section-title">Add New Contact</h2>
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Type</label>
+                                <div class="radio-group d-flex">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="type" value="individual" required>
+                                        <label class="form-check-label">Individual</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="type" value="company">
+                                        <label class="form-check-label">Company</label>
+                                    </div>
+                                </div>
+                            </div>
 
-.radio-option {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Add spacing between the radio button and label */
-    font-size: 16px; /* Adjust font size */
-    cursor: pointer; /* Change cursor to pointer for better UX */
-}
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Name</label>
+                                <input type="text" class="form-control" name="name" required>
+                            </div>
 
-.radio-option input[type="radio"] {
-    appearance: none; /* Remove default radio button styling */
-    width: 18px;
-    height: 18px;
-    border: 2px solid black; /* Default border color */
-    border-radius: 50%; /* Make it circular */
-    outline: none;
-    cursor: pointer;
-    transition: all 0.3s ease; /* Smooth transition */
-}
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Address</label>
+                                <textarea class="form-control" name="address" rows="3" required></textarea>
+                            </div>
 
-.radio-option input[type="radio"]:checked {
-    background-color: #FFC107; /* Change background color to dark yellow */
-    border-color: black; /* Set border color to black when selected */
-}
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" name="phone">
+                            </div>
 
-.radio-option span {
-    color: #333; /* Text color */
-    font-weight: 500; /* Slightly bold text */
-}
-            </style>
-    </div>
-</div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Mobile Number</label>
+                                <input type="tel" class="form-control" name="mobile" required>
+                            </div>
 
-                    <div class="form-group">
-                        <label>Name:</label>
-                        <input type="text" name="name" required>
-                    </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email">
+                            </div>
 
-                    <div class="form-group">
-                        <label>Address:</label>
-                        <textarea name="address" required rows="3"></textarea>
-                    </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tax Number</label>
+                                <input type="text" class="form-control" name="tax_number">
+                            </div>
 
-                    <div class="form-group">
-                        <label>Phone Number:</label>
-                        <input type="tel" name="phone">
-                    </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Website</label>
+                                <input type="url" class="form-control" name="website">
+                            </div>
 
-                    <div class="form-group">
-                        <label>Mobile Number:</label>
-                        <input type="tel" name="mobile" required>
-                    </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tags</label>
+                                <input type="text" class="form-control" name="tags" placeholder="customer, supplier, etc">
+                            </div>
 
-                    <div class="form-group">
-                        <label>Email:</label>
-                        <input type="email" name="email">
-                    </div>
+                            <div class="col-12 mb-4">
+                                <label class="form-label">Profile Picture</label>
+                                <input type="file" class="form-control" name="profile_picture" accept="image/*" id="profilePictureInput">
+                                <div class="profile-preview-container mt-2">
+                                    <img id="profilePicturePreview" src="#" alt="Profile Preview" style="display: none;">
+                                </div>
+                            </div>
 
-                    <div class="form-group">
-                        <label>Tax Number:</label>
-                        <input type="text" name="tax_number">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Website:</label>
-                        <input type="url" name="website">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Profile Picture:</label>
-                        <input type="file" name="profile_picture" accept="image/*" id="profilePictureInput">
-                        <div class="profile-picture-preview">
-                        <img id="profilePicturePreview" src="#" alt="Profile Preview" style="display: none;">
-                <style>
-                  .profile-picture-preview {
-                               margin-top: 10px;
-                        }
-
-                .profile-picture-preview img {
-                      max-width: 150px;
-                      max-height: 150px;
-                      border: 1px solid #ddd;
-                      border-radius: 4px;
-}
-                </style>
-           </div>
-        </div>
-<script>
-    document.getElementById('profilePictureInput').addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        const preview = document.getElementById('profilePicturePreview');
-
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        } else {
-            preview.src = '#';
-            preview.style.display = 'none';
-        }
-    });
-</script>
-
-
-                    <div class="form-group">
-                        <label>Tags (comma separated):</label>
-                        <input type="text" name="tags" placeholder="customer, supplier, etc">
-                    </div>
-
-                    <button type="submit">Add Contact</button>
-                    <style>
-                        .contact-form input[type="text"],
-                        .contact-form input[type="tel"],
-                        .contact-form input[type="email"],
-                        .contact-form input[type="url"],
-                        .contact-form input[type="file"],
-                        .contact-form textarea {
-    width: 100%; /* Make all input fields take the full width of their container */
-    padding: 10px; /* Add consistent padding */
-    border: 1px solid #ddd; /* Add a border */
-    border-radius: 4px; /* Add rounded corners */
-    font-size: 16px; /* Ensure consistent font size */
-    box-sizing: border-box; /* Include padding and border in the element's total width */
-}
-
-.contact-form textarea {
-    resize: vertical; /* Allow vertical resizing only */
-}
-
-.contact-form .form-group {
-    margin-bottom: 15px; /* Add spacing between form groups */
-}
-                        </style>
-                </form>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary submit-btn">
+                                    <i class="bi bi-person-plus-fill me-2"></i>Add Contact
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Add Bootstrap JS and its dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Form validation
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+
+        // Profile picture preview
+        document.getElementById('profilePictureInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('profilePicturePreview');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = '#';
+                preview.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
