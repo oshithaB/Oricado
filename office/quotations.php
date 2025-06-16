@@ -525,6 +525,21 @@ if ($debug_mode) {
                             <a href="download_quotation.php?id=<?php echo $quotation['id']; ?>" 
                                class="button download-btn">Download Quotation</a>
                             
+                            <?php 
+                            // Check if quotation has any coil items
+                            $has_coils = false;
+                            foreach ($quotation['items'] as $item) {
+                                if ($item['type'] == 'coil') {
+                                    $has_coils = true;
+                                    break;
+                                }
+                            }
+                            
+                            if ($has_coils): ?>
+                                <a href="print_job_card.php?id=<?php echo $quotation['id']; ?>" 
+                                   target="_blank" class="button job-card-btn">Print Job Card #<?php echo $quotation['id']; ?></a>
+                            <?php endif; ?>
+
                             <?php if ($quotation['type'] == 'raw_materials' && !$quotation['has_order']): ?>
                                 <form method="POST" action="confirm_material_quotation.php" style="display: inline;">
                                     <input type="hidden" name="quotation_id" value="<?php echo $quotation['id']; ?>">

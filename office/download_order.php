@@ -176,16 +176,20 @@ $showSignature = in_array($order_status, ['reviewed', 'completed', 'done']);
                 <div class="col-md-6">
                     <table class="info-table">
                         <tr>
-                            <td>Section 1:</td>
-                            <td><?php echo $order['section1'] ? $order['section1'] . ' inches' : 'N/A'; ?></td>
+                            <td>Outside Width:</td>
+                            <td><?php echo $order['outside_width'] ? $order['outside_width'] . ' inches' : 'N/A'; ?></td>
                         </tr>
                         <tr>
-                            <td>Section 2:</td>
-                            <td><?php echo $order['section2'] ? $order['section2'] . ' inches' : 'N/A'; ?></td>
+                            <td>Inside Width:</td>
+                            <td><?php echo $order['inside_width'] ? $order['inside_width'] . ' inches' : 'N/A'; ?></td>
                         </tr>
                         <tr>
                             <td>Door Width:</td>
                             <td><?php echo $order['door_width'] ? $order['door_width'] . ' inches' : 'N/A'; ?></td>
+                        </tr>
+                        <tr>
+                            <td>Tower Height:</td>
+                            <td><?php echo $order['tower_height'] ? $order['tower_height'] . ' inches' : 'N/A'; ?></td>
                         </tr>
                         <tr>
                             <td>Total Square Feet:</td>
@@ -198,6 +202,10 @@ $showSignature = in_array($order_status, ['reviewed', 'completed', 'done']);
                         <tr>
                             <td>Coil Color:</td>
                             <td><?php echo $order['coil_color'] ? str_replace('_', ' ', ucfirst($order['coil_color'])) : 'N/A'; ?></td>
+                        </tr>
+                        <tr>
+                            <td>Tower Type:</td>
+                            <td><?php echo $order['tower_type'] ? ucfirst($order['tower_type']) : 'N/A'; ?></td>
                         </tr>
                         <tr>
                             <td>Thickness:</td>
@@ -223,9 +231,11 @@ $showSignature = in_array($order_status, ['reviewed', 'completed', 'done']);
             <div class="row">
                 <div class="col-md-6">
                     <table class="info-table">
-                        <tr><td>Point 1:</td><td><?php echo $order['point1']; ?></td></tr>
-                        <tr><td>Point 2:</td><td><?php echo $order['point2']; ?></td></tr>
-                        <tr><td>Point 3:</td><td><?php echo $order['point3']; ?></td></tr>
+                        <tr><td>Point 1:</td><td><?php echo $order['point1']; ?> inches</td></tr>
+                        <tr><td>Point 2:</td><td><?php echo $order['point2']; ?> inches</td></tr>
+                        <tr><td>Point 3:</td><td><?php echo $order['point3']; ?> inches</td></tr>
+                        <tr><td>Point 4:</td><td><?php echo $order['point4']; ?> inches</td></tr>
+                        <tr><td>Point 5:</td><td><?php echo $order['point5']; ?> inches</td></tr>
                     </table>
                 </div>
                 <div class="col-md-6">
@@ -233,6 +243,7 @@ $showSignature = in_array($order_status, ['reviewed', 'completed', 'done']);
                         <tr><td>Door Opening:</td><td><?php echo str_replace('_', ' ', ucfirst($order['door_opening'])); ?></td></tr>
                         <tr><td>Handle:</td><td><?php echo $order['handle'] ? 'Yes' : 'No'; ?></td></tr>
                         <tr><td>Letter Box:</td><td><?php echo $order['letter_box'] ? 'Yes' : 'No'; ?></td></tr>
+                        <tr><td>Door Type:</td><td><?php echo $order['door_type'] ? ucfirst($order['door_type']) : 'N/A'; ?></td></tr>
                     </table>
                 </div>
             </div>

@@ -11,8 +11,13 @@ if (!$order_id) {
 // Get complete order details
 $order = $conn->query("
     SELECT o.*, 
-           rdm.*, 
-           wdm.*,
+           rdm.outside_width, rdm.inside_width, rdm.door_width, rdm.tower_height,
+           rdm.tower_type, rdm.coil_color, rdm.thickness, rdm.covering,
+           rdm.side_lock, rdm.motor, rdm.fixing, rdm.down_lock,
+           rdm.section1, rdm.section2,
+           wdm.point1, wdm.point2, wdm.point3, wdm.point4, wdm.point5,
+           wdm.thickness as wicket_thickness, wdm.door_opening, wdm.handle,
+           wdm.letter_box, wdm.coil_color as wicket_color,
            u.name as prepared_by_name,
            u.contact as prepared_by_contact,
            q.id as quotation_id,
@@ -24,6 +29,11 @@ $order = $conn->query("
     LEFT JOIN quotations q ON o.quotation_id = q.id
     WHERE o.id = $order_id
 ")->fetch_assoc();
+
+// Handle null values in the order array
+array_walk_recursive($order, function(&$value) {
+    $value = $value ?? 'N/A';
+});
 
 // Get materials list
 $materials = $conn->query("
@@ -194,28 +204,37 @@ table tr:hover {
             <div class="section">
                 <h3>Roller Door Measurements</h3>
                 <div class="measurements-grid">
-                    <p><strong>Section 1:</strong> <?php echo $order['section1']; ?></p>
-                    <p><strong>Section 2:</strong> <?php echo $order['section2']; ?></p>
-                    <p><strong>Outside Width:</strong> <?php echo $order['outside_width']; ?></p>
-                    <p><strong>Inside Width:</strong> <?php echo $order['inside_width']; ?></p>
-                    <p><strong>Door Width:</strong> <?php echo $order['door_width']; ?></p>
-                    <p><strong>Tower Height:</strong> <?php echo $order['tower_height']; ?></p>
-                    <p><strong>Tower Type:</strong> <?php echo ucfirst($order['tower_type']); ?></p>
-                    <p><strong>Color:</strong> <?php echo str_replace('_', ' ', ucfirst($order['coil_color'])); ?></p>
-                    <p><strong>Thickness:</strong> <?php echo $order['thickness']; ?></p>
+                    <p><strong>Outside Width:</strong> <?php echo $order['outside_width'] ?? 'N/A'; ?> inches</p>
+                    <p><strong>Inside Width:</strong> <?php echo $order['inside_width'] ?? 'N/A'; ?> inches</p>
+                    <p><strong>Door Width:</strong> <?php echo $order['door_width'] ?? 'N/A'; ?> inches</p>
+                    <p><strong>Tower Height:</strong> <?php echo $order['tower_height'] ?? 'N/A'; ?> inches</p>
+                    <p><strong>Tower Type:</strong> <?php echo $order['tower_type'] ? ucfirst($order['tower_type']) : 'N/A'; ?></p>
+                    <p><strong>Coil Color:</strong> <?php echo $order['coil_color'] ? str_replace('_', ' ', ucfirst($order['coil_color'])) : 'N/A'; ?></p>
+                    <p><strong>Thickness:</strong> <?php echo $order['thickness'] ?? 'N/A'; ?></p>
+                    <p><strong>Covering:</strong> <?php echo $order['covering'] ?? 'N/A'; ?></p>
+                    <p><strong>Side Lock:</strong> <?php echo $order['side_lock'] ?? 'N/A'; ?></p>
+                    <p><strong>Motor:</strong> <?php echo $order['motor'] ? ($order['motor'] === 'L' ? 'Left' : ($order['motor'] === 'R' ? 'Right' : 'Manual')) : 'N/A'; ?></p>
+                    <p><strong>Fixing:</strong> <?php echo $order['fixing'] ? ucfirst($order['fixing']) : 'N/A'; ?></p>
+                    <p><strong>Down Lock:</strong> <?php echo $order['down_lock'] ?? 'N/A'; ?></p>
+                    <p><strong>Section 1:</strong> <?php echo $order['section1'] ?? 'N/A'; ?> inches</p>
+                    <p><strong>Section 2:</strong> <?php echo $order['section2'] ?? 'N/A'; ?> inches</p>
                 </div>
             </div>
 
-            <?php if ($order['point1']): ?>
+            <?php if ($order['point1'] || $order['point2'] || $order['point3'] || $order['point4'] || $order['point5']): ?>
             <div class="section">
                 <h3>Wicket Door Measurements</h3>
                 <div class="measurements-grid">
-                    <p><strong>Point 1:</strong> <?php echo $order['point1']; ?></p>
-                    <p><strong>Point 2:</strong> <?php echo $order['point2']; ?></p>
-                    <p><strong>Point 3:</strong> <?php echo $order['point3']; ?></p>
-                    <p><strong>Point 4:</strong> <?php echo $order['point4']; ?></p>
-                    <p><strong>Point 5:</strong> <?php echo $order['point5']; ?></p>
-                    <p><strong>Door Opening:</strong> <?php echo str_replace('_', ' ', ucfirst($order['door_opening'])); ?></p>
+                    <p><strong>Point 1:</strong> <?php echo $order['point1'] ?? 'N/A'; ?> inches</p>
+                    <p><strong>Point 2:</strong> <?php echo $order['point2'] ?? 'N/A'; ?> inches</p>
+                    <p><strong>Point 3:</strong> <?php echo $order['point3'] ?? 'N/A'; ?> inches</p>
+                    <p><strong>Point 4:</strong> <?php echo $order['point4'] ?? 'N/A'; ?> inches</p>
+                    <p><strong>Point 5:</strong> <?php echo $order['point5'] ?? 'N/A'; ?> inches</p>
+                    <p><strong>Thickness:</strong> <?php echo $order['wicket_thickness'] ?? 'N/A'; ?></p>
+                    <p><strong>Door Opening:</strong> <?php echo $order['door_opening'] ? str_replace('_', ' ', ucfirst($order['door_opening'])) : 'N/A'; ?></p>
+                    <p><strong>Handle:</strong> <?php echo isset($order['handle']) ? ($order['handle'] ? 'Yes' : 'No') : 'N/A'; ?></p>
+                    <p><strong>Letter Box:</strong> <?php echo isset($order['letter_box']) ? ($order['letter_box'] ? 'Yes' : 'No') : 'N/A'; ?></p>
+                    <p><strong>Coil Color:</strong> <?php echo $order['wicket_color'] ? str_replace('_', ' ', ucfirst($order['wicket_color'])) : 'N/A'; ?></p>
                 </div>
             </div>
             <?php endif; ?>

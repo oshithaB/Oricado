@@ -168,6 +168,14 @@ $orders = $conn->query("
                                         <a href="create_invoice.php?id=<?php echo $order['id']; ?>" 
                                            class="btn btn-primary w-100">Create Final Invoice</a>
                                     <?php endif; ?>
+
+                                    <!-- Add Mark as Done button -->
+                                    <form method="POST" onsubmit="return confirm('Are you sure you want to mark this order as done?');">
+                                        <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
+                                        <button type="submit" name="mark_done" class="btn btn-success w-100 mt-2">
+                                            Mark as Done
+                                        </button>
+                                    </form>
                                 <?php endif; ?>
                             </div>
                         </div>

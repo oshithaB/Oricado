@@ -2,7 +2,7 @@
 require_once '../config/config.php';
 checkAuth(['supervisor']);
 
-// Get all pending orders that haven't been reviewed yet
+// Get all pending orders that haven't been reviewed yet and are from order quotations
 $orders = $conn->query("
     SELECT o.*, 
            rdm.section1, rdm.section2, rdm.door_width, rdm.tower_height,
@@ -17,6 +17,7 @@ $orders = $conn->query("
     LEFT JOIN users u ON o.prepared_by = u.id
     LEFT JOIN quotations q ON o.quotation_id = q.id
     WHERE o.status = 'pending'
+    AND q.type = 'order'  /* Add this condition to filter order quotations */
     ORDER BY o.created_at DESC
 ")->fetch_all(MYSQLI_ASSOC);
 ?>

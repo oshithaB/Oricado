@@ -33,40 +33,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Add quotation item
                 $stmt = $conn->prepare("
                     INSERT INTO quotation_items (
-                        quotation_id, material_id, name, quantity, unit, price, amount
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                        quotation_id, material_id, name, quantity, unit, price, amount, newsaleprice
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ");
 
                 $material_id = isset($item['material_id']) ? $item['material_id'] : null;
                 
-                $stmt->bind_param("iisdsdd",
+                $stmt->bind_param("iisdsddd",
                     $quotation_id,
                     $material_id,
                     $item['name'],
                     $quantity,
                     $item['unit'],
                     $price,
-                    $amount
+                    $amount,
+                    $item['saleprice']
                 );
                 $stmt->execute();
-
-                // Update material or insert new one
-                if (!empty($item['material_id'])) {
-                    $material = $conn->query("SELECT quantity, price FROM materials WHERE id = {$item['material_id']}")->fetch_assoc();
-                    $total_qty = $material['quantity'] + $quantity;
-                    $avg_price = (($material['quantity'] * $material['price']) + ($quantity * $price)) / $total_qty;
-                    
-                    $stmt = $conn->prepare("UPDATE materials SET quantity = ?, price = ?, saleprice = ? WHERE id = ?");
-                    $stmt->bind_param("dddi", $total_qty, $avg_price, $item['saleprice'], $item['material_id']);
-                    $stmt->execute();
-                } else {
-                    $stmt = $conn->prepare("
-                        INSERT INTO materials (name, type, unit, quantity, price, saleprice)
-                        VALUES (?, 'other', ?, ?, ?, ?)
-                    ");
-                    $stmt->bind_param("ssddd", $item['name'], $item['unit'], $quantity, $price, $item['saleprice']);
-                    $stmt->execute();
-                }
             }
         }
 

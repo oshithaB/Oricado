@@ -4,7 +4,7 @@ checkAuth(['office_staff']);
 
 // Get supplier quotations
 $quotations = $conn->query("
-    SELECT sq.*, q.*, u.name as created_by_name
+    SELECT sq.*, q.*, u.name as created_by_name, sq.status
     FROM supplier_quotations sq
     JOIN quotations q ON sq.quotation_id = q.id
     LEFT JOIN users u ON sq.created_by = u.id
@@ -81,15 +81,42 @@ foreach ($quotations as &$quotation) {
                     </table>
 
                     <div class="quotation-actions">
-                        <a href="print_supplier_quotation.php?id=<?php echo $quotation['quotation_id']; ?>" 
-                           class="button download-btn">Print Quotation</a>
-                        
-                        <a href="download_supplier_invoice.php?id=<?php echo $quotation['quotation_id']; ?>" 
-                           class="button invoice-btn">Download Invoice</a>
+                        <?php if ($quotation['status'] === 'requested'): ?>
+                            <a href="print_supplier_request.php?id=<?php echo $quotation['quotation_id']; ?>" 
+                               target="_blank" class="button download-btn">Print Request</a>
+                            <button onclick="updateStatus(<?php echo $quotation['quotation_id']; ?>, 'request_confirmed')" 
+                                    class="button approve-btn">Approve</button>
+                        <?php elseif ($quotation['status'] === 'request_confirmed'): ?>
+                            <button onclick="updateStatus(<?php echo $quotation['quotation_id']; ?>, 'receved')" 
+                                    class="button receive-btn">Received</button>
+                        <?php elseif ($quotation['status'] === 'receved'): ?>
+                            <a href="print_supplier_invoice.php?id=<?php echo $quotation['quotation_id']; ?>" 
+                               target="_blank" class="button invoice-btn">Print Invoice</a>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>
         </div>
     </div>
+
+    <script>
+    function updateStatus(id, status) {
+        fetch('update_supplier_status.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `id=${id}&status=${status}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error updating status');
+            }
+        });
+    }
+    </script>
 </body>
 </html>

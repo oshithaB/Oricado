@@ -4,6 +4,7 @@ checkAuth(['office_staff']);
 
 $start_date = $_GET['start_date'] ?? '';
 $end_date = $_GET['end_date'] ?? '';
+$report_type = $_GET['report_type'] ?? 'payment'; // Add report type selection
 
 // Format dates for MySQL if provided
 $formatted_start = !empty($start_date) ? date('Y-m-d 00:00:00', strtotime($start_date)) : null;
@@ -14,7 +15,32 @@ $orders_data = null;
 $total_order_amount = 0;
 $total_paid_amount = 0;
 
-if ($formatted_start && $formatted_end) {
+// Get orders data with material cost for profit report
+if ($formatted_start && $formatted_end && $report_type === 'profit') {
+    $query = "SELECT o.*, 
+                     u.name as created_by_name,
+                     o.material_cost,
+                     (o.total_price - COALESCE(o.material_cost, 0)) as profit
+              FROM orders o
+              LEFT JOIN users u ON o.prepared_by = u.id
+              WHERE o.created_at BETWEEN ? AND ?
+              ORDER BY o.created_at DESC";
+
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("ss", $formatted_start, $formatted_end);
+    $stmt->execute();
+    $orders_data = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+    // Calculate totals for profit report
+    $total_sales = 0;
+    $total_cost = 0;
+    $total_profit = 0;
+    foreach ($orders_data as $order) {
+        $total_sales += $order['total_price'];
+        $total_cost += $order['material_cost'] ?? 0;
+        $total_profit += $order['profit'] ?? 0;
+    }
+} elseif ($formatted_start && $formatted_end) {
     $query = "SELECT o.*, 
                      u.name as created_by_name,
                      COALESCE(SUM(i.amount), 0) as paid_amount,
@@ -88,24 +114,29 @@ if ($formatted_start && $formatted_end) {
                 <!-- Date Range Selection Form -->
                 <div class="date-range-form">
                     <form method="GET" class="row g-3">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
+                            <label class="form-label">Report Type</label>
+                            <select name="report_type" class="form-control" required>
+                                <option value="payment" <?php echo $report_type === 'payment' ? 'selected' : ''; ?>>Payment Report</option>
+                                <option value="profit" <?php echo $report_type === 'profit' ? 'selected' : ''; ?>>Profit Report</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
                             <label class="form-label">Start Date</label>
                             <input type="date" name="start_date" id="startDate" class="form-control" 
                                    value="<?php echo $start_date; ?>" required>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label">End Date</label>
                             <input type="date" name="end_date" id="endDate" class="form-control" 
                                    value="<?php echo $end_date; ?>" required>
                         </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary">Generate Report</button>
-                        </div>
-                        <?php if (!empty($start_date) && !empty($end_date)): ?>
-                            <div class="col-md-2 d-flex align-items-end">
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">Generate Report</button>
+                            <?php if (!empty($start_date) && !empty($end_date)): ?>
                                 <a href="reports.php" class="btn btn-secondary">Clear</a>
-                            </div>
-                        <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
                     </form>
                 </div>
 
@@ -113,25 +144,43 @@ if ($formatted_start && $formatted_end) {
                     <!-- Summary Section -->
                     <div class="summary-box">
                         <h4>Summary</h4>
-                        <div class="summary-item">
-                            <strong>Total Order Value:</strong>
-                            <span>Rs. <?php echo number_format($total_order_amount, 2); ?></span>
-                        </div>
-                        <div class="summary-item">
-                            <strong>Total Received Amount:</strong>
-                            <span>Rs. <?php echo number_format($total_paid_amount, 2); ?></span>
-                        </div>
-                        <div class="summary-item">
-                            <strong>Total Outstanding:</strong>
-                            <span>Rs. <?php echo number_format($total_order_amount - $total_paid_amount, 2); ?></span>
-                        </div>
-                    </div>
+                        <?php if ($report_type === 'payment'): ?>
+                            <div class="summary-item">
+                                <strong>Total Order Value:</strong>
+                                <span>Rs. <?php echo number_format($total_order_amount, 2); ?></span>
+                            </div>
+                            <div class="summary-item">
+                                <strong>Total Received Amount:</strong>
+                                <span>Rs. <?php echo number_format($total_paid_amount, 2); ?></span>
+                            </div>
+                            <div class="summary-item">
+                                <strong>Total Outstanding:</strong>
+                                <span>Rs. <?php echo number_format($total_order_amount - $total_paid_amount, 2); ?></span>
+                            </div>
+                        <?php else: ?>
+                            <!-- Profit report summary -->
+                            <div class="summary-item">
+                                <strong>Total Sales:</strong>
+                                <span>Rs. <?php echo number_format($total_sales, 2); ?></span>
+                            </div>
+                            <div class="summary-item">
+                                <strong>Total Material Cost:</strong>
+                                <span>Rs. <?php echo number_format($total_cost, 2); ?></span>
+                            </div>
+                            <div class="summary-item">
+                                <strong>Total Profit:</strong>
+                                <span>Rs. <?php echo number_format($total_profit, 2); ?></span>
+                            </div>
+                        <?php endif; ?>
 
-                    <!-- Download Button -->
-                    <div class="report-actions">
-                        <button onclick="downloadReport()" class="btn btn-success">
-                            <i class="fas fa-download"></i> Download Report
-                        </button>
+                        <!-- Add Download Button -->
+                        <?php if ($orders_data): ?>
+                            <div class="mt-3">
+                                <button onclick="downloadCsv()" class="btn btn-success">
+                                    <i class="fas fa-download"></i> Download CSV Report
+                                </button>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                     <!-- Orders Table -->
@@ -140,137 +189,216 @@ if ($formatted_start && $formatted_end) {
                             <tr>
                                 <th>Order ID</th>
                                 <th>Customer</th>
-                                <th>Contact</th>
                                 <th>Created By</th>
                                 <th>Date</th>
                                 <th>Total Amount</th>
-                                <th>Paid Amount</th>
-                                <th>Balance</th>
-                                <th>Status</th>
+                                <?php if ($report_type === 'payment'): ?>
+                                    <th>Paid Amount</th>
+                                    <th>Balance</th>
+                                    <th>Status</th>
+                                <?php else: ?>
+                                    <th>Material Cost</th>
+                                    <th>Profit</th>
+                                    <th>Actions</th>
+                                <?php endif; ?>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($orders_data as $order): ?>
                             <tr>
-                                <td><?php echo $order['id']; ?></td>
-                                <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
-                                <td><?php echo htmlspecialchars($order['customer_contact']); ?></td>
-                                <td><?php echo htmlspecialchars($order['created_by_name']); ?></td>
+                                <td><?php echo $order['id'] ?? 'N/A'; ?></td>
+                                <td><?php echo htmlspecialchars($order['customer_name'] ?? 'N/A'); ?></td>
+                                <td><?php echo htmlspecialchars($order['created_by_name'] ?? 'N/A'); ?></td>
                                 <td><?php echo date('Y-m-d', strtotime($order['created_at'])); ?></td>
-                                <td>Rs. <?php echo number_format($order['total_price'], 2); ?></td>
-                                <td>Rs. <?php echo number_format($order['paid_amount'], 2); ?></td>
-                                <td>Rs. <?php echo number_format($order['balance_amount'], 2); ?></td>
-                                <td><?php echo ucfirst($order['status']); ?></td>
+                                <td>Rs. <?php echo number_format($order['total_price'] ?? 0, 2); ?></td>
+                                <?php if ($report_type === 'payment'): ?>
+                                    <td>Rs. <?php echo number_format($order['paid_amount'] ?? 0, 2); ?></td>
+                                    <td>Rs. <?php echo number_format($order['balance_amount'] ?? 0, 2); ?></td>
+                                    <td><?php echo ucfirst($order['status'] ?? 'N/A'); ?></td>
+                                <?php else: ?>
+                                    <td>Rs. <?php echo number_format($order['material_cost'] ?? 0, 2); ?></td>
+                                    <td>Rs. <?php echo number_format($order['profit'] ?? 0, 2); ?></td>
+                                    <td>
+                                        <button onclick="viewMaterials(<?php echo $order['id']; ?>)" 
+                                                class="btn btn-sm btn-info">
+                                            View Materials
+                                        </button>
+                                    </td>
+                                <?php endif; ?>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+
+                    <!-- Materials Modal -->
+                    <div class="modal fade" id="materialsModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Order Materials Details</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Material</th>
+                                                <th>Specifications</th>
+                                                <th>Quantity</th>
+                                                <th>Unit</th>
+                                                <th>Cost Price</th>
+                                                <th>Selling Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="materialsTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                    function viewMaterials(orderId) {
+                        const tbody = document.getElementById('materialsTableBody');
+                        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Loading...</td></tr>';
+                        
+                        fetch(`get_order_materials.php?id=${orderId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                tbody.innerHTML = '';
+                                
+                                if (!Array.isArray(data) || data.length === 0) {
+                                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No materials found</td></tr>';
+                                    return;
+                                }
+
+                                data.forEach(material => {
+                                    let specs = [];
+                                    if (material.type === 'coil') {
+                                        if (material.color) specs.push(`Color: ${material.color.replace('_', ' ')}`);
+                                        if (material.thickness) specs.push(`Thickness: ${material.thickness}`);
+                                    }
+                                    
+                                    tbody.innerHTML += `
+                                        <tr>
+                                            <td>${material.name || 'N/A'}</td>
+                                            <td>${specs.length ? specs.join('<br>') : 'N/A'}</td>
+                                            <td>${material.quantity || '0'}</td>
+                                            <td>${material.unit || 'N/A'}</td>
+                                            <td>Rs. ${Number(material.cost || 0).toFixed(2)}</td>
+                                            <td>Rs. ${Number(material.selling_price || 0).toFixed(2)}</td>
+                                        </tr>
+                                    `;
+                                });
+                                
+                                new bootstrap.Modal(document.getElementById('materialsModal')).show();
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading materials</td></tr>';
+                            });
+                    }
+
+                    function downloadCsv() {
+                        const reportType = '<?php echo $report_type; ?>';
+                        const startDate = '<?php echo $start_date; ?>';
+                        const endDate = '<?php echo $end_date; ?>';
+                        
+                        // Create form element
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = 'download_report.php';
+                        
+                        // Add hidden fields
+                        const fields = {
+                            report_type: reportType,
+                            start_date: startDate,
+                            end_date: endDate
+                        };
+                        
+                        for (const [key, value] of Object.entries(fields)) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = key;
+                            input.value = value;
+                            form.appendChild(input);
+                        }
+                        
+                        document.body.appendChild(form);
+                        form.submit();
+                        document.body.removeChild(form);
+                    }
+                    </script>
                 <?php endif; ?>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-    <script>
-        $(function() {
-            $('#dateRange').daterangepicker({
-                opens: 'left',
-                autoUpdateInput: false, // Disable auto-update
-                locale: {
-                    format: 'YYYY-MM-DD',
-                    cancelLabel: 'Clear'
-                }
-            });
-
-            // Handle apply event
-            $('#dateRange').on('apply.daterangepicker', function(ev, picker) {
-                $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
-                $('#startDate').val(picker.startDate.format('YYYY-MM-DD'));
-                $('#endDate').val(picker.endDate.format('YYYY-MM-DD'));
-            });
-
-            // Handle cancel event
-            $('#dateRange').on('cancel.daterangepicker', function(ev, picker) {
-                $(this).val('');
-                $('#startDate').val('');
-                $('#endDate').val('');
-            });
-        });
-
-        function downloadReport() {
-            // Get the table HTML
-            let table = document.getElementById('ordersTable');
-            
-            // Convert table to CSV
-            let csv = [];
-            let rows = table.querySelectorAll('tr');
-            
-            for (let i = 0; i < rows.length; i++) {
-                let row = [], cols = rows[i].querySelectorAll('td, th');
-                
-                for (let j = 0; j < cols.length; j++) {
-                    // Clean the text content
-                    let text = cols[j].textContent.replace(/\s+/g, ' ').trim();
-                    // Quote the text and escape existing quotes
-                    row.push('"' + text.replace(/"/g, '""') + '"');
-                }
-                
-                csv.push(row.join(','));
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script>
+    $(function() {
+        $('#dateRange').daterangepicker({
+            opens: 'left',
+            autoUpdateInput: false, // Disable auto-update
+            locale: {
+                format: 'YYYY-MM-DD',
+                cancelLabel: 'Clear'
             }
-
-            // Add summary data
-            csv.push(''); // Empty line
-            csv.push('"Summary"');
-            csv.push('"Total Order Value","<?php echo number_format($total_order_amount, 2); ?>"');
-            csv.push('"Total Received Amount","<?php echo number_format($total_paid_amount, 2); ?>"');
-            csv.push('"Total Outstanding","<?php echo number_format($total_order_amount - $total_paid_amount, 2); ?>"');
-            
-            // Create CSV file
-            let csvFile = csv.join('\n');
-            let blob = new Blob([csvFile], { type: 'text/csv;charset=utf-8;' });
-            let link = document.createElement("a");
-            let url = URL.createObjectURL(blob);
-            
-            // Set file name with date range
-            let fileName = 'orders_report_<?php echo $start_date; ?>_to_<?php echo $end_date; ?>.csv';
-            
-            link.setAttribute("href", url);
-            link.setAttribute("download", fileName);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get date input elements
-            const startDate = document.getElementById('startDate');
-            const endDate = document.getElementById('endDate');
-
-            // Set max date to today for both calendars
-            const today = new Date().toISOString().split('T')[0];
-            startDate.max = today;
-            endDate.max = today;
-
-            // Update end date min value when start date changes
-            startDate.addEventListener('change', function() {
-                endDate.min = this.value;
-                if (endDate.value && endDate.value < this.value) {
-                    endDate.value = this.value;
-                }
-            });
-
-            // Update start date max value when end date changes
-            endDate.addEventListener('change', function() {
-                startDate.max = this.value;
-                if (startDate.value && startDate.value > this.value) {
-                    startDate.value = this.value;
-                }
-            });
         });
-    </script>
+
+        // Handle apply event
+        $('#dateRange').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+            $('#startDate').val(picker.startDate.format('YYYY-MM-DD'));
+            $('#endDate').val(picker.endDate.format('YYYY-MM-DD'));
+        });
+
+        // Handle cancel event
+        $('#dateRange').on('cancel.daterangepicker', function(ev, picker) {
+            $(this).val('');
+            $('#startDate').val('');
+            $('#endDate').val('');
+        });
+    });
+
+    function downloadReport(format) {
+        let url = format === 'excel' ? 'download_report_excel.php' : 'download_report.php';
+        url += '?report_type=<?php echo $report_type; ?>';
+        url += '&start_date=<?php echo $start_date; ?>';
+        url += '&end_date=<?php echo $end_date; ?>';
+        window.location.href = url;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get date input elements
+        const startDate = document.getElementById('startDate');
+        const endDate = document.getElementById('endDate');
+
+        // Set max date to today for both calendars
+        const today = new Date().toISOString().split('T')[0];
+        startDate.max = today;
+        endDate.max = today;
+
+        // Update end date min value when start date changes
+        startDate.addEventListener('change', function() {
+            endDate.min = this.value;
+            if (endDate.value && endDate.value < this.value) {
+                endDate.value = this.value;
+            }
+        });
+
+        // Update start date max value when end date changes
+        endDate.addEventListener('change', function() {
+            startDate.max = this.value;
+            if (startDate.value && startDate.value > this.value) {
+                startDate.value = this.value;
+            }
+        });
+    });
+</script>
 </body>
 </html>

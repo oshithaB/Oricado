@@ -211,36 +211,35 @@ h2 {
                 <!-- Roller Door Measurements -->
                 <h4>Roller Door</h4>
                 <div class="measurements-grid">
-                    <p><strong>Section 1:</strong> <?php echo $order['section1']; ?></p>
-                    <p><strong>Section 2:</strong> <?php echo $order['section2']; ?></p>
-                    <p><strong>Total Height:</strong> <?php echo $order['section1'] + $order['section2']; ?></p>
-                    <p><strong>Outside Width:</strong> <?php echo $order['outside_width']; ?></p>
-                    <p><strong>Inside Width:</strong> <?php echo $order['inside_width']; ?></p>
-                    <p><strong>Door Width:</strong> <?php echo $order['door_width']; ?></p>
-                    <p><strong>Tower Height:</strong> <?php echo $order['tower_height']; ?></p>
-                    <p><strong>Tower Type:</strong> <?php echo ucfirst($order['tower_type']); ?></p>
-                    <p><strong>Coil Color:</strong> <?php echo str_replace('_', ' ', ucfirst($order['coil_color'])); ?></p>
-                    <p><strong>Thickness:</strong> <?php echo $order['thickness']; ?></p>
-                    <p><strong>Covering:</strong> <?php echo ucfirst($order['covering']); ?></p>
-                    <p><strong>Side Lock:</strong> <?php echo $order['side_lock'] ? 'Yes' : 'No'; ?></p>
-                    <p><strong>Motor:</strong> <?php echo $order['motor']; ?></p>
-                    <p><strong>Fixing:</strong> <?php echo ucfirst($order['fixing']); ?></p>
-                    <p><strong>Down Lock:</strong> <?php echo $order['down_lock'] ? 'Yes' : 'No'; ?></p>
+                    <p><strong>Section 1:</strong> <?php echo $order['section1'] != 'N/A' ? $order['section1'] . ' inches' : 'N/A'; ?></p>
+                    <p><strong>Section 2:</strong> <?php echo $order['section2'] != 'N/A' ? $order['section2'] . ' inches' : 'N/A'; ?></p>
+                    <p><strong>Outside Width:</strong> <?php echo $order['outside_width'] != 'N/A' ? $order['outside_width'] . ' inches' : 'N/A'; ?></p>
+                    <p><strong>Inside Width:</strong> <?php echo $order['inside_width'] != 'N/A' ? $order['inside_width'] . ' inches' : 'N/A'; ?></p>
+                    <p><strong>Door Width:</strong> <?php echo $order['door_width'] != 'N/A' ? $order['door_width'] . ' inches' : 'N/A'; ?></p>
+                    <p><strong>Tower Height:</strong> <?php echo $order['tower_height'] != 'N/A' ? $order['tower_height'] . ' inches' : 'N/A'; ?></p>
+                    <p><strong>Tower Type:</strong> <?php echo $order['tower_type'] != 'N/A' ? ucfirst($order['tower_type']) : 'N/A'; ?></p>
+                    <p><strong>Coil Color:</strong> <?php echo $order['coil_color'] != 'N/A' ? str_replace('_', ' ', ucfirst($order['coil_color'])) : 'N/A'; ?></p>
+                    <p><strong>Thickness:</strong> <?php echo $order['thickness'] != 'N/A' ? $order['thickness'] : 'N/A'; ?></p>
+                    <p><strong>Covering:</strong> <?php echo $order['covering'] != 'N/A' ? ucfirst($order['covering']) : 'N/A'; ?></p>
+                    <p><strong>Side Lock:</strong> <?php echo isset($order['side_lock']) ? ($order['side_lock'] ? 'Yes' : 'No') : 'N/A'; ?></p>
+                    <p><strong>Motor:</strong> <?php echo $order['motor'] != 'N/A' ? ($order['motor'] === 'L' ? 'Left' : ($order['motor'] === 'R' ? 'Right' : 'Manual')) : 'N/A'; ?></p>
+                    <p><strong>Fixing:</strong> <?php echo $order['fixing'] != 'N/A' ? ucfirst($order['fixing']) : 'N/A'; ?></p>
+                    <p><strong>Down Lock:</strong> <?php echo isset($order['down_lock']) ? ($order['down_lock'] ? 'Yes' : 'No') : 'N/A'; ?></p>
                 </div>
 
                 <!-- Wicket Door Measurements (if exists) -->
-                <?php if ($order['point1']): ?>
+                <?php if ($order['point1'] || $order['point2'] || $order['point3'] || $order['point4'] || $order['point5']): ?>
                 <h4>Wicket Door</h4>
                 <div class="measurements-grid">
-                    <p><strong>Point 1:</strong> <?php echo $order['point1']; ?></p>
-                    <p><strong>Point 2:</strong> <?php echo $order['point2']; ?></p>
-                    <p><strong>Point 3:</strong> <?php echo $order['point3']; ?></p>
-                    <p><strong>Point 4:</strong> <?php echo $order['point4']; ?></p>
-                    <p><strong>Point 5:</strong> <?php echo $order['point5']; ?></p>
-                    <p><strong>Door Opening:</strong> <?php echo str_replace('_', ' ', ucfirst($order['door_opening'])); ?></p>
-                    <p><strong>Handle:</strong> <?php echo $order['handle'] ? 'Yes' : 'No'; ?></p>
-                    <p><strong>Letter Box:</strong> <?php echo $order['letter_box'] ? 'Yes' : 'No'; ?></p>
-                    <p><strong>Color:</strong> <?php echo str_replace('_', ' ', ucfirst($order['coil_color'])); ?></p>
+                    <p><strong>Point 1:</strong> <?php echo $order['point1'] != 'N/A' ? $order['point1'] . ' inches' : 'N/A'; ?></p>
+                    <p><strong>Point 2:</strong> <?php echo $order['point2'] != 'N/A' ? $order['point2'] . ' inches' : 'N/A'; ?></p>
+                    <p><strong>Point 3:</strong> <?php echo $order['point3'] != 'N/A' ? $order['point3'] . ' inches' : 'N/A'; ?></p>
+                    <p><strong>Point 4:</strong> <?php echo $order['point4'] != 'N/A' ? $order['point4'] . ' inches' : 'N/A'; ?></p>
+                    <p><strong>Point 5:</strong> <?php echo $order['point5'] != 'N/A' ? $order['point5'] . ' inches' : 'N/A'; ?></p>
+                    <p><strong>Door Opening:</strong> <?php echo $order['door_opening'] != 'N/A' ? str_replace('_', ' ', ucfirst($order['door_opening'])) : 'N/A'; ?></p>
+                    <p><strong>Handle:</strong> <?php echo isset($order['handle']) ? ($order['handle'] ? 'Yes' : 'No') : 'N/A'; ?></p>
+                    <p><strong>Letter Box:</strong> <?php echo isset($order['letter_box']) ? ($order['letter_box'] ? 'Yes' : 'No') : 'N/A'; ?></p>
+                    <p><strong>Color:</strong> <?php echo $order['wicket_color'] != 'N/A' ? str_replace('_', ' ', ucfirst($order['wicket_color'])) : 'N/A'; ?></p>
                 </div>
                 <?php endif; ?>
             </div>

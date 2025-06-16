@@ -12,8 +12,13 @@ if (!$order_id) {
 // Get complete order details with all measurements
 $order = $conn->query("
     SELECT o.*, 
-           rdm.*, 
-           wdm.*,
+           rdm.outside_width, rdm.inside_width, rdm.door_width, rdm.tower_height,
+           rdm.tower_type, rdm.coil_color, rdm.thickness, rdm.covering,
+           rdm.side_lock, rdm.motor, rdm.fixing, rdm.down_lock,
+           rdm.section1, rdm.section2,
+           wdm.point1, wdm.point2, wdm.point3, wdm.point4, wdm.point5,
+           wdm.thickness as wicket_thickness, wdm.door_opening, wdm.handle,
+           wdm.letter_box, wdm.coil_color as wicket_color,
            u1.name as prepared_by_name,
            u2.name as checked_by_name,
            u3.name as admin_approved_by_name,
@@ -29,6 +34,11 @@ $order = $conn->query("
     LEFT JOIN quotations q ON o.quotation_id = q.id
     WHERE o.id = $order_id
 ")->fetch_assoc();
+
+// Handle null values
+array_walk_recursive($order, function(&$value) {
+    $value = $value ?? 'N/A';
+});
 
 // Get materials with costs
 $materials = $conn->query("

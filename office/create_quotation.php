@@ -490,6 +490,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
         }
 
+        /* Add these new styles */
+        .card-body {
+            position: relative;
+            padding-bottom: 0; /* Remove bottom padding */
+        }
+        
+        .table-container {
+            margin-bottom: 60px; /* Add space for the button */
+        }
+        
+        .add-product-btn {
+            position: absolute;
+            bottom: -50px; /* Position below the table */
+            left: 20px;
+            z-index: 10;
+        }
+
         .suggestions-dropdown {
             position: absolute;
             width: 100%;
@@ -497,18 +514,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             border: 1px solid #dee2e6;
             border-radius: 0.375rem;
             box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
-            z-index: 1000;
+            z-index: 1050;
             max-height: 200px;
             overflow-y: auto;
         }
 
-        .suggestions-dropdown div {
-            padding: 0.5rem 1rem;
-            cursor: pointer;
+        /* Modal styles for LFT Calculator */
+        .custom-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
         }
 
-        .suggestions-dropdown div:hover {
-            background-color: #f8f9fa;
+        .custom-modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 600px;
+            max-width: 90%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
@@ -558,11 +589,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
 
                     <div class="card mt-4">
-                        <div class="card-header bg-light">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">Items</h5>
+                            <button type="button" id="addItem" class="btn custom-btn btn-sm">
+                                <i class="fas fa-plus me-2"></i>Add Product
+                            </button>
                         </div>
                         <div class="card-body">
-                            <div class="table-responsive">
+                            <div class="table-container">
                                 <table id="itemsTable" class="table table-hover align-middle">
                                     <thead>
                                         <tr>
@@ -579,9 +613,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <tbody></tbody>
                                 </table>
                             </div>
-                            <button type="button" id="addItem" class="btn custom-btn mt-3">
-                                <i class="fas fa-plus me-2"></i>Add Product
-                            </button>
                         </div>
                     </div>
 
@@ -626,27 +657,49 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <button type="button" id="createVatInvoice" class="btn custom-btn">
                             <i class="fas fa-file-invoice me-2"></i>Create VAT Invoice
                         </button>
+                        <!-- Add LFT Calculator Button -->
+                        <button type="button" class="btn custom-btn" onclick="openLftCalculatorModal()">
+                            <i class="fas fa-calculator me-2"></i>LFT Calculator
+                        </button>
                     </div>
 
-                    <!-- VAT Modal -->
-                    <div id="vatModal" class="modal" style="display: none;">
-                        <div class="modal-content">
-                            <h2>VAT Invoice Details</h2>
-                            <div class="form-group">
-                                <label>VAT Percentage:</label>
-                                <input type="number" id="vatPercentage" value="18" min="0" max="100">
+                    <!-- LFT Calculator Modal -->
+                    <div id="lftCalculatorModal" class="custom-modal" style="display: none;">
+                        <div class="custom-modal-content" style="width: 500px; max-width: 90%;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+                                <h3 style="margin: 0;">LFT Calculator</h3>
+                                <button type="button" onclick="closeLftCalculatorModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
                             </div>
-                            <div class="form-group">
-                                <label>Customer Tax ID:</label>
-                                <input type="text" id="customerTaxId">
+                            
+                            <!-- Input fields section -->
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Length (inches)</label>
+                                <div style="display: flex; gap: 5px;">
+                                    <input type="number" id="doorHeight" step="0.01" placeholder="Enter length in inches" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label>Customer Address:</label>
-                                <textarea id="customerAddress"></textarea>
+
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Number of Pieces</label>
+                                <div style="display: flex; gap: 5px;">
+                                    <input type="number" id="doorWidth" step="1" placeholder="Enter number of pieces" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                                </div>
                             </div>
-                            <div class="actions">
-                                <button onclick="generateVatInvoice()">Create VAT Invoice</button>
-                                <button onclick="document.getElementById('vatModal').style.display='none'">Cancel</button>
+
+                            <!-- Action Buttons -->
+                            <div style="display: flex; justify-content: space-between; margin: 20px 0;">
+                                <button type="button" onclick="resetLftCalculator()" style="padding: 10px 20px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Reset</button>
+                                <button type="button" onclick="calculateLft()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Calculate</button>
+                            </div>
+
+                            <!-- Results -->
+                            <div style="background-color: #d1ecf1; padding: 15px; border-radius: 4px; border: 1px solid #bee5eb;">
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <p style="margin: 0;"><strong>Linear Feet Required:</strong> <span id="linearFeet">0</span> LFt</p>
+                                    <button type="button" onclick="copyLftValue('linearFeet')" title="Copy value" style="padding: 5px 10px; background-color: #007bff; color: white; border: 1px solid #007bff; border-radius: 4px; cursor: pointer;">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -655,7 +708,77 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
         </div>
     </div>
- 
+
     <script src="../assets/js/quotation.js"></script>
+    <!-- Add LFT Calculator JavaScript -->
+    <script>
+    function openLftCalculatorModal() {
+        document.getElementById('lftCalculatorModal').style.display = 'block';
+    }
+
+    function closeLftCalculatorModal() {
+        document.getElementById('lftCalculatorModal').style.display = 'none';
+        resetLftCalculator();
+    }
+
+    function resetLftCalculator() {
+        document.getElementById('doorHeight').value = '';
+        document.getElementById('doorWidth').value = '';
+        document.getElementById('squareFeet').textContent = '0';
+        document.getElementById('linearFeet').textContent = '0';
+    }
+
+    function calculateLft() {
+        const lengthInches = parseFloat(document.getElementById('doorHeight').value) || 0;
+        const numberOfPieces = parseFloat(document.getElementById('doorWidth').value) || 0;
+
+        if (lengthInches === 0 || numberOfPieces === 0) {
+            alert('Please enter valid length and number of pieces');
+            return;
+        }
+
+        // Calculate total linear feet
+        // Formula: (length in inches × number of pieces) ÷ 12
+        const totalLft = (lengthInches * numberOfPieces) / 12;
+
+        document.getElementById('linearFeet').textContent = totalLft.toFixed(2);
+    }
+
+    function copyLftValue(elementId) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            const value = element.textContent;
+            navigator.clipboard.writeText(value).then(() => {
+                const button = event.target.closest('button');
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                }, 1000);
+            });
+        }
+    }
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        const modal = document.getElementById('lftCalculatorModal');
+        if (modal.style.display === 'block') {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                calculateLft();
+            }
+            if (e.key === 'Escape') {
+                closeLftCalculatorModal();
+            }
+        }
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('lftCalculatorModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeLftCalculatorModal();
+        }
+    });
+    </script>
 </body>
 </html>

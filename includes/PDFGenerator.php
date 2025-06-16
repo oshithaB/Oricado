@@ -837,11 +837,8 @@ body {
                 <tr>
                     <th>Created By</th>
                     <td>' . htmlspecialchars($order['prepared_by_name']) . '</td>
-                </tr>
-                <tr>
-                    <th>Contact Number</th>
-                    <td>' . htmlspecialchars($order['prepared_by_contact']) . '</td>
                 </tr>';
+               
         
         if ($order['status'] === 'done' && isset($order['total_price'])) {
             $html .= '<tr>
@@ -899,10 +896,7 @@ body {
                     <th>Created By</th>
                     <td>' . htmlspecialchars($order['prepared_by_name']) . '</td>
                 </tr>
-                <tr>
-                    <th>Contact Number</th>
-                    <td>' . htmlspecialchars($order['prepared_by_contact']) . '</td>
-                </tr>
+                
             </table>';
 
         $html .= $this->getMeasurementsHTML($order);

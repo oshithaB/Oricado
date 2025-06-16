@@ -26,12 +26,12 @@ $items = $conn->query("
 ")->fetch_all(MYSQLI_ASSOC);
 
 header('Content-Type: text/html');
-header('Content-Disposition: attachment; filename="supplier_invoice_'.$id.'.html"');
+header('Content-Disposition: attachment; filename="material_request_'.$id.'.html"');
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Supplier Invoice #<?php echo $id; ?></title>
+    <title>Material Request #<?php echo $id; ?></title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         table { width: 100%; border-collapse: collapse; margin: 20px 0; }
@@ -42,8 +42,8 @@ header('Content-Disposition: attachment; filename="supplier_invoice_'.$id.'.html
 </head>
 <body>
     <div class="header">
-        <h1>Supplier Invoice</h1>
-        <p><strong>Invoice #:</strong> <?php echo $quotation['id']; ?></p>
+        <h1>Material Request</h1>
+        <p><strong>Request #:</strong> <?php echo $quotation['id']; ?></p>
         <p><strong>Supplier:</strong> <?php echo htmlspecialchars($quotation['supplier_name']); ?></p>
         <p><strong>Date:</strong> <?php echo date('Y-m-d', strtotime($quotation['created_at'])); ?></p>
     </div>

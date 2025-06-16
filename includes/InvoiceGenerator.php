@@ -1,17 +1,18 @@
 <?php
 class InvoiceGenerator {
     private $id;
+    private $logoPath;  // Add this property
 
     public function __construct($id) {
         $this->id = $id;
+        $this->logoPath = __DIR__ . '/../assets/images/oricado logo.png';  // Set logo path in constructor
     }
 
     public function generateInvoicePDF($invoice, $type = 'standard') {
         header('Content-Type: text/html; charset=utf-8');
         
-        $logoPath = __DIR__ . '/../assets/images/oricado logo.png';
-        $logoHtml = file_exists($logoPath) ? 
-            '<img src="data:image/jpeg;base64,' . base64_encode(file_get_contents($logoPath)) . '" 
+        $logoHtml = file_exists($this->logoPath) ? 
+            '<img src="data:image/jpeg;base64,' . base64_encode(file_get_contents($this->logoPath)) . '" 
                   style="width: 120px; height: auto; margin: 20px 0;">' : '';
 
         if ($type == 'material') {
@@ -57,11 +58,10 @@ class InvoiceGenerator {
             }
 
             .company-logo {
-                width: 50%;
-                height: 60%;
+                width: 200px;
+                height: auto;
+                border-radius: 25px;
                 object-fit: contain;
-                border-radius: 25px; /* Increased border radius */
-                transition: transform 0.3s ease;
             }
 
             .logo-container {
@@ -111,19 +111,39 @@ class InvoiceGenerator {
                 margin: 25px 0;
             }
             .table {
-                border: 1px solid #dee2e6;
+                border: 2px solid #dee2e6;
                 border-radius: 8px;
                 overflow: hidden;
+                margin-bottom: 40px;
+                border-collapse: collapse;
+                font-size: 13px; /* Smaller font size */
             }
-            .table th { 
-                background-color: #f8f9fa;
-                border-bottom: 2px solid #dee2e6;
-                font-weight: 600;
-                color: #495057;
-            }
-            .table td, .table th {
-                padding: 12px 15px;
+            .table th, .table td {
+                border: none;
+                border-bottom: 1px solid #dee2e6;
+                padding: 8px 10px; /* Reduced padding */
                 vertical-align: middle;
+            }
+            .table thead th {
+                background-color: #2c3e50;
+                color: white;
+                font-weight: 500;
+                border-bottom: 2px solid #2c3e50;
+                white-space: nowrap; /* Prevent header wrapping */
+            }
+            .table tbody tr:nth-child(even) {
+                background-color: #f8f9fa;
+            }
+            .table tbody tr:hover {
+                background-color: #f0f2f5;
+            }
+            .table tfoot tr {
+                border-top: 2px solid #dee2e6;
+                background-color: #fff;
+            }
+            .table tfoot tr:last-child {
+                font-weight: bold;
+                background-color: #f8f9fa;
             }
             .amount { 
                 color: #dc3545;
@@ -160,23 +180,57 @@ class InvoiceGenerator {
 
                 /* Print-specific fixes */
                 @media print {
-                    body { margin: 0; padding: 0; }
-                    .invoice-container { box-shadow: none; margin: 0; padding: 20px; }
-                    
-                    /* Hide URLs when printing */
                     @page {
-                        size: auto;
-                        margin: 0mm;
+                        margin: 0;
+                        size: A4;
                     }
                     
-                    a:link:after, 
-                    a:visited:after {
-                        content: "" !important;
-                        display: none !important;
+                    body { 
+                        margin: 0;
+                        padding: 0 20px 60px 20px;
+                        height: 100%;
+                        position: relative;
                     }
                     
-                    a[href]:after {
-                        content: none !important;
+                    .invoice-container {
+                        margin: 0;
+                        padding: 20px 20px 100px 20px; /* Increased bottom padding */
+                    }
+                    
+                    .page-footer {
+                        position: fixed;
+                        bottom: 0;
+                        left: 0;
+                        right: 0;
+                        background-color: white !important;
+                        border-top: 2px solid #d4af37 !important;
+                        padding: 8px 20px !important;
+                        margin: 0 !important;
+                        height: 40px !important;
+                        z-index: 1000 !important;
+                        display: block !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+
+                    .footer * {
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+
+                    .table {
+                        page-break-inside: avoid;
+                        font-size: 11px; /* Even smaller for print */
+                    }
+                    
+                    .table th, .table td {
+                        padding: 6px 8px; /* Further reduced padding for print */
+                    }
+
+                    /* Force footer to show */
+                    .page-footer * {
+                        visibility: visible !important;
+                        display: flex !important;
                     }
                 }
 
@@ -218,12 +272,28 @@ class InvoiceGenerator {
                     font-weight: 600;
                     margin-top: 10px;
                     font-style: italic;
-                    text-transform: capitalize;
-                    letter-spacing: 1.5px; /* Increased letter spacing */
-                    line-height: 1.4;
-                    text-shadow: 2px 2px 4px rgba(0,0,0,0.15);
                     font-family: "Georgia", serif;
-                    word-spacing: 3px; /* Add word spacing */
+                }
+
+                .suggestions-dropdown {
+                    position: absolute;
+                    width: 100%;
+                    background: white;
+                    border: 1px solid #dee2e6;
+                    border-radius: 0.375rem;
+                    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+                    z-index: 1050; /* Increased z-index to appear above other elements */
+                    max-height: 200px;
+                    overflow-y: auto;
+                }
+
+                .suggestions-dropdown div {
+                    padding: 0.5rem 1rem;
+                    cursor: pointer;
+                }
+
+                .suggestions-dropdown div:hover {
+                    background-color: #f8f9fa;
                 }
               </style>
         </head>';
@@ -301,7 +371,12 @@ class InvoiceGenerator {
         <div class="invoice-container">
             <div class="header">
                 <div class="logo-and-info">
-                    ' . $logoHtml . '
+                    <div class="logo-container">
+                        <img src="data:image/jpeg;base64,' . base64_encode(file_get_contents($this->logoPath)) . '" 
+                             alt="Oricado Logo" 
+                             class="company-logo">
+                        <div class="tagline">Strength Style And Security In Every Roll</div>
+                    </div>
                     <div class="company-details">
                         <div class="company-name">Oricado Roller Doors</div>
                         <div class="company-address">
@@ -318,38 +393,43 @@ class InvoiceGenerator {
                 <p><strong>Contact:</strong> ' . htmlspecialchars($invoice['customer_contact']) . '</p>
                 <p><strong>Address:</strong> ' . htmlspecialchars($invoice['customer_address']) . '</p>
                 <p><strong>Order #:</strong> ' . $invoice['order_id'] . '</p>
+                <p><strong>Created By:</strong> ' . htmlspecialchars($invoice['created_by_name']) . '</p>
             </div>
 
-            <table>
+            <table class="table">
+            <thead>
                 <tr>
-                    <th>Description</th>
-                    <th>Amount</th>
+                    <th>#</th>
+                    <th>Item Description</th>
+                    <th>Specifications</th>
+                    <th>Quantity</th>
+                    <th>Unit Price (Rs.)</th>
+                    <th>Amount (Rs.)</th>
+                </tr>
+            </thead>
+            <tbody>
+                ' . $this->generateOrderItemsRows($invoice) . '
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="5" style="text-align: right;"><strong>Total Amount:</strong></td>
+                    <td style="text-align: right;">Rs. ' . number_format($invoice['total_price'], 2) . '</td>
                 </tr>
                 <tr>
-                    <td>Total Amount</td>
-                    <td>Rs. ' . number_format($invoice['total_price'], 2) . '</td>
+                    <td colspan="5" style="text-align: right; color: #28a745;">Amount Paid (Advance):</td>
+                    <td style="text-align: right; color: #28a745;">Rs. ' . number_format($invoice['amount'], 2) . '</td>
                 </tr>
                 <tr>
-                    <td>Advance Payment</td>
-                    <td class="amount">Rs. ' . number_format($invoice['amount'], 2) . '</td>
+                    <td colspan="5" style="text-align: right;">Balance Amount:</td>
+                    <td style="text-align: right;">Rs. ' . number_format($invoice['balance_amount'], 2) . '</td>
                 </tr>
-                <tr>
-                    <td>Balance Amount</td>
-                    <td>Rs. ' . number_format($invoice['balance_amount'], 2) . '</td>
-                </tr>
-            </table>
+            </tfoot>
+        </table>
 
             <div class="footer">
-                <p>Created by: ' . htmlspecialchars($invoice['created_by_name']) . '</p>
-                <div class="signatures">
-                    <div class="signature-line">
-                        
-                        <div>Customer Signature</div>
-                    </div>
-                    <div class="signature-line">
-                        
-                        <div>Authorized Signature</div>
-                    </div>
+                <div class="signature-block" style="margin-top: 50px;">
+                    <div class="signature-line">Customer Signature: _______________________</div>
+                    <div class="signature-line">Authorized Signature: _______________________</div>
                 </div>
             </div>
         </div>';
@@ -360,7 +440,12 @@ class InvoiceGenerator {
         <div class="invoice-container">
             <div class="header">
                 <div class="logo-and-info">
-                    ' . $logoHtml . '
+                    <div class="logo-container">
+                        <img src="data:image/jpeg;base64,' . base64_encode(file_get_contents($this->logoPath)) . '" 
+                             alt="Oricado Logo" 
+                             class="company-logo">
+                        <div class="tagline">Strength Style And Security In Every Roll</div>
+                    </div>
                     <div class="company-details">
                         <div class="company-name">Oricado Roller Doors</div>
                         <div class="company-address">
@@ -377,42 +462,43 @@ class InvoiceGenerator {
                 <p><strong>Contact:</strong> ' . htmlspecialchars($invoice['customer_contact']) . '</p>
                 <p><strong>Address:</strong> ' . htmlspecialchars($invoice['customer_address']) . '</p>
                 <p><strong>Order #:</strong> ' . $invoice['order_id'] . '</p>
+                <p><strong>Created By:</strong> ' . htmlspecialchars($invoice['created_by_name']) . '</p>
             </div>
 
-            <table>
-                <tr>
-                    <th>Description</th>
-                    <th>Amount</th>
-                </tr>
-                <tr>
-                    <td>Total Order Amount</td>
-                    <td>Rs. ' . number_format($invoice['total_price'], 2) . '</td>
-                </tr>
-                <tr>
-                    <td>Advance Paid</td>
-                    <td>Rs. ' . number_format($invoice['advance_amount'], 2) . '</td>
-                </tr>
-                <tr>
-                    <td>Balance Payment</td>
-                    <td class="amount">Rs. ' . number_format($invoice['amount'], 2) . '</td>
-                </tr>
-                <tr>
-                    <td><strong>Total Amount Paid</strong></td>
-                    <td class="amount">Rs. ' . number_format($invoice['total_price'], 2) . '</td>
-                </tr>
-            </table>
+            <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Item Description</th>
+                <th>Specifications</th>
+                <th>Quantity</th>
+                <th>Unit Price (Rs.)</th>
+                <th>Amount (Rs.)</th>
+            </tr>
+        </thead>
+        <tbody>
+            ' . $this->generateOrderItemsRows($invoice) . '
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5" style="text-align: right;">Advance Paid:</td>
+                <td style="text-align: right;">Rs. ' . number_format($invoice['advance_amount'], 2) . '</td>
+            </tr>
+            <tr>
+                <td colspan="5" style="text-align: right; color: #ff0000;">Balance Amount Paid:</td>
+                <td style="text-align: right; color: #ff0000;">Rs. ' . number_format($invoice['amount'], 2) . '</td>
+            </tr>
+            <tr>
+                <td colspan="5" style="text-align: right; font-weight: bold;">Total Amount Paid:</td>
+                <td style="text-align: right; font-weight: bold;">Rs. ' . number_format($invoice['total_price'], 2) . '</td>
+            </tr>
+        </tfoot>
+    </table>
 
             <div class="footer">
-                <p>Created by: ' . htmlspecialchars($invoice['created_by_name']) . '</p>
-                <div class="signatures">
-                    <div class="signature-line">
-                       
-                        <div>Customer Signature</div>
-                    </div>
-                    <div class="signature-line">
-                        
-                        <div>Authorized Signature</div>
-                    </div>
+                <div class="signature-block" style="margin-top: 50px;">
+                    <div class="signature-line">Customer Signature: _______________________</div>
+                    <div class="signature-line">Authorized Signature: _______________________</div>
                 </div>
             </div>
         </div>';
@@ -456,16 +542,9 @@ class InvoiceGenerator {
             </table>
 
             <div class="footer">
-                <p>Created by: ' . htmlspecialchars($invoice['created_by_name']) . '</p>
-                <div class="signatures">
-                    <div class="signature-line">
-                       
-                        <div>Customer Signature</div>
-                    </div>
-                    <div class="signature-line">
-                        
-                        <div>Authorized Signature</div>
-                    </div>
+                <div class="signature-block" style="margin-top: 50px;">
+                    <div class="signature-line">Customer Signature: _______________________</div>
+                    <div class="signature-line">Authorized Signature: _______________________</div>
                 </div>
             </div>
         </div>';
@@ -507,13 +586,12 @@ class InvoiceGenerator {
     }
 
     private function getLogoHtml() {
-        $logoPath = __DIR__ . '/../assets/images/oricado logo.png';
-        return file_exists($logoPath) ? 
+        return file_exists($this->logoPath) ? 
             '<div class="logo-container">
-                <img src="data:image/jpeg;base64,' . base64_encode(file_get_contents($logoPath)) . '" 
+                <img src="data:image/jpeg;base64,' . base64_encode(file_get_contents($this->logoPath)) . '" 
                      alt="Oricado Logo" 
                      class="company-logo">
-                <div class="tagline">SSttrreennggtthh,, SSttyyllee,, AAnndd SSeeccuurriittyy IInn EEvveerryy RRoolll</div>
+                <div class="tagline">Strength Style And Security In Every Roll</div>
             </div>' : '';
     }
 
@@ -554,11 +632,10 @@ class InvoiceGenerator {
             }
 
             .company-logo {
-                width: 50%;
-                height: 60%;
+                width: 200px;
+                height: auto;
+                border-radius: 25px;
                 object-fit: contain;
-                border-radius: 25px; /* Increased border radius */
-                transition: transform 0.3s ease;
             }
 
             .logo-container {
@@ -608,19 +685,39 @@ class InvoiceGenerator {
                 margin: 25px 0;
             }
             .table {
-                border: 1px solid #dee2e6;
+                border: 2px solid #dee2e6;
                 border-radius: 8px;
                 overflow: hidden;
+                margin-bottom: 40px;
+                border-collapse: collapse;
+                font-size: 13px; /* Smaller font size */
             }
-            .table th { 
-                background-color: #f8f9fa;
-                border-bottom: 2px solid #dee2e6;
-                font-weight: 600;
-                color: #495057;
-            }
-            .table td, .table th {
-                padding: 12px 15px;
+            .table th, .table td {
+                border: none;
+                border-bottom: 1px solid #dee2e6;
+                padding: 8px 10px; /* Reduced padding */
                 vertical-align: middle;
+            }
+            .table thead th {
+                background-color: #2c3e50;
+                color: white;
+                font-weight: 500;
+                border-bottom: 2px solid #2c3e50;
+                white-space: nowrap; /* Prevent header wrapping */
+            }
+            .table tbody tr:nth-child(even) {
+                background-color: #f8f9fa;
+            }
+            .table tbody tr:hover {
+                background-color: #f0f2f5;
+            }
+            .table tfoot tr {
+                border-top: 2px solid #dee2e6;
+                background-color: #fff;
+            }
+            .table tfoot tr:last-child {
+                font-weight: bold;
+                background-color: #f8f9fa;
             }
             .amount { 
                 color: #dc3545;
@@ -657,23 +754,57 @@ class InvoiceGenerator {
 
                 /* Print-specific fixes */
                 @media print {
-                    body { margin: 0; padding: 0; }
-                    .invoice-container { box-shadow: none; margin: 0; padding: 20px; }
-                    
-                    /* Hide URLs when printing */
                     @page {
-                        size: auto;
-                        margin: 0mm;
+                        margin: 0;
+                        size: A4;
                     }
                     
-                    a:link:after, 
-                    a:visited:after {
-                        content: "" !important;
-                        display: none !important;
+                    body { 
+                        margin: 0;
+                        padding: 0 20px 60px 20px;
+                        height: 100%;
+                        position: relative;
                     }
                     
-                    a[href]:after {
-                        content: none !important;
+                    .invoice-container {
+                        margin: 0;
+                        padding: 20px 20px 100px 20px; /* Increased bottom padding */
+                    }
+                    
+                    .page-footer {
+                        position: fixed;
+                        bottom: 0;
+                        left: 0;
+                        right: 0;
+                        background-color: white !important;
+                        border-top: 2px solid #d4af37 !important;
+                        padding: 8px 20px !important;
+                        margin: 0 !important;
+                        height: 40px !important;
+                        z-index: 1000 !important;
+                        display: block !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+
+                    .footer * {
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+
+                    .table {
+                        page-break-inside: avoid;
+                        font-size: 11px; /* Even smaller for print */
+                    }
+                    
+                    .table th, .table td {
+                        padding: 6px 8px; /* Further reduced padding for print */
+                    }
+
+                    /* Force footer to show */
+                    .page-footer * {
+                        visibility: visible !important;
+                        display: flex !important;
                     }
                 }
 
@@ -715,12 +846,28 @@ class InvoiceGenerator {
                     font-weight: 600;
                     margin-top: 10px;
                     font-style: italic;
-                    text-transform: capitalize;
-                    letter-spacing: 1.5px; /* Increased letter spacing */
-                    line-height: 1.4;
-                    text-shadow: 2px 2px 4px rgba(0,0,0,0.15);
                     font-family: "Georgia", serif;
-                    word-spacing: 3px; /* Add word spacing */
+                }
+
+                .suggestions-dropdown {
+                    position: absolute;
+                    width: 100%;
+                    background: white;
+                    border: 1px solid #dee2e6;
+                    border-radius: 0.375rem;
+                    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+                    z-index: 1050; /* Increased z-index to appear above other elements */
+                    max-height: 200px;
+                    overflow-y: auto;
+                }
+
+                .suggestions-dropdown div {
+                    padding: 0.5rem 1rem;
+                    cursor: pointer;
+                }
+
+                .suggestions-dropdown div:hover {
+                    background-color: #f8f9fa;
                 }
               </style>
         </head>';
@@ -741,5 +888,52 @@ class InvoiceGenerator {
 
         echo $html . '<script>window.onload = function() { window.print(); }</script></body></html>';
         exit;
+    }
+
+    public function generateOrderItemsRows($invoice) {
+        global $conn;
+        
+        // Get the quotation_id from orders table
+        $sql = "SELECT quotation_id FROM orders WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $invoice['order_id']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $order = $result->fetch_assoc();
+        
+        if (!$order || !$order['quotation_id']) {
+            return '<tr><td colspan="6">No items found</td></tr>';
+        }
+
+        // Get items from quotation_items table
+        $sql = "SELECT qi.name, qi.quantity, qi.unit, qi.price, qi.amount 
+                FROM quotation_items qi 
+                WHERE qi.quotation_id = ?";
+    
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $order['quotation_id']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $quotationItems = $result->fetch_all(MYSQLI_ASSOC);
+
+        if (empty($quotationItems)) {
+            return '<tr><td colspan="6">No items found</td></tr>';
+        }
+
+        $rows = '';
+        $counter = 1;
+        
+        foreach ($quotationItems as $item) {
+            $rows .= '<tr>
+                <td>' . $counter++ . '</td>
+                <td><strong>' . htmlspecialchars($item['name']) . '</strong></td>
+                <td></td>
+                <td style="text-align: center;">' . number_format($item['quantity'], 2) . '</td>
+                <td style="text-align: right;">' . number_format($item['price'], 2) . '</td>
+                <td style="text-align: right;">' . number_format($item['amount'], 2) . '</td>
+            </tr>';
+        }
+        
+        return $rows;
     }
 }

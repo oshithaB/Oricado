@@ -257,7 +257,7 @@ $order = $stmt->get_result()->fetch_assoc();
                                         <?php endforeach; ?>
                                     </select>
                                 </td>
-                                <td>meters</td>
+                                <td>LFT</td>
                                 <td>
                                     <input type="number" 
                                            name="coil_quantity" 
