@@ -208,90 +208,123 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 .btn-grn-calculator:hover {
     background-color: #218838;
 }
+
+.section {
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    margin: 20px;
+}
+
+.section h2 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #eee;
+}
+
+.supplier-section {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.items-section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.button-group {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
 </style>
 <body>
     <div class="dashboard">
         <?php include 'includes/navigation.php'; ?>
         <div class="content">
             <div class="section">
-                <h2>GRN</h2>
-                <!-- GRN Calculator Button -->
-                <div class="mb-3">
-                    <button type="button" class="btn-grn-calculator" onclick="openGrnCalculatorModal()">
-                        <i class="fas fa-calculator"></i> GRN Calculator
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">GRN</h2>
+                    <button type="button" class="btn btn-success" onclick="openGrnCalculatorModal()">
+                        <i class="fas fa-calculator me-2"></i> GRN Calculator
                     </button>
                 </div>
                 
                 <form method="POST" id="buyForm">
+                    <!-- Supplier Section -->
                     <div class="supplier-section">
-                        <div class="form-group" style="position: relative;">
-                            <label>Supplier Name:</label>
-                            <input type="text" name="supplier_name" id="supplierName" required autocomplete="off">
-                            <div id="supplierSuggestions" class="suggestions-dropdown"></div>
-                        </div>
-                        <div class="form-group">
-                            <label>Supplier Contact:</label>
-                            <input type="text" name="supplier_contact" id="supplierContact" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Created By:</label>
-                            <input type="text" value="<?php echo $_SESSION['name']; ?>" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label>Contact:</label>
-                            <input type="text" value="<?php echo $_SESSION['contact']; ?>" readonly>
-                        </div>
-                    </div>
-
-                    <div class="items-section">
-                        <h3>Materials</h3>
-                        <!-- Original Coil Calculator Modal -->
-                        <div id="coilCalculatorModal" class="custom-modal" style="display: none;">
-                            <div class="custom-modal-content">
-                                <h3>Calculate Coil Length</h3>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group position-relative">
+                                    <label class="form-label">Supplier Name:</label>
+                                    <input type="text" class="form-control" name="supplier_name" id="supplierName" required autocomplete="off">
+                                    <div id="supplierSuggestions" class="suggestions-dropdown"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <div class="form-group">
-                                    <label>Coil Roll Weight (kg):</label>
-                                    <input type="number" id="coilRollWeight" step="0.01">
+                                    <label class="form-label">Supplier Contact:</label>
+                                    <input type="text" class="form-control" name="supplier_contact" id="supplierContact" required>
                                 </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <div class="form-group">
-                                    <label>Wooden Roll Weight (kg):</label>
-                                    <input type="number" id="woodenRollWeight" step="0.01">
+                                    <label class="form-label">Created By:</label>
+                                    <input type="text" class="form-control" value="<?php echo $_SESSION['name']; ?>" readonly>
                                 </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <div class="form-group">
-                                    <label>Weight per LFt (kg):</label>
-                                    <input type="number" id="weightPerLft" step="0.001">
-                                </div>
-                                <div class="result-section">
-                                    <p>Net Weight: <span id="netWeight">0</span> kg</p>
-                                    <p>Total LFt: <span id="totalLft">0</span></p>
-                                </div>
-                                <div class="modal-buttons">
-                                    <button type="button" onclick="applyCoilCalculation()">Apply</button>
-                                    <button type="button" onclick="closeCoilModal()">Cancel</button>
+                                    <label class="form-label">Contact:</label>
+                                    <input type="text" class="form-control" value="<?php echo $_SESSION['contact']; ?>" readonly>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <table id="materialsTable">
-                            <thead>
-                                <tr>
-                                    <th>Product Name</th>
-                                    <th>Unit</th>
-                                    <th>Buy Price</th>
-                                    <th>Sale Price</th>
-                                    <th>Quantity</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
+                    <!-- Items Section -->
+                    <div class="items-section">
+                        <h3 class="mb-4">Materials</h3>
+                        <div class="table-responsive">
+                            <table id="materialsTable" class="table table-bordered table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product Name</th>
+                                        <th>Unit</th>
+                                        <th>Buy Price</th>
+                                        <th>Sale Price</th>
+                                        <th>Quantity</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                         <div class="button-group">
-                            <button type="button" id="addExisting">Add Existing Product</button>
-                            <button type="button" id="addNew">Add New Product</button>
+                            <button type="button" id="addExisting" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add Existing Product
+                            </button>
+                            <button type="button" id="addNew" class="btn btn-success">
+                                <i class="fas fa-plus-circle me-2"></i>Add New Product
+                            </button>
                         </div>
                     </div>
 
-                    <button type="submit">Create Buy Quotation</button>
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Create Buy Quotation
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
