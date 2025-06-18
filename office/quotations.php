@@ -8,8 +8,8 @@ $search = $_GET['search'] ?? '';
 // Debug mode - set to true to see debugging information
 $debug_mode = false;
 
-// First, let's get all quotations without supplier quotations
-$query = "SELECT q.* FROM quotations q 
+// Modify the query to include quotation_number
+$query = "SELECT q.*, q.quotation_number FROM quotations q 
           LEFT JOIN supplier_quotations sq ON q.id = sq.quotation_id 
           WHERE sq.id IS NULL";  // Only get quotations that are NOT in supplier_quotations
 
@@ -100,6 +100,18 @@ foreach ($quotations as $quotation) {
 
 if ($debug_mode) {
     echo "<!-- DEBUG: Final quotations count: " . count($final_quotations) . " -->\n";
+}
+
+// Add this function at the top after require statements
+function formatQuotationNumber($quotationId, $createdAt) {
+    $date = new DateTime($createdAt);
+    return sprintf(
+        "QT/%s/%s/%s/%05d",
+        $date->format('d'),
+        $date->format('m'),
+        $date->format('y'),
+        $quotationId
+    );
 }
 ?>
 
@@ -429,7 +441,7 @@ if ($debug_mode) {
                     <?php foreach ($final_quotations as $index => $quotation): ?>
                     <div class="quotation-card">
                         <div class="quotation-header">
-                            <h3>Quotation #<?php echo $quotation['id']; ?></h3>
+                            <h3>Quotation #<?php echo formatQuotationNumber($quotation['id'], $quotation['created_at']); ?></h3>
                             <div class="quotation-info">
                                 <p><strong>Customer:</strong> <?php echo htmlspecialchars($quotation['customer_name']); ?></p>
                                 <p><strong>Contact:</strong> <?php echo htmlspecialchars($quotation['customer_contact']); ?></p>
@@ -537,7 +549,7 @@ if ($debug_mode) {
                             
                             if ($has_coils): ?>
                                 <a href="print_job_card.php?id=<?php echo $quotation['id']; ?>" 
-                                   target="_blank" class="button job-card-btn">Print Job Card #<?php echo $quotation['id']; ?></a>
+                                   target="_blank" class="button job-card-btn">Print Job Card #<?php echo htmlspecialchars($quotation['quotation_number']); ?></a>
                             <?php endif; ?>
 
                             <?php if ($quotation['type'] == 'raw_materials' && !$quotation['has_order']): ?>

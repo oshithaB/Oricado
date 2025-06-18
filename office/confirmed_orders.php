@@ -2,6 +2,18 @@
 require_once '../config/config.php';
 checkAuth(['office_staff']);
 
+// Add this function at the top after require statements
+function formatOrderNumber($orderId, $createdAt) {
+    $date = new DateTime($createdAt);
+    return sprintf(
+        "SO/%s/%s/%s/%05d",
+        $date->format('d'),
+        $date->format('m'),
+        $date->format('y'),
+        $orderId
+    );
+}
+
 // Get confirmed orders with balance
 $orders = $conn->query("
     SELECT o.*, 
@@ -18,5 +30,6 @@ $orders = $conn->query("
 ")->fetch_all(MYSQLI_ASSOC);
 
 $status = 'confirmed';
+$formatOrderNumber = 'formatOrderNumber';
 require 'orders_template.php';
 ?>

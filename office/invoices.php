@@ -2,6 +2,28 @@
 require_once '../config/config.php';
 checkAuth(['office_staff']);
 
+function formatOrderNumber($orderId, $createdAt) {
+    $date = new DateTime($createdAt);
+    return sprintf(
+        "SO/%s/%s/%s/%05d",
+        $date->format('d'),
+        $date->format('m'),
+        $date->format('y'),
+        $orderId
+    );
+}
+
+function formatInvoiceNumber($invoiceId, $createdAt) {
+    $date = new DateTime($createdAt);
+    return sprintf(
+        "INV/%s/%s/%s/%d",
+        $date->format('d'),
+        $date->format('m'),
+        $date->format('y'),
+        $invoiceId
+    );
+}
+
 // Get search parameters
 $search = $_GET['search'] ?? '';
 
@@ -15,8 +37,9 @@ if (!in_array($type, ['advance', 'final'])) {
 
 // Build the query with search conditions
 $query = "
-    SELECT i.*, o.customer_name, o.customer_contact, o.customer_address,
-           o.total_price, u.name as created_by_name,
+    SELECT i.*, i.created_at as invoice_created_at,
+           o.*, o.created_at as order_created_at,
+           u.name as created_by_name,
            COALESCE(SUM(CASE WHEN inv.invoice_type = 'advance' THEN inv.amount ELSE 0 END), 0) as advance_paid,
            o.total_price - COALESCE(SUM(CASE WHEN inv.invoice_type = 'advance' THEN inv.amount ELSE 0 END), 0) as balance_amount
     FROM invoices i
@@ -296,8 +319,8 @@ $invoices = $result->fetch_all(MYSQLI_ASSOC);
                     <?php foreach ($invoices as $invoice): ?>
                     <div class="invoice-card">
                         <div class="invoice-info">
-                            <h3>Invoice #<?php echo $invoice['id']; ?></h3>
-                            <p><strong>Order #:</strong> <?php echo $invoice['order_id']; ?></p>
+                            <h3>Invoice #<?php echo formatInvoiceNumber($invoice['id'], $invoice['invoice_created_at']); ?></h3>
+                            <p><strong>Order #:</strong> <?php echo formatOrderNumber($invoice['order_id'], $invoice['order_created_at']); ?></p>
                             <p><strong>Customer:</strong> <?php echo htmlspecialchars($invoice['customer_name']); ?></p>
                             <p><strong>Total Order Amount:</strong> Rs. <?php echo number_format($invoice['total_price'], 2); ?></p>
                             <?php if ($invoice['invoice_type'] == 'advance'): ?>

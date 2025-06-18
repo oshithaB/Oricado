@@ -16,6 +16,17 @@ $orders = $conn->query("
     AND o.admin_approved = 1
     ORDER BY o.created_at DESC
 ")->fetch_all(MYSQLI_ASSOC);
+
+function formatOrderNumber($orderId, $createdAt) {
+    $date = new DateTime($createdAt);
+    return sprintf(
+        "SO/%s/%s/%s/%05d",
+        $date->format('d'),
+        $date->format('m'),
+        $date->format('y'),
+        $orderId
+    );
+}
 ?>
 
 <!DOCTYPE html>
@@ -79,7 +90,7 @@ $orders = $conn->query("
                         <div class="order-header">
                             <div class="reference-numbers">
                                 <h3>
-                                    <span class="order-word">Order</span> #<?php echo $order['id']; ?>
+                                    <span class="order-word">Order</span> #<?php echo formatOrderNumber($order['id'], $order['created_at']); ?>
                                 </h3>
                                 <?php if ($order['quotation_id']): ?>
                                     <h4>Quotation #<?php echo $order['quotation_id']; ?></h4>

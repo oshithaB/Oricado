@@ -300,27 +300,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Process items
                 if (!empty($_POST['items']) && is_array($_POST['items'])) {
                     $itemStmt = $conn->prepare("INSERT INTO quotation_items (
-                        quotation_id, material_id, name, quantity, unit, 
-                        discount, price, taxes, amount
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                        quotation_id, 
+                        material_id, 
+                        name, 
+                        quantity, 
+                        unit, 
+                        discount, 
+                        price, 
+                        newsaleprice, 
+                        coil_inches, 
+                        pieces, 
+                        taxes, 
+                        amount
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
                     foreach ($_POST['items'] as $item) {
-                        // Get item variables
                         $materialId = intval($item['material_id']);
-                        $name = $item['name']; // Make sure name is set
-                        $quantity = number_format(round(floatval($item['quantity']), 2), 2, '.', '');
+                        $name = $item['name'];
+                        $quantity = floatval($item['quantity']);
                         $unit = $item['unit'];
-                        $discount = number_format(round(floatval($item['discount']), 2), 2, '.', '');
-                        $price = number_format(round(floatval($item['price']), 2), 2, '.', '');
-                        $taxes = number_format(round(floatval($item['taxes']), 2), 2, '.', '');
-                        $amount = number_format(round(floatval($item['amount']), 2), 2, '.', '');
+                        $discount = floatval($item['discount']);
+                        $price = floatval($item['price']);
+                        $newSalePrice = $price; // Use price as newsaleprice
+                        $coilInches = isset($item['coil_inches']) ? floatval($item['coil_inches']) : null;
+                        $pieces = isset($item['pieces']) ? intval($item['pieces']) : null;
+                        $taxes = floatval($item['taxes']);
+                        $amount = floatval($item['amount']);
 
-                        // Verify name is not empty
-                        if (empty($name)) {
-                            throw new Exception("Item name cannot be empty");
-                        }
-
-                        $itemStmt->bind_param("iisssssss",  // Changed numeric types to s
+                        $itemStmt->bind_param("iisdsddddids",
                             $quotation_id,
                             $materialId,
                             $name,
@@ -328,6 +335,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             $unit,
                             $discount,
                             $price,
+                            $newSalePrice,
+                            $coilInches,
+                            $pieces,
                             $taxes,
                             $amount
                         );
@@ -362,6 +372,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header('Location: create_quotation.php');
         exit();
     }
+}
+
+function formatQuotationNumber($quotationId, $createdAt) {
+    $date = new DateTime($createdAt);
+    return sprintf(
+        "QT/%s/%s/%s/%05d",
+        $date->format('d'),
+        $date->format('m'),
+        $date->format('y'),
+        $quotationId
+    );
 }
 ?>
 

@@ -519,6 +519,28 @@ body {
         exit;
     }
 
+    private function formatQuotationNumber($quotationId, $createdAt) {
+        $date = new DateTime($createdAt);
+        return sprintf(
+            "QT/%s/%s/%s/%05d",
+            $date->format('d'),
+            $date->format('m'),
+            $date->format('y'),
+            $quotationId
+        );
+    }
+
+    private function formatOrderNumber($orderId, $createdAt) {
+        $date = new DateTime($createdAt);
+        return sprintf(
+            "SO/%s/%s/%s/%05d",
+            $date->format('d'),
+            $date->format('m'),
+            $date->format('y'),
+            $orderId
+        );
+    }
+
   private function getQuotationHTML($quotation, $docTitle) {
     // Get logo HTML for consistent use
     $logoPath = __DIR__ . '/../assets/images/oricado logo.png';
@@ -534,9 +556,14 @@ body {
     
     // Document meta information with professional styling
     $html .= '<div class="document-meta">
-        <div class="quotation-number">Quotation #' . $this->id . '</div>
+        <div class="quotation-number">Quotation #' . $this->formatQuotationNumber($this->id, $quotation['created_at']) . '</div>
         <div class="document-date">' . date('d F Y', strtotime($quotation['created_at'])) . '</div>
     </div>';
+
+    // If order exists, show order number
+    if (isset($quotation['order_id'])) {
+        $html .= '<div class="order-number">Order #' . $this->formatOrderNumber($quotation['order_id'], $quotation['order_created_at']) . '</div>';
+    }
 
     // Customer and quotation details in professional grid layout
     $html .= '<div class="quotation-details">

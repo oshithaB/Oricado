@@ -163,6 +163,7 @@ function selectMaterial(row, material) {
     const materialIdInput = row.querySelector('.material-id');
     const unitInput = row.querySelector('.unit');
     const priceInput = row.querySelector('.price');
+    const quantityInput = row.querySelector('.quantity');
     const suggestionDiv = row.querySelector('.material-suggestions');
 
     nameInput.value = material.display_name || material.name;
@@ -170,11 +171,56 @@ function selectMaterial(row, material) {
     materialIdInput.value = material.id;
     unitInput.value = material.unit;
     priceInput.value = material.saleprice || 0;
-    // Remove readonly attribute from price input
     priceInput.removeAttribute('readonly');
     suggestionDiv.style.display = 'none';
 
-    calculateRowTotal(row.querySelector('.quantity'));
+    // Check if material is coil type
+    if (material.type === 'coil') {
+        // Create inches and pieces fields container if not exists
+        let coilFields = row.querySelector('.coil-fields');
+        if (!coilFields) {
+            coilFields = document.createElement('div');
+            coilFields.className = 'coil-fields';
+            coilFields.style.marginTop = '5px';
+            coilFields.innerHTML = `
+                <div style="display: flex; gap: 5px; margin-top: 5px;">
+                    <input type="number" class="coil-inches form-control form-control-sm" placeholder="Inches" step="0.01" style="width: 45%;">
+                    <input type="number" class="coil-pieces form-control form-control-sm" placeholder="Pieces" step="1" style="width: 45%;">
+                </div>
+            `;
+            row.querySelector('.material-search').appendChild(coilFields);
+
+            // Add event listeners for auto calculation
+            const inchesInput = coilFields.querySelector('.coil-inches');
+            const piecesInput = coilFields.querySelector('.coil-pieces');
+
+            function calculateQuantity() {
+                const inches = parseFloat(inchesInput.value) || 0;
+                const pieces = parseInt(piecesInput.value) || 0;
+                if (inches && pieces) {
+                    const quantity = (inches * pieces) / 12;
+                    quantityInput.value = quantity.toFixed(2);
+                    // Save inches and pieces to hidden inputs
+                    row.querySelector('.coil-inches-input').value = inches;
+                    row.querySelector('.pieces-input').value = pieces;
+                    calculateRowTotal(quantityInput);
+                }
+            }
+
+            inchesInput.addEventListener('input', calculateQuantity);
+            piecesInput.addEventListener('input', calculateQuantity);
+        }
+        quantityInput.readOnly = true;
+    } else {
+        // Remove coil fields if they exist
+        const coilFields = row.querySelector('.coil-fields');
+        if (coilFields) {
+            coilFields.remove();
+        }
+        quantityInput.readOnly = false;
+    }
+
+    calculateRowTotal(quantityInput);
 }
 
 function setupCustomerSearch() {
@@ -217,6 +263,8 @@ function addNewRow() {
                 <div class="material-suggestions"></div>
                 <input type="hidden" name="items[${rowIndex}][material_id]" class="material-id">
                 <input type="hidden" name="items[${rowIndex}][name]" class="item-name-input">
+                <input type="hidden" name="items[${rowIndex}][coil_inches]" class="coil-inches-input">
+                <input type="hidden" name="items[${rowIndex}][pieces]" class="pieces-input">
             </div>
         </td>
         <td style="text-align: center; vertical-align: middle;">

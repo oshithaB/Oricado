@@ -366,6 +366,28 @@ class InvoiceGenerator {
         $this->outputPDF($html);
     }
 
+    private function formatInvoiceNumber($invoiceId, $createdAt) {
+        $date = new DateTime($createdAt);
+        return sprintf(
+            "INV/%s/%s/%s/%05d",
+            $date->format('d'),
+            $date->format('m'),
+            $date->format('y'),
+            $invoiceId
+        );
+    }
+
+    private function formatOrderNumber($orderId, $createdAt) {
+        $date = new DateTime($createdAt);
+        return sprintf(
+            "SO/%s/%s/%s/%05d",
+            $date->format('d'),
+            $date->format('m'),
+            $date->format('y'),
+            $orderId
+        );
+    }
+
     private function generateAdvanceInvoiceHTML($invoice, $logoHtml) {
         return '
         <div class="invoice-container">
@@ -392,7 +414,8 @@ class InvoiceGenerator {
                 <p><strong>Customer:</strong> ' . htmlspecialchars($invoice['customer_name']) . '</p>
                 <p><strong>Contact:</strong> ' . htmlspecialchars($invoice['customer_contact']) . '</p>
                 <p><strong>Address:</strong> ' . htmlspecialchars($invoice['customer_address']) . '</p>
-                <p><strong>Order #:</strong> ' . $invoice['order_id'] . '</p>
+                <p><strong>Invoice #:</strong> ' . $this->formatInvoiceNumber($invoice['id'], $invoice['invoice_created_at']) . '</p>
+                <p><strong>Order #:</strong> ' . $this->formatOrderNumber($invoice['order_id'], $invoice['order_created_at']) . '</p>
                 <p><strong>Created By:</strong> ' . htmlspecialchars($invoice['created_by_name']) . '</p>
             </div>
 
@@ -461,7 +484,8 @@ class InvoiceGenerator {
                 <p><strong>Customer:</strong> ' . htmlspecialchars($invoice['customer_name']) . '</p>
                 <p><strong>Contact:</strong> ' . htmlspecialchars($invoice['customer_contact']) . '</p>
                 <p><strong>Address:</strong> ' . htmlspecialchars($invoice['customer_address']) . '</p>
-                <p><strong>Order #:</strong> ' . $invoice['order_id'] . '</p>
+                <p><strong>Invoice #:</strong> ' . $this->formatInvoiceNumber($invoice['id'], $invoice['invoice_created_at']) . '</p>
+                <p><strong>Order #:</strong> ' . $this->formatOrderNumber($invoice['order_id'], $invoice['order_created_at']) . '</p>
                 <p><strong>Created By:</strong> ' . htmlspecialchars($invoice['created_by_name']) . '</p>
             </div>
 

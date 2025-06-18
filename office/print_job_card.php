@@ -18,7 +18,7 @@ $quotation = $conn->query("
 
 // Get coil items only
 $items = $conn->query("
-    SELECT qi.*, m.color, m.thickness, m.type
+    SELECT qi.*, m.color, m.thickness, m.type, qi.coil_inches, qi.pieces
     FROM quotation_items qi
     LEFT JOIN materials m ON qi.material_id = m.id
     WHERE qi.quotation_id = $id AND m.type = 'coil'
@@ -116,6 +116,8 @@ $items = $conn->query("
             <tr>
                 <th>Item</th>
                 <th>Details</th>
+                <th>Inches</th>
+                <th>Pieces</th>
                 <th>Quantity</th>
                 <th>Unit</th>
             </tr>
@@ -128,6 +130,8 @@ $items = $conn->query("
                     Color: <?php echo str_replace('_', ' ', ucfirst($item['color'])); ?><br>
                     Thickness: <?php echo $item['thickness']; ?>
                 </td>
+                <td><?php echo $item['coil_inches'] ? number_format($item['coil_inches'], 2) : '-'; ?></td>
+                <td><?php echo $item['pieces'] ? number_format($item['pieces']) : '-'; ?></td>
                 <td><?php echo number_format($item['quantity'], 2); ?></td>
                 <td><?php echo htmlspecialchars($item['unit']); ?></td>
             </tr>

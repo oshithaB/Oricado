@@ -2,6 +2,18 @@
 require_once '../config/config.php';
 checkAuth(['office_staff']);
 
+// Add this function at the top after require statements
+function formatOrderNumber($orderId, $createdAt) {
+    $date = new DateTime($createdAt);
+    return sprintf(
+        "SO/%s/%s/%s/%05d",
+        $date->format('d'),
+        $date->format('m'),
+        $date->format('y'),
+        $orderId
+    );
+}
+
 // Get search parameters
 $search = $_GET['search'] ?? '';
 
@@ -245,7 +257,7 @@ $orders = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
                     <div class="row">
                         <div class="col-md-8">
                             <h3 class="order-title">
-                                <span class="order-word">Order</span> #<?php echo $order['id']; ?>
+                                <span class="order-word">Order</span> #<?php echo formatOrderNumber($order['id'], $order['created_at']); ?>
                             </h3>
                             <div class="order-info">
                                 <p class="mb-2"><strong>Customer:</strong> <?php echo htmlspecialchars($order['customer_name']); ?></p>

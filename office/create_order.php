@@ -157,8 +157,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $measureQuery = $conn->prepare("INSERT INTO roller_door_measurements (
             order_id, section1, section2, outside_width, inside_width, door_width, 
             tower_height, tower_type, coil_color, thickness, covering, 
-            side_lock, motor, fixing, down_lock
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            motor, fixing
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         $section1 = $section1_inches;
         $section2 = $section2_inches;
@@ -167,18 +167,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $doorWidth = floatval($_POST['door_width']);
         $towerHeight = floatval($_POST['tower_height']);
         $towerType = $_POST['tower_type'];
-        $coilColor = $_POST['coil_color'];
+        $coilColor = ($_POST['coil_color'] === 'custom') ? $_POST['custom_coil_color'] : $_POST['coil_color'];
         $thickness = $_POST['thickness'];
         $covering = $_POST['covering'];
-        $sideLock = $_POST['side_lock'];
         $motor = $_POST['motor'];
         $fixing = $_POST['fixing'];
-        $downLock = intval($_POST['down_lock']);
 
-        $measureQuery->bind_param('iddddddsssssssi',
+        $measureQuery->bind_param('iddddddssssss',
             $order_id, $section1, $section2, $outsideWidth, $insideWidth, $doorWidth,
             $towerHeight, $towerType, $coilColor, $thickness, $covering, 
-            $sideLock, $motor, $fixing, $downLock
+            $motor, $fixing
         );
 
         $measureQuery->execute();
@@ -369,6 +367,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 `Square Feet: ${squareFeet.toFixed(2)} (Height: ${heightFeet.toFixed(2)}' × Width: ${widthFeet.toFixed(2)}')`;
         }
     }
+
+    function checkCustomColor(value) {
+        const customInput = document.getElementById('custom_coil_color');
+        if (value === 'custom') {
+            customInput.style.display = 'block';
+            customInput.required = true;
+        } else {
+            customInput.style.display = 'none';
+            customInput.required = false;
+            customInput.value = '';
+        }
+    }
     </script>
 </head>
 <body>
@@ -455,13 +465,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div class="form-group">
                         <label>Tower Type:</label>
                         <select name="tower_type" required>
+                            <option value="none">None</option>
                             <option value="small">Small</option>
                             <option value="large">Large</option>
+                            <option value="both">Both</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Coil Color:</label>
-                        <select name="coil_color" required>
+                        <select name="coil_color" id="coil_color" onchange="checkCustomColor(this.value)">
                             <option value="coffee_brown">Coffee Brown</option>
                             <option value="black_shine">Black Shine</option>
                             <option value="blue_color">Blue Color</option>
@@ -469,7 +481,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <option value="chocolate_brown">Chocolate Brown</option>
                             <option value="black_mate">Black Mate</option>
                             <option value="beige">Beige</option>
+                            <option value="custom">Custom Color</option>
                         </select>
+                        <input type="text" name="custom_coil_color" id="custom_coil_color" 
+                               style="display:none; margin-top:5px;" placeholder="Enter custom color">
                     </div>
                     <div class="form-group">
                         <label>Thickness:</label>
@@ -488,13 +503,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Side Lock:</label>
-                        <select name="side_lock" required>
-                            <option value="1">Yes</option>
-                            <option value="0">No</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
                         <label>Motor:</label>
                         <select name="motor" required>
                             <option value="R">Right</option>
@@ -507,13 +515,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <select name="fixing" required>
                             <option value="inside">Inside</option>
                             <option value="outside">Outside</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Down Lock:</label>
-                        <select name="down_lock" required>
-                            <option value="1">Yes</option>
-                            <option value="0">No</option>
                         </select>
                     </div>
                 </div>
@@ -576,9 +577,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <button type="submit" name="<?php echo $quotation_id ? 'check_quotation' : 'submit'; ?>">
                     <?php echo $quotation_id ? 'Check Measurements' : 'Create Order'; ?>
                 </button>
-            </form>
-        </div>
-    </div>
+        </div>form>
+    </div>div>
     <script src="../assets/js/order-form.js"></script>
-</body>
+</body>ript src="../assets/js/order-form.js"></script>
+</html>
 </html>
