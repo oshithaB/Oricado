@@ -142,7 +142,7 @@ $materials = $conn->query("SELECT * FROM materials ORDER BY type, name")->fetch_
             <div class="row g-4">
                 <?php foreach ($materials as $material): ?>
                     <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card stock-card h-100">
+                        <div class="card stock-card h-100 position-relative">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start mb-3">
                                     <h5 class="card-title">
@@ -162,9 +162,14 @@ $materials = $conn->query("SELECT * FROM materials ORDER BY type, name")->fetch_
                                     </div>
                                 <?php endif; ?>
 
-                                <p class="stock-level <?php echo $material['quantity'] < 10 ? 'low-stock' : ''; ?>">
+                                <p class="stock-level mb-2">
                                     <i class="fas fa-cubes me-2"></i>
-                                    <?php echo $material['quantity'] . ' ' . $material['unit']; ?>
+                                    <span style="color:<?php echo ($material['quantity'] < 100) ? '#dc3545' : '#198754'; ?>; font-weight:bold;">
+                                        <?php echo $material['quantity'] . ' ' . $material['unit']; ?>
+                                    </span>
+                                    <?php if ($material['quantity'] < 100): ?>
+                                        <i class="fas fa-exclamation-circle text-danger ms-2" title="Low Stock"></i>
+                                    <?php endif; ?>
                                 </p>
 
                                 <form method="POST" class="mt-3">

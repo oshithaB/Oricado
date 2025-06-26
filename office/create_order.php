@@ -354,6 +354,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <title>Create New Order</title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
     function calculateSquareFeet() {
         const section1 = parseFloat(document.getElementsByName('section1')[0].value) || 0;
