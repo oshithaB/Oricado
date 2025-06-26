@@ -173,6 +173,13 @@ $orders = $conn->query("
                                 <?php if ($order['quotation_type'] === 'raw_materials'): ?>
                                     <button type="button" onclick="showMaterials(<?php echo $order['quotation_id']; ?>)" 
                                             class="btn btn-material w-100">Show Materials</button>
+                                    <!-- Mark as Done button for material orders -->
+                                    <form method="POST" onsubmit="return confirm('Are you sure you want to mark this order as done?');">
+                                        <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
+                                        <button type="submit" name="mark_done" class="btn btn-success w-100 mt-2">
+                                            Mark as Done
+                                        </button>
+                                    </form>
                                 <?php else: ?>
                                     <a href="download_order.php?id=<?php echo $order['id']; ?>" 
                                        class="btn btn-secondary w-100">Download Order</a>

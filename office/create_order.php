@@ -78,10 +78,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             SELECT is_vat_quotation FROM quotations WHERE id = $quotation_id
         ")->fetch_assoc();
 
+        // Get roller door item for display/edit (match both types)
+        $roller_door = $conn->query("
+            SELECT qi.* 
+            FROM quotation_items qi
+            WHERE qi.quotation_id = $quotation_id 
+            AND (qi.name LIKE '%Powder-Coated Roller Door%' OR qi.name LIKE '%ZINC Aluminum Roller Door%')
+            LIMIT 1
+        ")->fetch_assoc();
+
         // Store all form data in session
         $_SESSION['order_data'] = $_POST;
         $_SESSION['calculated_sqft'] = $calculated_sqft;
         $_SESSION['is_vat_quotation'] = ($quotation_details['is_vat_quotation'] ?? false);
+        $_SESSION['roller_door_amount'] = $roller_door['amount'] ?? '';
 
         // Redirect to edit quotation
         header("Location: edit_quotation.php?id=$quotation_id&calculated_sqft=$calculated_sqft");
@@ -216,12 +226,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 WHERE q.id = $quotation_id
             ")->fetch_assoc();
 
-            // Get roller door item
+            // Get roller door item (match both types)
             $roller_door = $conn->query("
                 SELECT qi.* 
                 FROM quotation_items qi
                 WHERE qi.quotation_id = $quotation_id 
-                AND qi.name LIKE '%Powder-Coated Roller Door%'
+                AND (qi.name LIKE '%Powder-Coated Roller Door%' OR qi.name LIKE '%ZINC Aluminum Roller Door%')
                 LIMIT 1
             ")->fetch_assoc();
 
@@ -231,14 +241,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 try {
                     $conn->begin_transaction();
 
-                    // 1. Update roller door quantity and amount
+                    // 1. Update roller door quantity and amount (match both types)
                     $price_per_sqft = $roller_door['price'] ?? 0;
-                    $new_door_amount = $calculated_sqft * $price_per_sqft;
+                    $new_door_amount = isset($_POST['roller_door_amount']) ? floatval($_POST['roller_door_amount']) : ($calculated_sqft * $price_per_sqft);
                     
                     $update_door = $conn->prepare("
                         UPDATE quotation_items 
                         SET quantity = ?, amount = ?
-                        WHERE quotation_id = ? AND name LIKE '%Powder-Coated Roller Door%'
+                        WHERE quotation_id = ? AND (name LIKE '%Powder-Coated Roller Door%' OR name LIKE '%ZINC Aluminum Roller Door%')
                     ");
                     
                     if (!$update_door->bind_param("ddi", $calculated_sqft, $new_door_amount, $quotation_id)) {
@@ -574,6 +584,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </div>
                     </div>
                 </div>
+                <?php if (isset($_SESSION['roller_door_amount'])): ?>
+                    <div class="section">
+                        <h3>Powder Coated Roller Door Amount</h3>
+                        <div class="form-group">
+                            <label>Amount (Rs.):</label>
+                            <input type="number" step="0.01" name="roller_door_amount"
+                                   value="<?php echo htmlspecialchars($_SESSION['roller_door_amount']); ?>" required>
+                            <small>You can edit the amount if needed before updating the quotation.</small>
+                        </div>
+                    </div>
+                <?php endif; ?>
                 <button type="submit" name="<?php echo $quotation_id ? 'check_quotation' : 'submit'; ?>">
                     <?php echo $quotation_id ? 'Check Measurements' : 'Create Order'; ?>
                 </button>

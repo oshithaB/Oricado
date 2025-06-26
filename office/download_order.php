@@ -27,6 +27,11 @@ $order = $conn->query("
     WHERE o.id = $order_id
 ")->fetch_assoc();
 
+// Ensure all nulls are replaced with 'N/A'
+array_walk_recursive($order, function(&$value) {
+    $value = $value ?? 'N/A';
+});
+
 // Get materials if any
 $materials = $conn->query("
     SELECT m.*, om.quantity as used_quantity
@@ -48,6 +53,13 @@ $order_status = $result->fetch_assoc()['status'] ?? null;
 
 // Only show signatures for reviewed, completed, or done orders
 $showSignature = in_array($order_status, ['reviewed', 'completed', 'done']);
+
+// Get roller door measurements for this order
+$roller = $conn->query("
+    SELECT outside_width, inside_width, door_width, tower_height, tower_type, coil_color, thickness, covering, side_lock, motor, fixing, down_lock, section1, section2
+    FROM roller_door_measurements
+    WHERE order_id = $order_id
+")->fetch_assoc();
 ?>
 <!DOCTYPE html>
 <html>
@@ -173,52 +185,47 @@ $showSignature = in_array($order_status, ['reviewed', 'completed', 'done']);
         <div class="mb-4">
             <h2 class="section-title">Roller Door Specifications</h2>
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <table class="info-table">
-                        <tr>
-                            <td>Outside Width:</td>
-                            <td><?php echo $order['outside_width'] ? $order['outside_width'] . ' inches' : 'N/A'; ?></td>
-                        </tr>
-                        <tr>
-                            <td>Inside Width:</td>
-                            <td><?php echo $order['inside_width'] ? $order['inside_width'] . ' inches' : 'N/A'; ?></td>
-                        </tr>
-                        <tr>
-                            <td>Door Width:</td>
-                            <td><?php echo $order['door_width'] ? $order['door_width'] . ' inches' : 'N/A'; ?></td>
-                        </tr>
-                        <tr>
-                            <td>Tower Height:</td>
-                            <td><?php echo $order['tower_height'] ? $order['tower_height'] . ' inches' : 'N/A'; ?></td>
-                        </tr>
-                        <tr>
-                            <td>Total Square Feet:</td>
-                            <td><?php echo $order['total_sqft'] ? $order['total_sqft'] : 'N/A'; ?></td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="col-md-6">
-                    <table class="info-table">
-                        <tr>
-                            <td>Coil Color:</td>
-                            <td><?php echo $order['coil_color'] ? str_replace('_', ' ', ucfirst($order['coil_color'])) : 'N/A'; ?></td>
-                        </tr>
-                        <tr>
-                            <td>Tower Type:</td>
-                            <td><?php echo $order['tower_type'] ? ucfirst($order['tower_type']) : 'N/A'; ?></td>
-                        </tr>
-                        <tr>
-                            <td>Thickness:</td>
-                            <td><?php echo $order['thickness'] ? $order['thickness'] : 'N/A'; ?></td>
-                        </tr>
-                        <tr>
-                            <td>Motor:</td>
-                            <td><?php echo $order['motor'] ? ($order['motor'] === 'L' ? 'Left' : ($order['motor'] === 'R' ? 'Right' : 'Manual')) : 'N/A'; ?></td>
-                        </tr>
-                        <tr>
-                            <td>Fixing:</td>
-                            <td><?php echo $order['fixing'] ? ucfirst($order['fixing']) : 'N/A'; ?></td>
-                        </tr>
+                        <?php
+                        $rollerDoorFields = [
+                            'outside_width' => 'Outside Width (inches)',
+                            'inside_width' => 'Inside Width (inches)',
+                            'door_width' => 'Door Width (inches)',
+                            'tower_height' => 'Tower Height (inches)',
+                            'tower_type' => 'Tower Type',
+                            'coil_color' => 'Coil Color',
+                            'thickness' => 'Thickness',
+                            'covering' => 'Covering',
+                            'side_lock' => 'Side Lock',
+                            'motor' => 'Motor',
+                            'fixing' => 'Fixing',
+                            'down_lock' => 'Down Lock',
+                            'section1' => 'Section 1 (inches)',
+                            'section2' => 'Section 2 (inches)',
+                        ];
+
+                        foreach ($rollerDoorFields as $field => $label) {
+                            if (
+                                isset($roller[$field]) &&
+                                $roller[$field] !== null &&
+                                $roller[$field] !== '' &&
+                                $roller[$field] !== 'N/A'
+                            ) {
+                                $value = $roller[$field];
+                                if ($field === 'coil_color') {
+                                    $value = str_replace('_', ' ', ucfirst($value));
+                                } elseif ($field === 'tower_type' || $field === 'covering' || $field === 'fixing') {
+                                    $value = ucfirst($value);
+                                } elseif ($field === 'motor') {
+                                    $value = ($value === 'L' ? 'Left' : ($value === 'R' ? 'Right' : ucfirst($value)));
+                                } elseif ($field === 'side_lock' || $field === 'down_lock') {
+                                    $value = ($value == 1 ? 'Yes' : ($value == 0 ? 'No' : $value));
+                                }
+                                echo "<tr><td>{$label}:</td><td>{$value}</td></tr>";
+                            }
+                        }
+                        ?>
                     </table>
                 </div>
             </div>
@@ -243,7 +250,14 @@ $showSignature = in_array($order_status, ['reviewed', 'completed', 'done']);
                         <tr><td>Door Opening:</td><td><?php echo str_replace('_', ' ', ucfirst($order['door_opening'])); ?></td></tr>
                         <tr><td>Handle:</td><td><?php echo $order['handle'] ? 'Yes' : 'No'; ?></td></tr>
                         <tr><td>Letter Box:</td><td><?php echo $order['letter_box'] ? 'Yes' : 'No'; ?></td></tr>
-                        <tr><td>Door Type:</td><td><?php echo $order['door_type'] ? ucfirst($order['door_type']) : 'N/A'; ?></td></tr>
+                        <tr><td>Door Type:</td><td>
+                            <?php
+                            // Show N/A if not set or empty or error
+                            echo (isset($order['door_type']) && !empty($order['door_type'])) 
+                                ? ucfirst($order['door_type']) 
+                                : 'N/A';
+                            ?>
+                        </td></tr>
                     </table>
                 </div>
             </div>

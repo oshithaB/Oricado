@@ -8,81 +8,174 @@ document.addEventListener('DOMContentLoaded', function() {
     const itemsTable = document.getElementById('itemsTable').getElementsByTagName('tbody')[0];
 
     const quotationTexts = {
-        '0.60': `Features of the Roller Door
-914mm wide, 0.60mm thick powder-coated roller door panel
-Includes Springs, Pulleys, GI Center Bar, Dust Seal, Nylon Strip, Aluminum Bottom Bars, and Side Locks
-Available Colors
-Black, Buttermilk, Beige, Coffee Brown, Blue, Green, Maroon, Autumn Red, Maroon (sand finished)
-Warranty
-10-Year Warranty on non-corrosive states of the door panel (Conditions Apply)
-Warranty Card issued upon installation after full payment
-2-Year Warranty for motor & 1-Year Warranty for remotes (Conditions Apply)
-Terms & Conditions
-Validity: Quotation valid for 7 days only.
-Payment: 50% of the grand total is due as an advance payment within 3 days of the quotation date. This payment is non-refundable and non-transferable.
-Site Access:
+        '0.60': `📄 ORICADO ROLLER DOORS — PRODUCT & QUOTATION DETAILS
 
-The customer agrees to allow company representatives to visit the installation site during office hours at a mutually convenient time.
-The customer or an authorized representative must be present during site visits.
-The company is not responsible for any delays or additional costs due to restricted access or delays by the customer.
-The customer must prepare the site within 12 working days of the advance payment. Any delays in site preparation may result in price adjustments, and the advance payment will not be refunded.
-Final Payment: Full payment is required prior to delivery and installation. Ownership remains with ORICADO ROLLER DOORS until full payment is received. In case of non-payment, the company reserves the right to claim any damages and costs, and the advance payment will be forfeited.
-Price Adjustments: Prices are subject to change based on government budget updates or exchange rate fluctuations.
-Tax Exclusion: Prices exclude applicable taxes.
-Bank Details
+🔧 Features of the Roller Door
+Panel Size: 914mm wide, 0.60mm thick powder-coated roller door panel
+
+Included Components: Springs, Pulleys, GI Center Bar, Dust Seal, Nylon Strip, Aluminum Bottom Bars, Side Locks
+
+🎨 Available Colors
+Black
+
+Buttermilk
+
+Beige
+
+Coffee Brown
+
+Blue
+
+Green
+
+Maroon
+
+Autumn Red
+
+Maroon (Sand Finished)
+
+🛡️ Warranty
+10-Year Warranty on non-corrosive states of the door panel (conditions apply)
+
+Warranty card issued upon installation after full payment
+
+2-Year Warranty for motor & 1-Year Warranty for remotes (conditions apply)
+
+📜 Terms & Conditions
+✅ Validity
+Quotation is valid for 7 days only
+
+💰 Payment Terms
+50% advance payment (non-refundable & non-transferable) within 3 days of quotation date
+
+Full payment required prior to delivery and installation
+
+🏗️ Site Access
+Customer agrees to allow ORICADO representatives to visit the site during office hours at a mutually agreed time
+
+Customer or authorized person must be present during visits
+
+Company is not responsible for delays or extra costs due to site inaccessibility or delays caused by the customer
+
+Site must be ready within 12 working days of advance payment. Delay may lead to price adjustments. Advance is non-refundable
+
+🔒 Ownership & Final Payment
+Ownership remains with ORICADO ROLLER DOORS until full payment is received
+
+In case of non-payment, the company reserves the right to claim damages and costs, and the advance will be forfeited
+
+💸 Price Adjustments
+Subject to change based on government budget updates or exchange rate fluctuations
+
+🧾 Tax Exclusion
+All prices are exclusive of applicable taxes
+
+🏦 Bank Details
 Account Name: RIYON INTERNATIONAL (PVT) LTD
-Bank: HATTON NATIONAL BANK - MALABE
+
+Bank: Hatton National Bank – Malabe
+
 Account Number: 1560 1000 9853
-For inquiries, please contact  Ms. Poojani at +94 76 827 4015 /  Ms. Chathuri at +94 74 156 8098.   
 
-We are committed to providing high-quality products using the latest technology and premium materials.
+📞 For Inquiries
+Ms. Poojani: +94 76 827 4015
 
-Thank you for considering ORICADO ROLLER DOOR. 	​	​	​	​	​
+Ms. Chathuri: +94 74 156 8098
 
-Yours Sincerely,
+We are committed to providing high-quality roller doors using the latest technology and premium materials.
 
+Thank you for choosing ORICADO ROLLER DOORS.
+
+Yours sincerely,
 ORICADO ROLLER DOORS
 
+Prepared By: ..........................................
+Checked By: .............................................
+Authorized By: ..........................................
 
+`,
+        '0.47': `📄 ORICADO ROLLER DOORS — PRODUCT & QUOTATION DETAILS
 
-Prepared By: ......................................	​	​​Checked By:...........................................	​Authorized By:...................................................`,
-        '0.47': `Features of the Roller Door
+🔧 Features of the Roller Door
 Panel: 914mm wide, 0.47mm thick Zinc Aluminum Roller Door Panel
-Components: Includes Springs, Pulleys, GI Center Bar, Dust Seal, Nylon Strip, Aluminium Bottom Bars, and Side Locks
-Available Colors
-Black, Buttermilk, Beige, Coffee Brown, Blue, Green, Maroon, Autumn Red, Maroon (sand finished)
-Terms & Conditions
-Validity: Quotation valid for 7 days from the date issued.
-Advance Payment: 50% of the grand total is due within 3 days of the quotation date as a non-refundable, non-transferable advance.
-Site Access:
 
-The customer agrees to allow company representatives to access the site during office hours for installation.
+Included Components: Springs, Pulleys, GI Center Bar, Dust Seal, Nylon Strip, Aluminium Bottom Bars, Side Locks
+
+🎨 Available Colors
+Black
+
+Buttermilk
+
+Beige
+
+Coffee Brown
+
+Blue
+
+Green
+
+Maroon
+
+Autumn Red
+
+Maroon (Sand Finished)
+
+📜 Terms & Conditions
+✅ Validity
+Quotation is valid for 7 days from the date issued.
+
+💰 Advance Payment
+50% of the grand total must be paid within 3 days of the quotation date.
+
+This amount is non-refundable and non-transferable.
+
+🏗️ Site Access
+Customer agrees to allow ORICADO representatives to access the site during office hours for installation.
+
 The customer or an authorized representative must be present during site visits.
+
 ORICADO ROLLER DOORS is not liable for delays or extra costs if access is restricted.
-The customer should ensure the site is ready for installation within 12 working days of the advance payment. Delays in preparation may lead to price adjustments, and the advance payment will not be refunded.
-Final Payment: Full payment is required prior to delivery and installation. Ownership remains with ORICADO ROLLER DOORS until full payment is received. In case of non-payment, the company reserves the right to claim any damages and costs, and the advance payment will be forfeited.
-Price Adjustments: Prices are based on the current government budget and may be revised in case of any government price changes or budget updates.
-Currency Fluctuation: Prices are subject to change due to fluctuations in the US Dollar exchange rate.
-Exclusion of Taxes: Prices are exclusive of all applicable taxes.
-Bank Details
+
+Site must be ready within 12 working days of advance payment.
+
+Delays in site preparation may result in price adjustments, and the advance payment will not be refunded.
+
+🔒 Final Payment & Ownership
+Full payment is required prior to delivery and installation.
+
+Ownership remains with ORICADO ROLLER DOORS until full payment is received.
+
+In the event of non-payment, the company reserves the right to claim damages and costs, and the advance will be forfeited.
+
+💸 Price Adjustments
+Prices are based on the current government budget. Any changes may affect final pricing.
+
+Prices may also change due to currency fluctuations, particularly the US Dollar exchange rate.
+
+🧾 Exclusion of Taxes
+Prices listed are exclusive of all applicable taxes.
+
+🏦 Bank Details
 Account Name: RIYON INTERNATIONAL (PVT) LTD
-Bank: HATTON NATIONAL BANK - MALABE
+
+Bank: Hatton National Bank – Malabe
+
 Account Number: 1560 1000 9853
-For inquiries, please contact  Ms. Poojani at +94 76 827 4015. /  Ms. Chathuri at +94 74 156 8098.
 
-​
+📞 For Inquiries
+Ms. Poojani: +94 76 827 4015
 
-We trust this quotation meets your requirements. ORICADO ROLLER DOORS is committed to delivering high-quality products using advanced technology and premium materials.
+Ms. Chathuri: +94 74 156 8098
 
-Yours Sincerely,
+We trust this quotation meets your expectations.
+ORICADO ROLLER DOORS is committed to delivering high-quality products using advanced technology and premium materials.
 
+Yours sincerely,
 ORICADO ROLLER DOORS
 
-
-
-
-
-Prepared By: ......................................	​​	​​Checked By:.........................................	​	​	​Authorized By:.........................................`
+Prepared By: ..........................................
+Checked By: .............................................
+Authorized By: ..........................................`
     };
 
     quotationType.addEventListener('change', function() {

@@ -16,7 +16,7 @@ $query = "
     FROM quotations q
     JOIN quotation_items qi ON q.id = qi.quotation_id
     LEFT JOIN materials m ON qi.material_id = m.id
-    WHERE q.id = ? AND qi.name LIKE '%Roller Door%'
+    WHERE q.id = ? AND (qi.name LIKE '%Roller Door%')
     LIMIT 1
 ";
 
@@ -184,10 +184,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $discount = floatval($_POST['discount']);
             $taxes = floatval($_POST['taxes']);
             
-            // Calculate new amount for this item
-            $amount = $quantity * $price;
-            $amount = $amount * (1 - ($discount/100));
-            $amount = $amount * (1 + ($taxes/100));
+            // Use the rounded integer amount from the form
+            $amount = isset($_POST['amount']) ? intval(round($_POST['amount'])) : intval(round($quantity * $price));
             $material_id = intval($_POST['material_id']);
 
             $stmt->bind_param("dddddii", 
@@ -279,14 +277,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     
                     <div class="form-group">
                         <label>Square Feet:</label>
-                        <input type="number" name="quantity" step="0.01" 
+                        <input type="number" name="quantity" id="quantity" step="0.01" 
                                value="<?php echo $calculated_sqft; ?>" required>
                     </div>
 
                     <div class="form-group">
                         <label>Price per Unit:</label>
-                        <input type="number" name="price" step="0.01" 
+                        <input type="number" name="price" id="price" step="0.01" 
                                value="<?php echo $quotation['price']; ?>" required>
+                    </div>
+
+                    <!-- New Amount field -->
+                    <div class="form-group">
+                        <label>Amount (Rs.):</label>
+                        <input type="number" step="1" name="amount" id="amount"
+                               value="<?php 
+                                    // If form was submitted, keep entered value, else calculate
+                                    if (isset($_POST['amount'])) {
+                                        echo intval(round($_POST['amount']));
+                                    } else {
+                                        // Use calculated amount: sqft * price per unit, rounded to integer
+                                        echo intval(round($calculated_sqft * $quotation['price']));
+                                    }
+                                ?>" required>
+                        <small>Change the amount to update the price per unit automatically.</small>
                     </div>
 
                     <div class="form-group">
@@ -308,6 +322,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <?php endif; ?>
                     </div>
                 </form>
+
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    var sqftInput = document.getElementById('quantity');
+                    var priceInput = document.getElementById('price');
+                    var amountInput = document.getElementById('amount');
+
+                    function updatePricePerUnit() {
+                        var sqft = parseFloat(sqftInput.value) || 0;
+                        var amount = parseFloat(amountInput.value) || 0;
+                        if (sqft > 0) {
+                            priceInput.value = (amount / sqft).toFixed(2);
+                        }
+                    }
+
+                    amountInput.addEventListener('input', function() {
+                        // Always round amount to integer (no cents)
+                        var val = parseFloat(amountInput.value) || 0;
+                        amountInput.value = Math.round(val);
+                        updatePricePerUnit();
+                    });
+                });
+                </script>
             </div>
         </div>
     </div>

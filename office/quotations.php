@@ -549,7 +549,7 @@ function formatQuotationNumber($quotationId, $createdAt) {
                             
                             if ($has_coils): ?>
                                 <a href="print_job_card.php?id=<?php echo $quotation['id']; ?>" 
-                                   target="_blank" class="button job-card-btn">Print Job Card #<?php echo htmlspecialchars($quotation['quotation_number']); ?></a>
+                                   target="_blank" class="button job-card-btn">Print Job Card</a>
                             <?php endif; ?>
 
                             <?php if ($quotation['type'] == 'raw_materials' && !$quotation['has_order']): ?>
@@ -564,7 +564,6 @@ function formatQuotationNumber($quotationId, $createdAt) {
                                    class="button add-measurements-btn">Add Measurements</a>
                             <?php endif; ?>
 
-                            <a href="view_quotation.php?id=<?php echo $quotation['id']; ?>" class="btn btn-primary">View</a>
                             <a href="download_vat_invoice.php?id=<?php echo $quotation['id']; ?>" class="btn btn-warning">Download VAT Invoice</a>
                         </div>
                     </div>

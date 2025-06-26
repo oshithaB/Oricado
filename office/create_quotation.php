@@ -576,7 +576,7 @@ function formatQuotationNumber($quotationId, $createdAt) {
                             <div class="form-floating mb-3">
                                 <select class="form-select" name="quotation_type" id="quotationType" required>
                                     <option value="">Select Type</option>
-                                    <option value="raw_materials">Raw Materials Quotation</option>
+                                    <option value="raw_materials">Materials Quotation</option>
                                     <option value="order">Order Quotation</option>
                                 </select>
                                 <label>Quotation Type</label>
