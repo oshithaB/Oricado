@@ -77,6 +77,7 @@ $invoices = $result->fetch_all(MYSQLI_ASSOC);
 <head>
     <title><?php echo ucfirst($type); ?> Invoices</title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         .invoices-title {
             text-align: center;

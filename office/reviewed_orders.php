@@ -34,6 +34,7 @@ function formatOrderNumber($orderId, $createdAt) {
 <head>
     <title>Reviewed Orders</title>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         .reviewed-title {
             text-align: center;
