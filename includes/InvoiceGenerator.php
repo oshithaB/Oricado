@@ -948,12 +948,24 @@ class InvoiceGenerator {
         $counter = 1;
         
         foreach ($quotationItems as $item) {
+            // Normalize name for robust matching (remove spaces, hyphens, lowercase)
+            $normalizedName = strtolower(str_replace([' ', '-'], '', $item['name']));
+            if (
+                strpos($normalizedName, 'powdercoatedrollerdoor') !== false
+                && floatval($item['quantity']) < 65
+            ) {
+                $displayQty = 1;
+                $displayUnitPrice = 65000;
+            } else {
+                $displayQty = $item['quantity'];
+                $displayUnitPrice = $item['price'];
+            }
             $rows .= '<tr>
                 <td>' . $counter++ . '</td>
                 <td><strong>' . htmlspecialchars($item['name']) . '</strong></td>
                 <td></td>
-                <td style="text-align: center;">' . number_format($item['quantity'], 2) . '</td>
-                <td style="text-align: right;">' . number_format($item['price'], 2) . '</td>
+                <td style="text-align: center;">' . number_format($displayQty, 2) . '</td>
+                <td style="text-align: right;">' . number_format($displayUnitPrice, 2) . '</td>
                 <td style="text-align: right;">' . number_format($item['amount'], 2) . '</td>
             </tr>';
         }

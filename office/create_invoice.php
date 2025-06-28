@@ -29,29 +29,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn->begin_transaction();
     try {
         if ($invoice_type == 'final') {
-            // For direct final invoice without advance
-            $amount = $order['total_price'];
-            
+            // Use current advance as advance_amount, and only charge the remaining balance
+            $advance = floatval($payment_info['advance_paid']);
+            $final_amount = $order['total_price'] - $advance;
+            if ($final_amount < 0) $final_amount = 0;
+
             // Update order - set paid_amount to total_price and balance to 0
             $stmt = $conn->prepare("
                 UPDATE orders 
                 SET paid_amount = total_price,
                     balance_amount = 0,
-                    status = 'completed'  /* Update status to completed when fully paid */
+                    status = 'completed'
                 WHERE id = ?
             ");
             $stmt->bind_param("i", $order_id);
             $stmt->execute();
 
-            // Create final invoice with full amount and zero balance
+            // Create final invoice with advance and final amount
             $stmt = $conn->prepare("
                 INSERT INTO invoices (
                     order_id, invoice_type, amount, advance_amount, balance_amount, created_by
-                ) VALUES (?, 'final', ?, 0, 0, ?)
+                ) VALUES (?, 'final', ?, ?, 0, ?)
             ");
-            $stmt->bind_param("idi", 
+            $stmt->bind_param("iddi", 
                 $order_id, 
-                $amount,
+                $final_amount,
+                $advance,
                 $_SESSION['user_id']
             );
             $stmt->execute();
@@ -250,13 +253,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <div class="col-md-6">
                                         <div class="amount-display">
                                             <label>Advance Paid:</label>
-                                            <div>Rs. <?php echo number_format($order['paid_amount'], 2); ?></div>
+                                            <div>Rs. <?php echo number_format($payment_info['advance_paid'], 2); ?></div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="amount-display">
-                                            <label>Balance Payment:</label>
-                                            <div>Rs. <?php echo number_format($order['balance_amount'], 2); ?></div>
+                                            <label>Final Amount:</label>
+                                            <div>Rs. <?php
+                                                $final = $order['total_price'] - $payment_info['advance_paid'];
+                                                if ($final < 0) $final = 0;
+                                                echo number_format($final, 2);
+                                            ?></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-md-12">
+                                        <div class="amount-display">
+                                            <label>Total Paid:</label>
+                                            <div>Rs. <?php echo number_format($order['total_price'], 2); ?></div>
                                         </div>
                                     </div>
                                 </div>

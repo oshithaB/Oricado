@@ -317,6 +317,15 @@ $invoices = $result->fetch_all(MYSQLI_ASSOC);
                 </div>
 
                 <div class="invoices-list">
+                    <?php
+                    // Build a map of order_id => has_final_invoice for fast lookup
+                    $orderHasFinalInvoice = [];
+                    foreach ($invoices as $inv) {
+                        if ($inv['invoice_type'] === 'final') {
+                            $orderHasFinalInvoice[$inv['order_id']] = true;
+                        }
+                    }
+                    ?>
                     <?php foreach ($invoices as $invoice): ?>
                     <div class="invoice-card">
                         <div class="invoice-info">
@@ -330,10 +339,20 @@ $invoices = $result->fetch_all(MYSQLI_ASSOC);
                             <?php else: ?>
                                 <p><strong>Previous Advance:</strong> Rs. <?php echo number_format($invoice['advance_amount'], 2); ?></p>
                                 <p><strong>Final Amount:</strong> Rs. <?php echo number_format($invoice['amount'], 2); ?></p>
+                                <p><strong>Total Paid:</strong> Rs. <?php echo number_format($invoice['advance_amount'] + $invoice['amount'], 2); ?></p>
+                                <p><strong>Remaining:</strong> Rs. 0.00</p>
                             <?php endif; ?>
                         </div>
                         <div class="invoice-actions">
-                            <?php if ($invoice['invoice_type'] === 'advance' && $invoice['balance_amount'] > 0): ?>
+                            <?php
+                            $has_final_invoice = isset($orderHasFinalInvoice[$invoice['order_id']]);
+                            $has_balance = $invoice['balance_amount'] > 0;
+                            ?>
+                            <?php if (
+                                $invoice['invoice_type'] === 'advance' 
+                                && !$has_final_invoice
+                                && $has_balance
+                            ): ?>
                                 <?php if ($type !== 'final'): ?>
                                     <a href="create_invoice.php?id=<?php echo $invoice['order_id']; ?>&type=advance" 
                                        class="invoice-btn btn-advance">

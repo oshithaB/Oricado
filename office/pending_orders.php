@@ -297,7 +297,7 @@ $orders = $conn->query($query)->fetch_all(MYSQLI_ASSOC);
                                     <button type="button" onclick="showMaterials(<?php echo $order['quotation_id']; ?>)" 
                                             class="btn btn-material">Show Materials</button>
                                     
-                                    <?php if (!$order['has_final_invoice']): ?>
+                                    <?php if (!$order['has_final_invoice'] && $order['balance_amount'] > 0): ?>
                                         <?php if ($order['advance_paid'] > 0): ?>
                                             <a href="create_invoice.php?id=<?php echo $order['id']; ?>&type=advance" 
                                                class="btn btn-info">

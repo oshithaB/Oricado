@@ -716,6 +716,10 @@ body {
                 foreach ($lines as $line) {
                     $line = trim($line);
                     if (!empty($line)) {
+                        // Bold lines that start with an emoji (Unicode range)
+                        if (preg_match('/^\p{So}/u', $line)) {
+                            $line = '<strong>' . $line . '</strong>';
+                        }
                         if (strpos($line, ':') !== false && ctype_upper(substr($line, 0, 1))) {
                             if (!empty($currentSubsection)) {
                                 $html .= '</ul>';
@@ -735,12 +739,24 @@ body {
                 $html .= '<div class="quotation-title">Bank Details</div>';
                 foreach ($lines as $line) {
                     if (!empty(trim($line))) {
+                        // Bold lines that start with an emoji (Unicode range)
+                        if (preg_match('/^\p{So}/u', $line)) {
+                            $line = '<strong>' . $line . '</strong>';
+                        }
                         $html .= '<div>' . trim($line) . '</div>';
                     }
                 }
                 $html .= '</div>';
             } else {
-                $html .= '<p>' . implode('<br>', array_map('trim', $lines)) . '</p>';
+                // Bold lines that start with an emoji (Unicode range)
+                $lines = array_map(function($l) {
+                    $l = trim($l);
+                    if (preg_match('/^\p{So}/u', $l)) {
+                        return '<strong>' . $l . '</strong>';
+                    }
+                    return $l;
+                }, $lines);
+                $html .= '<p>' . implode('<br>', $lines) . '</p>';
             }
         }
 
