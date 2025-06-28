@@ -11,16 +11,19 @@ $colors = [
     'maroon' => ['hex' => '#800000', 'text' => 'white']
 ];
 
-// Get coil statistics
-$coilQuery = "SELECT m.*, 
+// Remove coil-only filter and get all materials
+$searchTerm = isset($_GET['search']) ? trim($_GET['search']) : '';
+$materialsQuery = "SELECT m.*, 
     (SELECT COUNT(*) FROM order_materials om WHERE om.material_id = m.id) as usage_count,
     (SELECT SUM(o.total_price) FROM order_materials om 
      JOIN orders o ON om.order_id = o.id 
      WHERE om.material_id = m.id) as total_revenue
-FROM materials m 
-WHERE m.type = 'coil'";
-
-$coils = $conn->query($coilQuery)->fetch_all(MYSQLI_ASSOC);
+FROM materials m";
+if ($searchTerm !== '') {
+    $searchTermEsc = $conn->real_escape_string($searchTerm);
+    $materialsQuery .= " WHERE m.name LIKE '%$searchTermEsc%' OR m.color LIKE '%$searchTermEsc%' OR m.type LIKE '%$searchTermEsc%'";
+}
+$materials = $conn->query($materialsQuery)->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -139,34 +142,58 @@ $coils = $conn->query($coilQuery)->fetch_all(MYSQLI_ASSOC);
             border: 2px solid #FFD700;
             box-shadow: 0 0 10px 2px #FFD700;
         }
+
+        .navigation {
+            background: #333; /* Black background for navigation */
+            color: white;
+            padding: 20px;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .navigation-logo {
+            max-width: 150px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            border-radius: 50%; /* Makes the logo circular */
+            border: 2px solid #FFD700; /* Gold color for the border */
+            box-shadow: 0 0 10px 2px #FFD700; /* Optional: Add a glowing effect */
+        }
+
+        .search-bar {
+            margin-bottom: 25px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .search-bar input[type="text"] {
+            width: 250px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        .search-bar button {
+            padding: 8px 18px;
+            border-radius: 6px;
+            border: none;
+            background: #007bff;
+            color: white;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .search-bar button:hover {
+            background: #0056b3;
+        }
     </style>
 </head>
 <body>
     <div class="dashboard">
         <nav>
         <img src="../assets/images/oricado logo.jpg" alt="Oricado Logo" class="navigation-logo">
-<style>
-    .navigation {
-    background: #333; /* Black background for navigation */
-    color: white;
-    padding: 20px;
-}
-
-.logo-container {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.navigation-logo {
-    max-width: 150px;
-    height: auto;
-    display: block;
-    margin: 0 auto;
-    border-radius: 50%; /* Makes the logo circular */
-    border: 2px solid #FFD700; /* Gold color for the border */
-    box-shadow: 0 0 10px 2px #FFD700; /* Optional: Add a glowing effect */
-}
-    </style>
             <h2>Admin Dashboard</h2>
             <ul>
                 <li><a href="users.php">Manage Users</a></li>
@@ -179,41 +206,57 @@ $coils = $conn->query($coilQuery)->fetch_all(MYSQLI_ASSOC);
 
         <div class="dashboard-content">
             <h2 class="page-title">
-                <i class="fas fa-chart-line me-2"></i>Coil Overview
+                <i class="fas fa-chart-line me-2"></i>Materials Overview
             </h2>
-            
+            <form class="search-bar" method="get" action="">
+                <input type="text" name="search" placeholder="Search materials by name, color, or type" value="<?php echo htmlspecialchars($searchTerm); ?>">
+                <button type="submit"><i class="fas fa-search"></i> Search</button>
+                <?php if ($searchTerm !== ''): ?>
+                    <a href="dashboard.php" class="btn btn-secondary" style="margin-left:10px;">Clear</a>
+                <?php endif; ?>
+            </form>
             <div class="row">
-                <?php foreach ($coils as $coil): 
-                    $colorInfo = $colors[$coil['color']] ?? ['hex' => '#000000', 'text' => 'white'];
-                    $colorName = str_replace('_', ' ', ucfirst($coil['color']));
+                <?php foreach ($materials as $mat): 
+                    $colorValue = isset($mat['color']) && $mat['color'] !== null ? $mat['color'] : '';
+                    $colorInfo = $colors[$colorValue] ?? ['hex' => '#000000', 'text' => 'white'];
+                    $colorName = $colorValue !== '' ? str_replace('_', ' ', ucfirst($colorValue)) : '';
                 ?>
                 <div class="col-12 col-md-6 col-lg-4">
                     <div class="coil-card">
-                        <div class="color-header" style="background-color: <?php echo $colors[$coil['color']]['hex'] ?? '#000000'; ?>;">
-                            <h4 style="color: <?php echo $colors[$coil['color']]['text'] ?? 'white'; ?>;">
+                        <div class="color-header" style="background-color: <?php echo $colorInfo['hex']; ?>;">
+                            <h4 style="color: <?php echo $colorInfo['text']; ?>;">
                                 <i class="fas fa-circle me-2"></i>
-                                <?php echo ucwords($coil['color']); ?>
+                                <?php echo ucwords($mat['name']); ?>
+                                <?php if ($colorName !== ''): ?>
+                                    <span style="font-size: 0.9em; margin-left: 8px;">(<?php echo htmlspecialchars($colorName); ?>)</span>
+                                <?php endif; ?>
                             </h4>
                         </div>
                         <div class="coil-details">
                             <p>
-                                <span class="stat-label"><i class="fas fa-layer-group me-2"></i>Thickness:</span>
-                                <span class="stat-value"><?php echo $coil['thickness']; ?></span>
+                                <span class="stat-label"><i class="fas fa-tag me-2"></i>Type:</span>
+                                <span class="stat-value"><?php echo htmlspecialchars($mat['type']); ?></span>
                             </p>
+                            <?php if (!empty($mat['thickness'])): ?>
+                            <p>
+                                <span class="stat-label"><i class="fas fa-layer-group me-2"></i>Thickness:</span>
+                                <span class="stat-value"><?php echo $mat['thickness']; ?></span>
+                            </p>
+                            <?php endif; ?>
                             <p>
                                 <span class="stat-label"><i class="fas fa-box me-2"></i>Available:</span>
-                                <span class="stat-value"><?php echo $coil['quantity'] . ' ' . $coil['unit']; ?></span>
+                                <span class="stat-value"><?php echo $mat['quantity'] . ' ' . $mat['unit']; ?></span>
                             </p>
                             <p>
                                 <span class="stat-label"><i class="fas fa-chart-bar me-2"></i>Usage Count:</span>
-                                <span class="stat-value"><?php echo $coil['usage_count']; ?></span>
+                                <span class="stat-value"><?php echo $mat['usage_count']; ?></span>
                             </p>
                             <p>
                                 <span class="stat-label"><i class="fas fa-rupee-sign me-2"></i>Revenue:</span>
-                                <span class="stat-value">Rs. <?php echo number_format($coil['total_revenue'] ?? 0, 2); ?></span>
+                                <span class="stat-value">Rs. <?php echo number_format($mat['total_revenue'] ?? 0, 2); ?></span>
                             </p>
                         </div>
-                        <button onclick="window.location.href='coil_details.php?id=<?php echo $coil['id']; ?>'" 
+                        <button onclick="window.location.href='coil_details.php?id=<?php echo $mat['id']; ?>'" 
                                 class="view-details-btn btn btn-primary">
                             <i class="fas fa-eye me-2"></i>View Details
                         </button>

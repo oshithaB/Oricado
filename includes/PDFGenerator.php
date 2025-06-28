@@ -624,6 +624,14 @@ body {
             <td style="text-align: right;">' . number_format($item['price'], 2) . '</td>
             <td style="text-align: right; font-weight: 600;">' . number_format($item['amount'], 2) . '</td>
         </tr>';
+        // Add note row if item_note is present and not empty
+        if (!empty($item['item_note'])) {
+            $html .= '<tr>
+                <td colspan="7" style="background: #f8f9fa; font-size: 13px; color: #444; border-top: none;">
+                    <strong>Note:</strong> ' . nl2br(htmlspecialchars($item['item_note'])) . '
+                </td>
+            </tr>';
+        }
     }
 
     // Professional totals section
@@ -646,39 +654,47 @@ body {
 
     $html .= '</div>'; // Close first page content-section
 
-    // FIXED: Terms and conditions page with proper content structure
+    // Only first page has header; subsequent pages do not
     if (!empty($quotation['quotation_text'])) {
-        $html .= '<div class="page-break">';
-        
-        // Include header with logo for terms page
-        $html .= '<div class="header">
-            <div class="logo-and-info">
-                ' . $logoHtml . '
-                <div class="company-details">
-                    <div class="company-name">Oricado Roller Doors</div>
-                    <div class="company-address">
-                        456/A/1 MDH Jayawardhana Mawatha,<br>
-                        Kaduwela 10640<br>
-                        Phone: 0112 270 588
+        $sections = preg_split('/\n\s*\n/', $quotation['quotation_text']);
+        $firstSection = true;
+        $sectionsToPrint = [];
+        foreach ($sections as $idx => $section) {
+            if ($firstSection) {
+                // Already rendered on first page
+                $firstSection = false;
+                continue;
+            }
+            $sectionsToPrint[] = $section;
+        }
+        if (count($sectionsToPrint) > 0) {
+            // Remove background styles, just use default content and quotation-content classes
+            $html .= '
+            <div style="page-break-before: always;">
+                <div class="quotation-content" style="margin-top:1cm; padding-bottom:60px;">
+                ';
+            foreach ($sectionsToPrint as $section) {
+                $html .= $this->formatQuotationText($section);
+            }
+            $html .= '</div>
+                <div class="page-footer" style="position: absolute; left: 0; right: 0; bottom: 0;">
+                    <div>
+                        <div style="display: flex; gap: 20px;">
+                            <a href="mailto:info@oricado.lk">📧 info@oricado.lk</a>
+                            <a href="http://www.oricado.lk">🌐 www.oricado.lk</a>
+                            <a href="tel:+94112270588">📞 +94 112 270 588</a>
+                        </div>
+                        <div style="color: #999; font-size: 12px;">
+                            Generated on ' . date('d/m/Y H:i') . '
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="document-meta">
-                <div class="document-title" style="font-size: 20px; font-weight: bold; color: #2c3e50;">Terms & Conditions</div>
-                <div class="document-date">Quotation #' . $this->id . '</div>
-            </div>
-        </div>';
-        
-        // FIXED: Terms content with proper container
-        $html .= '<div class="quotation-content">';
-        $html .= $this->formatQuotationText($quotation['quotation_text']);
-        $html .= '</div>'; // Close quotation-content
-        
-        $html .= '</div>'; // Close page-break
+            </div>';
+        }
     }
 
-    // Professional footer
-    $html .= '<div class="page-footer">
+    // Footer for first page (manually positioned at bottom)
+    $html .= '<div class="page-footer" style="position: absolute; left: 0; right: 0; bottom: 0;">
         <div>
             <div style="display: flex; gap: 20px;">
                 <a href="mailto:info@oricado.lk">
@@ -702,28 +718,22 @@ body {
     private function formatQuotationText($text) {
         $sections = preg_split('/\n\s*\n/', $text);
         $html = '';
-        
         foreach ($sections as $section) {
             $lines = explode("\n", trim($section));
-            
-            if (preg_match('/^[A-Z\s&]+:?$/', trim($lines[0]))) {
+            $titleLine = trim($lines[0]);
+            if (preg_match('/^\p{So}.*$/u', $titleLine) || preg_match('/^[A-Z\s&]+:?$/', $titleLine)) {
                 $html .= '<div class="quotation-section">';
-                $html .= '<div class="quotation-title">' . trim($lines[0]) . '</div>';
+                $html .= '<div class="quotation-title">' . $titleLine . '</div>';
                 array_shift($lines);
-                
                 $html .= '<ul class="quotation-list">';
-                
                 foreach ($lines as $line) {
                     $line = trim($line);
                     if (!empty($line)) {
-                        // Bold lines that start with an emoji (Unicode range)
                         if (preg_match('/^\p{So}/u', $line)) {
                             $line = '<strong>' . $line . '</strong>';
                         }
                         if (strpos($line, ':') !== false && ctype_upper(substr($line, 0, 1))) {
-                            if (!empty($currentSubsection)) {
-                                $html .= '</ul>';
-                            }
+                            $html .= '</ul>';
                             $html .= '<div class="quotation-subtitle">' . $line . '</div>';
                             $html .= '<ul class="quotation-list">';
                         } else {
@@ -732,23 +742,8 @@ body {
                         }
                     }
                 }
-                
                 $html .= '</ul></div>';
-            } elseif (strpos(strtoupper($lines[0]), 'BANK DETAILS') !== false) {
-                $html .= '<div class="bank-details">';
-                $html .= '<div class="quotation-title">Bank Details</div>';
-                foreach ($lines as $line) {
-                    if (!empty(trim($line))) {
-                        // Bold lines that start with an emoji (Unicode range)
-                        if (preg_match('/^\p{So}/u', $line)) {
-                            $line = '<strong>' . $line . '</strong>';
-                        }
-                        $html .= '<div>' . trim($line) . '</div>';
-                    }
-                }
-                $html .= '</div>';
             } else {
-                // Bold lines that start with an emoji (Unicode range)
                 $lines = array_map(function($l) {
                     $l = trim($l);
                     if (preg_match('/^\p{So}/u', $l)) {
@@ -759,18 +754,8 @@ body {
                 $html .= '<p>' . implode('<br>', $lines) . '</p>';
             }
         }
-
-       
-
-      
-
-
-
-    // Add signature section
-   
-
-    return $html;
-}
+        return $html;
+    }
 
     private function getSupplierQuotationHTML($quotation) {
         return '<div class="section">

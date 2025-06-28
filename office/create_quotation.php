@@ -299,6 +299,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 // Process items
                 if (!empty($_POST['items']) && is_array($_POST['items'])) {
+                    // Add item_note to the insert statement and binding
                     $itemStmt = $conn->prepare("INSERT INTO quotation_items (
                         quotation_id, 
                         material_id, 
@@ -311,8 +312,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         coil_inches, 
                         pieces, 
                         taxes, 
-                        amount
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                        amount,
+                        item_note
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
                     foreach ($_POST['items'] as $item) {
                         $materialId = intval($item['material_id']);
@@ -326,8 +328,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $pieces = isset($item['pieces']) ? intval($item['pieces']) : null;
                         $taxes = floatval($item['taxes']);
                         $amount = floatval($item['amount']);
+                        $itemNote = isset($item['item_note']) ? $item['item_note'] : null;
 
-                        $itemStmt->bind_param("iisdsddddids",
+                        $itemStmt->bind_param("iisdsddddidss",
                             $quotation_id,
                             $materialId,
                             $name,
@@ -339,7 +342,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             $coilInches,
                             $pieces,
                             $taxes,
-                            $amount
+                            $amount,
+                            $itemNote
                         );
                         
                         if (!$itemStmt->execute()) {
@@ -631,7 +635,18 @@ function formatQuotationNumber($quotationId, $createdAt) {
                                             <th>Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody></tbody>
+                                    <tbody>
+                                        <!-- JS will render item rows here, including an extra row for item note if present -->
+                                        <!-- Example row structure:
+                                        <tr>
+                                            <td>Product Name</td>
+                                            ...other columns...
+                                        </tr>
+                                        <tr class="item-note-row">
+                                            <td colspan="8"><textarea class="form-control item-note" name="items[0][item_note]" placeholder="Note for this item"></textarea></td>
+                                        </tr>
+                                        -->
+                                    </tbody>
                                 </table>
                             </div>
                         </div>

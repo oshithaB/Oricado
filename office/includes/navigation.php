@@ -56,8 +56,7 @@
         <li><a href="dashboard.php"><i class="fas fa-home"></i> Dashboard</a></li>
         <li><a href="create_quotation.php"><i class="fas fa-file-signature"></i> Create Quotation</a></li>
         <li><a href="quotations.php"><i class="fas fa-file-alt"></i> Quotations</a></li>
-        <li><a href="updated_quotations.php"><i class="fas fa-edit"></i> Updated Quotations</a></li>
-        <li><a href="create_order.php"><i class="fas fa-plus-square"></i> New Order</a></li>
+       <li><a href="expenses.php"><i class="fas fa-money-bill-wave me-2"></i>Expenses</a></li>
         <li><a href="pending_orders.php"><i class="fas fa-hourglass-half"></i> Pending Orders</a></li>
         <li><a href="reviewed_orders.php"><i class="fas fa-search"></i> Reviewed Orders</a></li>
         <li><a href="confirmed_orders.php"><i class="fas fa-check-circle"></i> Confirmed Orders</a></li>
