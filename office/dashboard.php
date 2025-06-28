@@ -2,6 +2,18 @@
 require_once '../config/config.php';
 checkAuth(['office_staff']);
 
+// Fetch logged-in user info
+//session_start();
+$user_id = $_SESSION['user_id'] ?? null;
+$user_info = null;
+if ($user_id) {
+    $stmt = $conn->prepare("SELECT name, role FROM users WHERE id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $user_info = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+}
+
 // Get recent orders with creator info
 $recent_orders = $conn->query("
     SELECT o.*, 
@@ -699,6 +711,20 @@ body {
         </div>
     </div>
 
+    <!-- User Info Badge (top right) -->
+<div class="position-absolute top-0 end-0 p-3" style="z-index: 1050;">
+  <?php if ($user_info): ?>
+    <span class="badge bg-primary fs-6 me-2">
+      <i class="fas fa-user-circle me-1"></i>
+      <?php echo htmlspecialchars($user_info['name']); ?>
+    </span>
+    <span class="badge bg-secondary fs-6 text-uppercase">
+      <i class="fas fa-user-tag me-1"></i>
+      <?php echo htmlspecialchars($user_info['role']); ?>
+    </span>
+  <?php endif; ?>
+</div>
+
     <?php
     // Check if there is any low stock (quantity < 100)
     $has_low_stock = false;
@@ -749,6 +775,15 @@ body {
         </div>
       </div>
     </div>
+
+    <!-- Roller Door Animation Overlay -->
+<div id="rollerDoorOverlay" class="roller-door-overlay d-flex flex-column justify-content-end align-items-center">
+  <div class="roller-door-inner d-flex flex-column align-items-center justify-content-center">
+    <i class="fas fa-warehouse fa-4x text-secondary mb-3"></i>
+    <span class="roller-door-text fw-bold text-secondary">Welcome, <?php echo htmlspecialchars($user_info['name']); ?>!</span>
+    <span class="roller-door-subtext text-muted">Loading your dashboard...</span>
+  </div>
+</div>
 
     <!-- Bootstrap JS (place before </body>) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
